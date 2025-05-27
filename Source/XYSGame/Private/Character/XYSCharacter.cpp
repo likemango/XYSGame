@@ -9,6 +9,7 @@
 #include "Camera/XYSCameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Controller/XYSEnhancedInputComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 
 AXYSCharacter::AXYSCharacter(const FObjectInitializer& ObjectInitializer)
@@ -38,16 +39,20 @@ void AXYSCharacter::Input_Move(const FInputActionValue& InputActionValue)
 	if (!Controller) return;
 
 	const APawn* Pawn = Controller->GetPawn();
-	const FRotator ActorRotation = Pawn->GetActorRotation();
+	// const FRotator ActorRotation = Pawn->GetActorRotation();
 	const FVector PawnVelocity = Pawn->GetVelocity();
 
-	const FVector LocalAcceleration = ActorRotation.UnrotateVector(XYSMovementComponent->GetCurrentAcceleration());
-	const FVector LocalVelocity = ActorRotation.UnrotateVector(FVector(PawnVelocity.X, PawnVelocity.Y, 0.f));
-	const double DotProduct = FVector::DotProduct(LocalAcceleration.GetSafeNormal(0.0001f),
-			LocalVelocity.GetSafeNormal(0.0001f));
+	// const FVector LocalAcceleration = ActorRotation.UnrotateVector(XYSMovementComponent->GetCurrentAcceleration());
+	// const FVector LocalVelocity = ActorRotation.UnrotateVector(FVector(PawnVelocity.X, PawnVelocity.Y, 0.f));
+	const FVector LocalAcceleration = XYSMovementComponent->GetCurrentAcceleration();
+	const FVector LocalVelocity = FVector(PawnVelocity.X, PawnVelocity.Y, 0.f);
+	const double DotProduct = FVector::DotProduct(LocalAcceleration.GetSafeNormal(0.0001f),LocalVelocity.GetSafeNormal(0.0001f));
+
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + LocalAcceleration * 100.f, 2, FLinearColor::Red);
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + LocalVelocity * 100.f, 2, FLinearColor::Blue);
 	
 	const FVector2D MoveValue = InputActionValue.Get<FVector2D>();
-	const FRotator MovementRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
+	const FRotator ControllerRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 	
 	const double LocalAcceleration2D = LocalAcceleration.Size2D();
 	const double LocalVelocity2D = LocalVelocity.Size2D();
@@ -61,12 +66,12 @@ void AXYSCharacter::Input_Move(const FInputActionValue& InputActionValue)
 
 	if (MoveValue.X != 0.f)
 	{
-		const FVector MovementDirection = MovementRotation.RotateVector(FVector::RightVector);
+		const FVector MovementDirection = ControllerRotation.RotateVector(FVector::RightVector);
 		AddMovementInput(MovementDirection, MoveValue.X);
 	}
 	if (MoveValue.Y != 0.f)
 	{
-		const FVector MovementDirection = MovementRotation.RotateVector(FVector::ForwardVector);
+		const FVector MovementDirection = ControllerRotation.RotateVector(FVector::ForwardVector);
 		AddMovementInput(MovementDirection, MoveValue.Y);
 	}
 }
