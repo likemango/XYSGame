@@ -258,7 +258,8 @@ void AMotionCharacter::Input_Move(const FInputActionValue& InputActionValue)
 		const FVector2D MoveValue = InputActionValue.Get<FVector2D>();
 		const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 
-		const double DotProduct = FVector::DotProduct(LocalAcceleration.GetSafeNormal(0.0001), LocalVelocity.GetSafeNormal(0.0001));
+		const double DotProduct = FVector::DotProduct(LocalAcceleration.GetSafeNormal(0.0001),
+			LocalVelocity.GetSafeNormal(0.0001));
 
 		const double LocalAcceleration2D = LocalAcceleration.Size2D();
 		const double LocalVelocity2D = LocalVelocity.Size2D();

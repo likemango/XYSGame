@@ -17,25 +17,6 @@ class UMotionCameraComponent;
 struct FInputActionValue;
 class UInputMappingContext;
 
-USTRUCT(BlueprintType)
-struct FCharacterGroundInfo
-{
-	GENERATED_BODY()
-
-	FCharacterGroundInfo()
-		: LastUpdateFrame(0)
-		, GroundDistance(0.0f)
-	{}
-
-	uint64 LastUpdateFrame;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Motion")
-	FHitResult GroundHitResult;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Motion")
-	float GroundDistance;
-};
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnVelocityBeginSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnVelocityStopSignature);
 

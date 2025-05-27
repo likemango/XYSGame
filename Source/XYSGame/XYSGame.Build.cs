@@ -14,7 +14,10 @@ public class XYSGame : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput"
+			"EnhancedInput",
+			"GameplayAbilities",
+			"MotionCore",
+			"MetasoundEngine",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
