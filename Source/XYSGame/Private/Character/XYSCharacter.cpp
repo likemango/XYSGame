@@ -48,8 +48,8 @@ void AXYSCharacter::Input_Move(const FInputActionValue& InputActionValue)
 	const FVector LocalVelocity = FVector(PawnVelocity.X, PawnVelocity.Y, 0.f);
 	const double DotProduct = FVector::DotProduct(LocalAcceleration.GetSafeNormal(0.0001f),LocalVelocity.GetSafeNormal(0.0001f));
 
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + LocalAcceleration * 100.f, 2, FLinearColor::Red);
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + LocalVelocity * 100.f, 2, FLinearColor::Blue);
+	// UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + LocalAcceleration * 100.f, 2, FLinearColor::Red);
+	// UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + LocalVelocity * 100.f, 2, FLinearColor::Blue);
 	
 	const FVector2D MoveValue = InputActionValue.Get<FVector2D>();
 	const FRotator ControllerRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
