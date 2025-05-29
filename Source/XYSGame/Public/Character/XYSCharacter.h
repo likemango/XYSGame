@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "MotionCore/Core/MotionStructs.h"
 #include "XYSCharacter.generated.h"
@@ -36,7 +37,7 @@ struct FCharacterGroundInfo
 
 
 UCLASS()
-class XYSGAME_API AXYSCharacter : public ACharacter
+class XYSGAME_API AXYSCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -44,6 +45,7 @@ public:
 	explicit AXYSCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void BeginPlay() override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	/*
 	 * Basic locomotion logic
@@ -69,12 +71,16 @@ public:
 //~Animation
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	const FCharacterGroundInfo& GetGroundInfo();
+
 protected:
 	// Ground Info that is used by the Animation Blueprint that ships with Motion
 	FCharacterGroundInfo CachedGroundInfo;
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TSubclassOf<UAnimInstance> DefaultAnimLinkedLayerForAllSkeletalMeshes;
 //~End of animation
+
+	virtual void PossessedBy(AController* NewController) override;
+	
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYSComponents")

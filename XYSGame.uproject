@@ -9,7 +9,9 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine"
+				"Engine",
+				"GameplayAbilities",
+				"ModularGameplay"
 			]
 		}
 	],
@@ -33,6 +35,10 @@
 		},
 		{
 			"Name": "PhysicsControl",
+			"Enabled": true
+		},
+		{
+			"Name": "ModularGameplay",
 			"Enabled": true
 		}
 	]

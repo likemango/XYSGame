@@ -182,3 +182,10 @@ const FCharacterGroundInfo& AXYSCharacter::GetGroundInfo()
 
 	return CachedGroundInfo;
 }
+
+void AXYSCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	
+}
