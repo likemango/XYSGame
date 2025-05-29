@@ -3,11 +3,16 @@
 
 #include "Character/XYSPawnExtensionComponent.h"
 
+#include "Character/XYSPawnData.h"
 #include "XYSGameplayTags.h"
 #include "XYSLogChannels.h"
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Net/UnrealNetwork.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(XYSPawnExtensionComponent)
+
+const FName UXYSPawnExtensionComponent::NAME_ActorFeatureName("PawnExtension");
 
 UXYSPawnExtensionComponent::UXYSPawnExtensionComponent(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
@@ -83,8 +88,7 @@ bool UXYSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManag
 	if (!CurrentState.IsValid() && DesiredState == XYSGameplayTags::InitState_Spawned)
 	{
 		// As long as we are on a valid pawn, we count as spawned
-		if (Pawn)
-			return true;
+		return Pawn != nullptr;
 	}
 	if (CurrentState == XYSGameplayTags::InitState_Spawned && DesiredState == XYSGameplayTags::InitState_DataAvailable)
 	{
@@ -114,7 +118,10 @@ bool UXYSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManag
 
 void UXYSPawnExtensionComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager,FGameplayTag CurrentState, FGameplayTag DesiredState)
 {
-	// This is currently all handled by other components listening to this state change
+	if (DesiredState == XYSGameplayTags::InitState_DataInitialized)
+	{
+		// This is currently all handled by other components listening to this state change
+	}
 }
 
 void UXYSPawnExtensionComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
@@ -205,26 +212,82 @@ void UXYSPawnExtensionComponent::InitializeAbilitySystem(UXYSAbilitySystemCompon
 
 void UXYSPawnExtensionComponent::UninitializeAbilitySystem()
 {
-	
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	// Uninitialize the ASC if we're still the avatar actor (otherwise another pawn already did it when they became the avatar actor)
+	if (AbilitySystemComponent->GetAvatarActor() == GetOwner())
+	{
+		FGameplayTagContainer AbilityTypesToIgnore;
+		AbilityTypesToIgnore.AddTag(XYSGameplayTags::Ability_Behavior_SurvivesDeath);
+
+		AbilitySystemComponent->CancelAbilities(nullptr, &AbilityTypesToIgnore);
+		// todo
+		// AbilitySystemComponent->ClearAbilityInput();
+		AbilitySystemComponent->RemoveAllGameplayCues();
+
+		if (AbilitySystemComponent->GetOwnerActor() != nullptr)
+		{
+			AbilitySystemComponent->SetAvatarActor(nullptr);
+		}
+		else
+		{
+			// If the ASC doesn't have a valid owner, we need to clear *all* actor info, not just the avatar pairing
+			AbilitySystemComponent->ClearActorInfo();
+		}
+
+		OnAbilitySystemUninitialized.Broadcast();
+	}
+
+	AbilitySystemComponent = nullptr;
 }
 
 void UXYSPawnExtensionComponent::HandleControllerChanged()
 {
+	if (AbilitySystemComponent && (AbilitySystemComponent->GetAvatarActor() == GetPawnChecked<APawn>()))
+	{
+		ensure(AbilitySystemComponent->AbilityActorInfo->OwnerActor == AbilitySystemComponent->GetOwnerActor());
+		if (AbilitySystemComponent->GetOwnerActor() == nullptr)
+		{
+			UninitializeAbilitySystem();
+		}
+		else
+		{
+			// 更新ASC的ActorInfo(FGameplayAbilityActorInfo)，包括Controller/SkeletonMesh/AnimInstance等等
+			AbilitySystemComponent->RefreshAbilityActorInfo();
+		}
+	}
+	CheckDefaultInitialization();
 }
 
 void UXYSPawnExtensionComponent::HandlePlayerStateReplicated()
 {
+	CheckDefaultInitialization();
 }
 
 void UXYSPawnExtensionComponent::SetupPlayerInputComponent()
 {
+	CheckDefaultInitialization();
 }
 
-void UXYSPawnExtensionComponent::OnAbilitySystemInitialized_RegisterAndCall(
-	FSimpleMulticastDelegate::FDelegate Delegate)
+void UXYSPawnExtensionComponent::OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate Delegate)
 {
+	if (!OnAbilitySystemInitialized.IsBoundToObject(Delegate.GetUObject()))
+	{
+		OnAbilitySystemInitialized.Add(Delegate);
+	}
+	if (AbilitySystemComponent)
+	{
+		Delegate.Execute();
+	}
 }
 
 void UXYSPawnExtensionComponent::OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate Delegate)
 {
+	if (!OnAbilitySystemUninitialized.IsBoundToObject(Delegate.GetUObject()))
+	{
+		OnAbilitySystemUninitialized.Add(Delegate);
+	}
 }

@@ -5,9 +5,9 @@
 #include "CoreMinimal.h"
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "Components/PawnComponent.h"
+#include "Character/XYSPawnData.h"
 #include "XYSPawnExtensionComponent.generated.h"
 
-class UXYSPawnData;
 class UXYSAbilitySystemComponent;
 /**
  * Component that adds functionality to all Pawn classes so it can be used for characters/vehicles/etc.
@@ -86,7 +86,7 @@ protected:
 	FSimpleMulticastDelegate OnAbilitySystemUninitialized;
 
 	/** Pawn data used to create the pawn. Specified from a spawn function or on a placed instance. */
-	UPROPERTY(EditInstanceOnly, ReplicatedUsing = OnRep_PawnData, Category = "XYS|Pawn")
+	UPROPERTY(EditInstanceOnly, ReplicatedUsing = OnRep_PawnData, Category = "Pawn")
 	TObjectPtr<const UXYSPawnData> PawnData;
 	
 	/** Pointer to the ability system component that is cached for convenience. */

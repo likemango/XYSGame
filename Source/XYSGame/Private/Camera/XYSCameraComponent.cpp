@@ -3,3 +3,6 @@
 
 #include "Camera/XYSCameraComponent.h"
 
+UXYSCameraComponent::UXYSCameraComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+}

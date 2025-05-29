@@ -3,50 +3,201 @@
 
 #include "Character/XYSHeroComponent.h"
 
-UXYSHeroComponent::UXYSHeroComponent(const FObjectInitializer& ObjectInitializer)
-{
-}
+#include "XYSGameplayTags.h"
+#include "XYSLogChannels.h"
+#include "Camera/XYSCameraComponent.h"
+#include "Character/XYSPawnExtensionComponent.h"
+#include "Components/GameFrameworkComponentManager.h"
+#include "Controller/XYSPlayerController.h"
+#include "Misc/UObjectToken.h"
+#include "Player/XYSPlayerState.h"
 
-bool UXYSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState,FGameplayTag DesiredState) const
-{
-	check(Manager);
+const FName UXYSHeroComponent::NAME_ActorFeatureName("Hero");
 
-	
-}
-
-void UXYSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState,FGameplayTag DesiredState)
+UXYSHeroComponent::UXYSHeroComponent(const FObjectInitializer& ObjectInitializer):Super(ObjectInitializer)
 {
-	IGameFrameworkInitStateInterface::HandleChangeInitState(Manager, CurrentState, DesiredState);
-}
-
-void UXYSHeroComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
-{
-	IGameFrameworkInitStateInterface::OnActorInitStateChanged(Params);
-}
-
-void UXYSHeroComponent::CheckDefaultInitialization()
-{
-	IGameFrameworkInitStateInterface::CheckDefaultInitialization();
 }
 
 void UXYSHeroComponent::OnRegister()
 {
 	Super::OnRegister();
 
-	
+	if (!GetPawn<APawn>())
+	{
+		UE_LOG(LogXYSGame, Error, TEXT("[ULyraHeroComponent::OnRegister] This component has been added to a blueprint whose base class is not a Pawn. To use this component, it MUST be placed on a Pawn Blueprint."));
+
+#if WITH_EDITOR
+		if (GIsEditor)
+		{
+			static const FText Message = NSLOCTEXT("LyraHeroComponent", "NotOnPawnError", "has been added to a blueprint whose base class is not a Pawn. To use this component, it MUST be placed on a Pawn Blueprint. This will cause a crash if you PIE!");
+			static const FName HeroMessageLogName = TEXT("LyraHeroComponent");
+			
+			FMessageLog(HeroMessageLogName).Error()
+				->AddToken(FUObjectToken::Create(this, FText::FromString(GetNameSafe(this))))
+				->AddToken(FTextToken::Create(Message));
+				
+			FMessageLog(HeroMessageLogName).Open();
+		}
+#endif
+	}
+	else
+	{
+		RegisterInitStateFeature();
+	}
 }
 
 void UXYSHeroComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	// Listen for when the pawn extension component changes init state
+	// 只监听PawnExtension的feature初始化装填，每当它的初始化状态改变时，调用OnActorInitStateChanged
+	BindOnActorInitStateChanged(UXYSPawnExtensionComponent::NAME_ActorFeatureName, FGameplayTag(), false);
+
+	// Notifies that we are done spawning, then try the rest of initialization
+	ensure(TryToChangeInitState(XYSGameplayTags::InitState_Spawned));
+	CheckDefaultInitialization();
 }
 
 void UXYSHeroComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	UnregisterInitStateFeature();
+	
 	Super::EndPlay(EndPlayReason);
 }
+
+void UXYSHeroComponent::CheckDefaultInitialization()
+{
+	static const TArray<FGameplayTag> StateChain = { XYSGameplayTags::InitState_Spawned, XYSGameplayTags::InitState_DataAvailable, XYSGameplayTags::InitState_DataInitialized, XYSGameplayTags::InitState_GameplayReady };
+
+	// This will try to progress from spawned (which is only set in BeginPlay) through the data initialization stages until it gets to gameplay ready
+	ContinueInitStateChain(StateChain);
+}
+
+bool UXYSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState,FGameplayTag DesiredState) const
+{
+	check(Manager);
+
+	APawn* Pawn = GetPawn<APawn>();
+	if (!CurrentState.IsValid() && DesiredState == XYSGameplayTags::InitState_Spawned)
+	{
+		return Pawn != nullptr;
+	}
+	if (CurrentState == XYSGameplayTags::InitState_Spawned && DesiredState == XYSGameplayTags::InitState_DataAvailable)
+	{
+		// The player state is required.
+		if (!GetPlayerState<AXYSPlayerState>())
+			return false;
+
+		// If we're authority or autonomous, we need to wait for a controller with registered ownership of the player state.
+		// 如果是server或者本地控制，那么需要controller和playerState都已经注册，并且确定从属关系
+		if (Pawn->GetLocalRole() != ROLE_SimulatedProxy)
+		{
+			AController* Controller = GetController<AController>();
+
+			const bool bHasControllerPairedWithPS = (Controller != nullptr) && \
+				(Controller->PlayerState != nullptr) && \
+				(Controller->PlayerState->GetOwner() == Controller);
+
+			if (!bHasControllerPairedWithPS)
+			{
+				return false;
+			}
+
+			const bool bIsLocallyControlled = Pawn->IsLocallyControlled();
+			const bool bIsBot = Pawn->IsBotControlled();
+
+			if (bIsLocallyControlled && !bIsBot)
+			{
+				AXYSPlayerController* LyraPC = GetController<AXYSPlayerController>();
+
+				// The input component and local player is required when locally controlled.
+				// 如果是本地控制，那么需要LocalPlayer和InputComponent都已经准备好
+				if (!Pawn->InputComponent || !LyraPC || !LyraPC->GetLocalPlayer())
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	if (CurrentState == XYSGameplayTags::InitState_DataAvailable && DesiredState == XYSGameplayTags::InitState_DataInitialized)
+	{
+		// Wait for player state and extension component
+		// 等待PawnExtension已经达到InitState_DataInitialized
+		AXYSPlayerState* LyraPS = GetPlayerState<AXYSPlayerState>();
+		return LyraPS && Manager->HasFeatureReachedInitState(Pawn, UXYSPawnExtensionComponent::NAME_ActorFeatureName, XYSGameplayTags::InitState_DataInitialized);
+	}
+	if (CurrentState == XYSGameplayTags::InitState_DataInitialized && DesiredState == XYSGameplayTags::InitState_GameplayReady)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void UXYSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState,FGameplayTag DesiredState)
+{
+	if (CurrentState == XYSGameplayTags::InitState_Spawned && DesiredState == XYSGameplayTags::InitState_DataAvailable)
+	{
+		// do nothing
+		return;
+	}
+	if (CurrentState == XYSGameplayTags::InitState_DataAvailable && DesiredState == XYSGameplayTags::InitState_DataInitialized)
+	{
+		APawn* Pawn = GetPawn<APawn>();
+		AXYSPlayerState* XYSPS = GetPlayerState<AXYSPlayerState>();
+		if (!ensure(Pawn && XYSPS))
+			return;
+
+		const UXYSPawnData* PawnData = nullptr;
+		if (UXYSPawnExtensionComponent* PawnExtensionComponent = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+		{
+			// 初始化ASC, InitAbilityActorInfo
+			PawnExtensionComponent->InitializeAbilitySystem(XYSPS->GetXYSAbilitySystemComponent(), XYSPS);
+			PawnData = PawnExtensionComponent->GetPawnData<UXYSPawnData>();
+		}
+		
+		// 为pawn绑定相机模式变化的委托，方便后续更改相机模式
+		if (PawnData)
+		{
+			// Hook up the delegate for all pawns, in case we spectate later
+			if (UXYSCameraComponent* CameraComponent = UXYSCameraComponent::FindCameraComponent(Pawn))
+			{
+				// CameraComponent->DetermineCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
+			}
+		}
+
+		// 初始化角色输入
+		if (AXYSPlayerController* XYSPC = GetController<AXYSPlayerController>())
+		{
+			if (Pawn->InputComponent)
+			{
+				InitializePlayerInput(Pawn->InputComponent);
+			}
+		}
+	}
+	if (CurrentState == XYSGameplayTags::InitState_DataInitialized && DesiredState == XYSGameplayTags::InitState_GameplayReady)
+	{
+		// do nothing
+		return;
+	}
+}
+
+void UXYSHeroComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
+{
+	if (Params.FeatureName == UXYSPawnExtensionComponent::NAME_ActorFeatureName)
+	{
+		if (Params.FeatureState == XYSGameplayTags::InitState_DataInitialized)
+		{
+			// If the extension component says all all other components are initialized, try to progress to next state
+			// 因为我自身在等待PawnExtension的DataInitialized( HasFeatureReachedInitState )，以此我需要在这里接收消息，来提醒我可以进行后续状态
+			CheckDefaultInitialization();
+		}
+	}
+}
+
 
 void UXYSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 {

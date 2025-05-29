@@ -37,7 +37,7 @@ struct FCharacterGroundInfo
 
 
 UCLASS()
-class XYSGAME_API AXYSCharacter : public ACharacter, public IAbilitySystemInterface
+class XYSGAME_API AXYSCharacter : public ACharacter/*, public IAbilitySystemInterface*/
 {
 	GENERATED_BODY()
 
@@ -45,7 +45,6 @@ public:
 	explicit AXYSCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void BeginPlay() override;
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	/*
 	 * Basic locomotion logic
