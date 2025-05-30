@@ -5,26 +5,48 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "Character/XYSCharacterMovementComponent.h"
 #include "Camera/XYSCameraComponent.h"
+#include "Character/XYSHeroComponent.h"
+#include "Character/XYSPawnExtensionComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Controller/XYSEnhancedInputComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
 
 
 AXYSCharacter::AXYSCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UXYSCharacterMovementComponent>(CharacterMovementComponentName))
 {
+	// Avoid ticking characters if possible.
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
+	SetNetCullDistanceSquared(900000000.0f);
+
+	UXYSCharacterMovementComponent* XYSMoveComp = CastChecked<UXYSCharacterMovementComponent>(GetCharacterMovement());
+	XYSMoveComp->GravityScale = 1.0f;
+	XYSMoveComp->MaxAcceleration = 2400.0f;
+	XYSMoveComp->BrakingFrictionFactor = 1.0f;
+	XYSMoveComp->BrakingFriction = 6.0f;
+	XYSMoveComp->GroundFriction = 8.0f;
+	XYSMoveComp->BrakingDecelerationWalking = 1400.0f;
+	XYSMoveComp->bUseControllerDesiredRotation = false;
+	XYSMoveComp->bOrientRotationToMovement = false;
+	// XYSMoveComp->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+	XYSMoveComp->bAllowPhysicsRotationDuringAnimRootMotion = false;
+	XYSMoveComp->GetNavAgentPropertiesRef().bCanCrouch = true;
+	XYSMoveComp->bCanWalkOffLedgesWhenCrouching = true;
+	// XYSMoveComp->SetCrouchedHalfHeight(65.0f);
+
+	PawnExtComponent = CreateDefaultSubobject<UXYSPawnExtensionComponent>(TEXT("PawnExtComponent"));
+	// PawnExtComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
+	// PawnExtComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
+
+	HeroComponent = CreateDefaultSubobject<UXYSHeroComponent>(TEXT("HeroComponent"));
+	
 	bUseControllerRotationYaw = true;
-
 	XYSCameraComponent = CreateDefaultSubobject<UXYSCameraComponent>(TEXT("XYSCameraComponent"));
 	XYSCameraComponent->SetupAttachment(GetMesh(), CameraAttachSocket);
 	XYSCameraComponent->bUsePawnControlRotation = true;
-	
-	XYSMovementComponent = Cast<UXYSCharacterMovementComponent>(GetCharacterMovement());
-	XYSMovementComponent->bOrientRotationToMovement = false;
-	XYSMovementComponent->bUseControllerDesiredRotation = false;
 }
 
 void AXYSCharacter::BeginPlay()
@@ -32,6 +54,21 @@ void AXYSCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->LinkAnimClassLayers(DefaultAnimLinkedLayerForAllSkeletalMeshes);
+}
+
+UXYSAbilitySystemComponent* AXYSCharacter::GetXYSAbilitySystemComponent() const
+{
+	return Cast<UXYSAbilitySystemComponent>(GetAbilitySystemComponent());
+}
+
+UAbilitySystemComponent* AXYSCharacter::GetAbilitySystemComponent() const
+{
+	if (PawnExtComponent == nullptr)
+	{
+		return nullptr;
+	}
+
+	return PawnExtComponent->GetXYSAbilitySystemComponent();
 }
 
 void AXYSCharacter::Input_Move(const FInputActionValue& InputActionValue)
@@ -105,39 +142,25 @@ void AXYSCharacter::Input_Crouch(const FInputActionValue& InputActionValue)
 	}
 }
 
-void AXYSCharacter::Input_Jump(const FInputActionValue& InputActionValue)
-{
-	if (!Controller) return;
-
-	if (XYSMovementComponent->bWantsToCrouch || bIsCrouched)
-	{
-		UnCrouch();
-	}
-	else if (CanJump())
-	{
-		Jump();
-	}
-}
+// void AXYSCharacter::Input_Jump(const FInputActionValue& InputActionValue)
+// {
+// 	if (!Controller) return;
+//
+// 	if (XYSMovementComponent->bWantsToCrouch || bIsCrouched)
+// 	{
+// 		UnCrouch();
+// 	}
+// 	else if (CanJump())
+// 	{
+// 		Jump();
+// 	}
+// }
 
 void AXYSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	const APlayerController* PC = GetController<APlayerController>();
-	check(PC);
-
-	UXYSEnhancedInputComponent* EnhancedInputComponent = Cast<UXYSEnhancedInputComponent>(InputComponent);
-	ensureMsgf(EnhancedInputComponent, TEXT("Unexpected Input Component class! "
-										 "The Gameplay Abilities will not be bound to their inputs. Change the input component to UXYSEnhancedInputComponent or a subclass of it."));
-	UEnhancedInputLocalPlayerSubsystem* EnhancedInputLocalPlayerSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
-	check(EnhancedInputLocalPlayerSubsystem);
-
-	EnhancedInputLocalPlayerSubsystem->AddMappingContext(DefaultMappingContext, 0);
-
-	EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this,  &AXYSCharacter::Input_Move);
-	EnhancedInputComponent->BindAction(IA_Look, ETriggerEvent::Triggered, this,  &AXYSCharacter::Input_Look);
-	EnhancedInputComponent->BindAction(IA_Crouch, ETriggerEvent::Triggered, this,  &AXYSCharacter::Input_Crouch);
-	EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Triggered, this,  &AXYSCharacter::Input_Jump);
+	PawnExtComponent->SetupPlayerInputComponent();
 }
 
 const FCharacterGroundInfo& AXYSCharacter::GetGroundInfo()
@@ -187,5 +210,26 @@ void AXYSCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	
+	PawnExtComponent->HandleControllerChanged();
+}
+
+void AXYSCharacter::UnPossessed()
+{
+	Super::UnPossessed();
+
+	PawnExtComponent->HandleControllerChanged();
+}
+
+void AXYSCharacter::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+
+	PawnExtComponent->HandleControllerChanged();
+}
+
+void AXYSCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	PawnExtComponent->HandlePlayerStateReplicated();
 }

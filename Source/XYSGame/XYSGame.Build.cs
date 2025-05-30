@@ -19,7 +19,8 @@ public class XYSGame : ModuleRules
 			"MotionCore",
 			"MetasoundEngine",
 			"GameplayTags",
-			"GameplayTasks"
+			"GameplayTasks",
+			"NetCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

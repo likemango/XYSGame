@@ -20,7 +20,7 @@ class XYSGAME_API UXYSPawnData : public UPrimaryDataAsset
 public:
 	UXYSPawnData(const FObjectInitializer& ObjectInitializer);
 
-	// Class to instantiate for this pawn (should usually derive from ALyraPawn or ALyraCharacter).
+	// Class to instantiate for this pawn (should usually derive from AXYSPawn or AXYSCharacter).
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Pawn")
 	TSubclassOf<APawn> PawnClass;
 
@@ -33,7 +33,7 @@ public:
 	TObjectPtr<UXYSAbilityTagRelationshipMapping> TagRelationshipMapping;
 	
 	// Input configuration used by player controlled pawns to create input mappings and bind input actions.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Input")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UXYSInputConfig> InputConfig;
 
 };

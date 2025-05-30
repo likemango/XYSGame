@@ -8,6 +8,9 @@
 #include "MotionCore/Core/MotionStructs.h"
 #include "XYSCharacter.generated.h"
 
+class UXYSHeroComponent;
+class UXYSPawnExtensionComponent;
+class UXYSAbilitySystemComponent;
 class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
@@ -35,36 +38,36 @@ struct FCharacterGroundInfo
 	float GroundDistance;	
 };*/
 
-
+/*
+*   The base character pawn class used by this project.
+ *	Responsible for sending events to pawn components.
+ *	New behavior should be added via pawn components when possible.
+ *  新逻辑应该添加到pawn component中，它只负责将消息转发给pawn component
+ */
 UCLASS()
-class XYSGAME_API AXYSCharacter : public ACharacter/*, public IAbilitySystemInterface*/
+class XYSGAME_API AXYSCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
-	explicit AXYSCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	AXYSCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable, Category = "Lyra|Character")
+	UXYSAbilitySystemComponent* GetXYSAbilitySystemComponent() const;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
 	/*
 	 * Basic locomotion logic
 	 */
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
 	void Input_Crouch(const FInputActionValue& InputActionValue);
-	void Input_Jump(const FInputActionValue& InputActionValue);
 
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputMappingContext> DefaultMappingContext;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> IA_Move;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> IA_Look;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> IA_Jump;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> IA_Crouch;
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
+	float TurnRateCamera = 50.0f;
+
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 //~Animation
@@ -79,7 +82,9 @@ protected:
 //~End of animation
 
 	virtual void PossessedBy(AController* NewController) override;
-	
+	virtual void UnPossessed() override;
+	virtual void OnRep_Controller() override;
+	virtual void OnRep_PlayerState() override;
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYSComponents")
@@ -90,8 +95,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "XYSComponents")
 	FName CameraAttachSocket = FName(TEXT("S_Camera"));
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
-	float TurnRateCamera = 50.0f;
+	
+private:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Lyra|Character", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UXYSPawnExtensionComponent> PawnExtComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Lyra|Character", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UXYSHeroComponent> HeroComponent;
 };
 
 

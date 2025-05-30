@@ -7,10 +7,15 @@
 #include "InputMappingContext.h"
 #include "XYSGameplayTags.h"
 #include "XYSLogChannels.h"
+#include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "Camera/XYSCameraComponent.h"
+#include "Character/XYSCharacter.h"
+#include "Character/XYSCharacterMovementComponent.h"
 #include "Character/XYSPawnExtensionComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Controller/XYSPlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Input/XYSInputComponent.h"
 #include "Misc/UObjectToken.h"
 #include "Player/XYSPlayerState.h"
 
@@ -26,13 +31,13 @@ void UXYSHeroComponent::OnRegister()
 
 	if (!GetPawn<APawn>())
 	{
-		UE_LOG(LogXYSGame, Error, TEXT("[ULyraHeroComponent::OnRegister] This component has been added to a blueprint whose base class is not a Pawn. To use this component, it MUST be placed on a Pawn Blueprint."));
+		UE_LOG(LogXYSGame, Error, TEXT("[UXYSHeroComponent::OnRegister] This component has been added to a blueprint whose base class is not a Pawn. To use this component, it MUST be placed on a Pawn Blueprint."));
 
 #if WITH_EDITOR
 		if (GIsEditor)
 		{
-			static const FText Message = NSLOCTEXT("LyraHeroComponent", "NotOnPawnError", "has been added to a blueprint whose base class is not a Pawn. To use this component, it MUST be placed on a Pawn Blueprint. This will cause a crash if you PIE!");
-			static const FName HeroMessageLogName = TEXT("LyraHeroComponent");
+			static const FText Message = NSLOCTEXT("XYSHeroComponent", "NotOnPawnError", "has been added to a blueprint whose base class is not a Pawn. To use this component, it MUST be placed on a Pawn Blueprint. This will cause a crash if you PIE!");
+			static const FName HeroMessageLogName = TEXT("XYSHeroComponent");
 			
 			FMessageLog(HeroMessageLogName).Error()
 				->AddToken(FUObjectToken::Create(this, FText::FromString(GetNameSafe(this))))
@@ -111,11 +116,11 @@ bool UXYSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manag
 
 			if (bIsLocallyControlled && !bIsBot)
 			{
-				AXYSPlayerController* LyraPC = GetController<AXYSPlayerController>();
+				AXYSPlayerController* XYSPC = GetController<AXYSPlayerController>();
 
 				// The input component and local player is required when locally controlled.
 				// 如果是本地控制，那么需要LocalPlayer和InputComponent都已经准备好
-				if (!Pawn->InputComponent || !LyraPC || !LyraPC->GetLocalPlayer())
+				if (!Pawn->InputComponent || !XYSPC || !XYSPC->GetLocalPlayer())
 				{
 					return false;
 				}
@@ -129,8 +134,18 @@ bool UXYSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manag
 	{
 		// Wait for player state and extension component
 		// 等待PawnExtension已经达到InitState_DataInitialized
-		AXYSPlayerState* LyraPS = GetPlayerState<AXYSPlayerState>();
-		return LyraPS && Manager->HasFeatureReachedInitState(Pawn, UXYSPawnExtensionComponent::NAME_ActorFeatureName, XYSGameplayTags::InitState_DataInitialized);
+		AXYSPlayerState* XYSPS = GetPlayerState<AXYSPlayerState>();
+
+		if (!XYSPS)
+			return false;
+		if (Manager->HasFeatureReachedInitState(Pawn, UXYSPawnExtensionComponent::NAME_ActorFeatureName, XYSGameplayTags::InitState_DataInitialized))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	if (CurrentState == XYSGameplayTags::InitState_DataInitialized && DesiredState == XYSGameplayTags::InitState_GameplayReady)
 	{
@@ -215,10 +230,10 @@ void UXYSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 	const ULocalPlayer* LP = Cast<ULocalPlayer>(PC->GetLocalPlayer());
 	check(LP);
 
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	check(Subsystem);
+	UEnhancedInputLocalPlayerSubsystem* LocalPlayerSubsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(LocalPlayerSubsystem);
 
-	Subsystem->ClearAllMappings();
+	LocalPlayerSubsystem->ClearAllMappings();
 
 	if (const UXYSPawnExtensionComponent* PawnExtComp = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
 	{
@@ -233,13 +248,89 @@ void UXYSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 						FModifyContextOptions Options = {};
 						Options.bIgnoreAllPressedKeysUntilRelease = false;
 						// Actually add the config to the local player							
-						Subsystem->AddMappingContext(IMC, Mapping.Priority, Options);
+						LocalPlayerSubsystem->AddMappingContext(IMC, Mapping.Priority, Options);
 					}
 				}
 
-				
+				UXYSInputComponent* XYSInputComponent = Cast<UXYSInputComponent>(PlayerInputComponent);
+				if (ensureAlwaysMsgf(XYSInputComponent, TEXT("Unexpected Input Component class! The Gameplay Abilities will not be bound to their inputs. Change the input component to UXYSInputComponent or a subclass of it.")))
+				{
+					// add custom key mapping
+					XYSInputComponent->AddInputMappings(InputConfig, LocalPlayerSubsystem);
+
+					// bind InputAction with InputTag, so ability can be triggered by: InputAction --> InputTag --> Ability
+					TArray<uint32> BindHandles;
+					XYSInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, BindHandles);
+
+					XYSInputComponent->BindNativeAction(InputConfig, XYSGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, false);
+					XYSInputComponent->BindNativeAction(InputConfig, XYSGameplayTags::InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_LookMouse, false);
+					XYSInputComponent->BindNativeAction(InputConfig, XYSGameplayTags::InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch, false);
+				}
 			}
 		}
+	}
+
+	// if (ensure(!bReadyToBindInputs))
+	// {
+	// 	bReadyToBindInputs = true;
+	// }
+ //
+	// UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_BindInputsNow);
+	// UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APawn*>(Pawn), NAME_BindInputsNow);
+}
+
+void UXYSHeroComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
+{
+	if (const APawn* Pawn = GetPawn<APawn>())
+	{
+		if (const UXYSPawnExtensionComponent* PawnExtComp = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+		{
+			if (UXYSAbilitySystemComponent* XYSASC = PawnExtComp->GetXYSAbilitySystemComponent())
+			{
+				XYSASC->AbilityInputTagPressed(InputTag);
+			}
+		}	
+	}
+}
+
+void UXYSHeroComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn)
+	{
+		return;
+	}
+
+	if (const UXYSPawnExtensionComponent* PawnExtComp = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+	{
+		if (UXYSAbilitySystemComponent* XYSASC = PawnExtComp->GetXYSAbilitySystemComponent())
+		{
+			XYSASC->AbilityInputTagReleased(InputTag);
+		}
+	}
+}
+
+void UXYSHeroComponent::Input_Move(const FInputActionValue& InputActionValue)
+{
+	if (AXYSCharacter* Character = GetPawn<AXYSCharacter>())
+	{
+		Character->Input_Move(InputActionValue);
+	}
+}
+
+void UXYSHeroComponent::Input_LookMouse(const FInputActionValue& InputActionValue)
+{
+	if (AXYSCharacter* Character = GetPawn<AXYSCharacter>())
+	{
+		Character->Input_Look(InputActionValue);
+	}
+}
+
+void UXYSHeroComponent::Input_Crouch(const FInputActionValue& InputActionValue)
+{
+	if (AXYSCharacter* Character = GetPawn<AXYSCharacter>())
+	{
+		Character->Input_Crouch(InputActionValue);
 	}
 }
 

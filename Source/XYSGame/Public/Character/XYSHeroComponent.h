@@ -8,6 +8,7 @@
 #include "Input/XYSInputConfig.h"
 #include "XYSHeroComponent.generated.h"
 
+struct FInputActionValue;
 /**
  * Component that sets up input and camera handling for player controlled pawns (or bots that simulate players).
  * This depends on a PawnExtensionComponent to coordinate initialization.
@@ -37,6 +38,13 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void InitializePlayerInput(UInputComponent* PlayerInputComponent);
+
+	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
+	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
+
+	void Input_Move(const FInputActionValue& InputActionValue);
+	void Input_LookMouse(const FInputActionValue& InputActionValue);
+	void Input_Crouch(const FInputActionValue& InputActionValue);
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FInputMappingContextAndPriority> DefaultInputMappings;

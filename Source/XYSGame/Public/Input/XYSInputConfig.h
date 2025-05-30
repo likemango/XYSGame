@@ -10,7 +10,7 @@
 class UInputMappingContext;
 class UInputAction;
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FInputMappingContextAndPriority
 {
 	GENERATED_BODY()

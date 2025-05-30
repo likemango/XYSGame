@@ -105,7 +105,14 @@ bool UXYSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManag
 	}
 	if (CurrentState == XYSGameplayTags::InitState_DataAvailable && DesiredState == XYSGameplayTags::InitState_DataInitialized)
 	{
-		return Manager->HaveAllFeaturesReachedInitState(Pawn, XYSGameplayTags::InitState_DataInitialized);
+		if ( Manager->HaveAllFeaturesReachedInitState(Pawn, XYSGameplayTags::InitState_DataAvailable))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	if (CurrentState == XYSGameplayTags::InitState_DataInitialized && DesiredState == XYSGameplayTags::InitState_GameplayReady)
 	{
