@@ -201,11 +201,10 @@ void UXYSPawnExtensionComponent::InitializeAbilitySystem(UXYSAbilitySystemCompon
 	AbilitySystemComponent = InASC;
 	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, Pawn);
 
-	// todo
-	// if (ensure(PawnData))
-	// {
-	// 	InASC->SetTagRelationshipMapping(PawnData->TagRelationshipMapping);
-	// }
+	if (ensure(PawnData))
+	{
+		InASC->SetTagRelationshipMapping(PawnData->TagRelationshipMapping);
+	}
 
 	OnAbilitySystemInitialized.Broadcast();
 }

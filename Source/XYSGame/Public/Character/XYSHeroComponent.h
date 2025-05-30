@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "Components/PawnComponent.h"
+#include "Input/XYSInputConfig.h"
 #include "XYSHeroComponent.generated.h"
 
 /**
@@ -37,5 +38,6 @@ protected:
 
 	virtual void InitializePlayerInput(UInputComponent* PlayerInputComponent);
 
-	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FInputMappingContextAndPriority> DefaultInputMappings;
 };

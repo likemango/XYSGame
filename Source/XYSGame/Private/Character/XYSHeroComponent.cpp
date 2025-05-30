@@ -3,6 +3,8 @@
 
 #include "Character/XYSHeroComponent.h"
 
+#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 #include "XYSGameplayTags.h"
 #include "XYSLogChannels.h"
 #include "Camera/XYSCameraComponent.h"
@@ -122,6 +124,7 @@ bool UXYSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manag
 		}
 		return false;
 	}
+	// 这里要依赖PawnExtension的可能原因：因为“Hero” feature是游戏核心feature，需要依赖其他feature都已经加载完毕才能判定initialized/gameplay，所以这里就依赖主feature的加载
 	if (CurrentState == XYSGameplayTags::InitState_DataAvailable && DesiredState == XYSGameplayTags::InitState_DataInitialized)
 	{
 		// Wait for player state and extension component
@@ -169,7 +172,7 @@ void UXYSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Ma
 			}
 		}
 
-		// 初始化角色输入
+		// 初始化玩家角色输入(非AI)
 		if (AXYSPlayerController* XYSPC = GetController<AXYSPlayerController>())
 		{
 			if (Pawn->InputComponent)
@@ -201,4 +204,64 @@ void UXYSHeroComponent::OnActorInitStateChanged(const FActorInitStateChangedPara
 
 void UXYSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 {
+	check(PlayerInputComponent);
+
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn) return;
+
+	const APlayerController* PC = GetController<APlayerController>();
+	check(PC);
+
+	const ULocalPlayer* LP = Cast<ULocalPlayer>(PC->GetLocalPlayer());
+	check(LP);
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(Subsystem);
+
+	Subsystem->ClearAllMappings();
+
+	if (const UXYSPawnExtensionComponent* PawnExtComp = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+	{
+		if (const UXYSPawnData* PawnData = PawnExtComp->GetPawnData<UXYSPawnData>())
+		{
+			if (const UXYSInputConfig* InputConfig = PawnData->InputConfig)
+			{
+				for (const FInputMappingContextAndPriority& Mapping : DefaultInputMappings)
+				{
+					if (UInputMappingContext* IMC = Mapping.InputMapping.Get())
+					{
+						FModifyContextOptions Options = {};
+						Options.bIgnoreAllPressedKeysUntilRelease = false;
+						// Actually add the config to the local player							
+						Subsystem->AddMappingContext(IMC, Mapping.Priority, Options);
+					}
+				}
+
+				
+			}
+		}
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
