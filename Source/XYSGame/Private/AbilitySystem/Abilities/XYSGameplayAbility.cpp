@@ -3,6 +3,9 @@
 
 #include "AbilitySystem/Abilities/XYSGameplayAbility.h"
 
+#include "Character/XYSCharacter.h"
+#include "Character/XYSCharacterMovementComponent.h"
+
 UXYSGameplayAbility::UXYSGameplayAbility(const FObjectInitializer& ObjectInitializer)
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
@@ -12,3 +15,14 @@ UXYSGameplayAbility::UXYSGameplayAbility(const FObjectInitializer& ObjectInitial
 	
 	ActivationPolicy = EXYSAbilityActivationPolicy::OnInputTriggered;
 }
+
+AXYSCharacter* UXYSGameplayAbility::GetXYSCharacterFromActorInfo() const
+{
+	return CurrentActorInfo ? Cast<AXYSCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr;
+}
+
+UXYSCharacterMovementComponent* UXYSGameplayAbility::GetXYSCharacterMovementFromActorInfo() const
+{
+	return CurrentActorInfo ? Cast<UXYSCharacterMovementComponent>(CurrentActorInfo->MovementComponent.Get()) : nullptr;
+}
+

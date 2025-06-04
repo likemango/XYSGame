@@ -25,6 +25,12 @@ public:
 	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
 	void ClearAbilityInput();
 
+	//~Begin AbilitySystemComponent
+	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
+	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
+	//~End
+
+	
 protected:
 	// If set, this table is used to look up tag relationships for activate and cancel
 	UPROPERTY()

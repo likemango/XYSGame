@@ -6,6 +6,8 @@
 #include "Abilities/GameplayAbility.h"
 #include "XYSGameplayAbility.generated.h"
 
+class AXYSCharacter;
+class UXYSCharacterMovementComponent;
 /**
  * EXYSAbilityActivationPolicy
  *
@@ -34,9 +36,14 @@ class XYSGAME_API UXYSGameplayAbility : public UGameplayAbility
 
 public:
 	UXYSGameplayAbility(const FObjectInitializer& ObjectInitializer);
-
+	
 	EXYSAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	AXYSCharacter* GetXYSCharacterFromActorInfo() const;
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	UXYSCharacterMovementComponent* GetXYSCharacterMovementFromActorInfo() const;
+	
 protected:
 	// Defines how this ability is meant to activate.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Activation")

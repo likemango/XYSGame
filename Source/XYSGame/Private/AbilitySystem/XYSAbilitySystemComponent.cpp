@@ -133,3 +133,37 @@ void UXYSAbilitySystemComponent::ClearAbilityInput()
 	InputReleasedSpecHandles.Reset();
 	InputHeldSpecHandles.Reset();
 }
+
+void UXYSAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)
+{
+	Super::AbilitySpecInputPressed(Spec);
+	
+	// We don't support UGameplayAbility::bReplicateInputDirectly.(提高性能，不需要每个按键都同步)
+	// Use replicated events instead so that the WaitInputPress ability task works.(广播消息给Server才能让WaitInputPress task生效)
+	if (Spec.IsActive())
+	{
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		const UGameplayAbility* Instance = Spec.GetPrimaryInstance();
+		FPredictionKey OriginalPredictionKey = Instance ? Instance->GetCurrentActivationInfo().GetActivationPredictionKey() : Spec.ActivationInfo.GetActivationPredictionKey();
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
+		
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, Spec.Handle, OriginalPredictionKey);
+	}
+}
+
+void UXYSAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& Spec)
+{
+	Super::AbilitySpecInputReleased(Spec);
+
+	// We don't support UGameplayAbility::bReplicateInputDirectly.(提高性能，不需要每个按键都同步)
+	// Use replicated events instead so that the WaitInputPress ability task works.(广播消息给Server才能让WaitInputPress task生效)
+	if (Spec.IsActive())
+	{
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		const UGameplayAbility* Instance = Spec.GetPrimaryInstance();
+		FPredictionKey OriginalPredictionKey = Instance ? Instance->GetCurrentActivationInfo().GetActivationPredictionKey() : Spec.ActivationInfo.GetActivationPredictionKey();
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+		
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle, OriginalPredictionKey);
+	}
+}
