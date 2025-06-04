@@ -2,8 +2,11 @@
 
 
 #include "Animation/XYSAnimInstance.h"
+
+#include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "Character/XYSCharacter.h"
+#include "Character/XYSPawnExtensionComponent.h"
 
 #if WITH_EDITOR
 #include "Misc/DataValidation.h"
@@ -14,8 +17,11 @@ UXYSAnimInstance::UXYSAnimInstance(const FObjectInitializer& ObjectInitializer)
 {
 }
 
-void UXYSAnimInstance::InitializeWithAbilitySystem(UAbilitySystemComponent* ASC)
+void UXYSAnimInstance::InitializeWithOnwerAbilitySystem()
 {
+	const AActor* OwningActor = GetOwningActor();
+	check(OwningActor);
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor);
 	check(ASC);
 
 	GameplayTagPropertyMap.Initialize(this, ASC);
@@ -39,10 +45,11 @@ void UXYSAnimInstance::NativeInitializeAnimation()
 
 	if (const AActor* OwningActor = GetOwningActor())
 	{
-		if (UAbilitySystemComponent* Asc = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor))
+		if (UXYSPawnExtensionComponent* PawnExtensionComponent = UXYSPawnExtensionComponent::FindPawnExtensionComponent(OwningActor))
 		{
-			InitializeWithAbilitySystem(Asc);
+			PawnExtensionComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &UXYSAnimInstance::InitializeWithOnwerAbilitySystem));
 		}
+		
 	}
 }
 

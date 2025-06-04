@@ -19,7 +19,7 @@ public:
 
 	UXYSAnimInstance(const FObjectInitializer& ObjectInitializer);
 
-	virtual void InitializeWithAbilitySystem(UAbilitySystemComponent* ASC);
+	virtual void InitializeWithOnwerAbilitySystem();
 
 protected:
 
