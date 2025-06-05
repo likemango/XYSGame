@@ -182,7 +182,7 @@ void UInteractorComponent::UpdateOverlappingInteractables()
 			if (bIsBeingHovered)
 			{
 				TempInteractable->UpdateHover(false, this);
-				HoveringInteractable == nullptr;
+				HoveringInteractable = nullptr;
 			}
 			
 			return true;
@@ -204,7 +204,7 @@ void UInteractorComponent::UpdateOverlappingInteractables()
 			if (bIsBeingHovered)
 			{
 				TempInteractable->UpdateHover(false, this);
-				HoveringInteractable == nullptr;
+				HoveringInteractable = nullptr;
 			}
 				
 			return true;

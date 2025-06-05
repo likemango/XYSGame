@@ -10,6 +10,7 @@
 #include "Engine/World.h"
 #include "SceneManagement.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "SceneProxies/WindSourceSceneProxy.h"
 
 DECLARE_CYCLE_STAT(TEXT("Tick"), STAT_SKGTick, STATGROUP_SKGShooterFrameworkProjectile);
 
