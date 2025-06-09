@@ -31,5 +31,5 @@ protected:
 	void CharacterJumpStart();
 
 	UFUNCTION(BlueprintCallable, Category = "Ability")
-	void CharacterJumpEnd();	
+	void CharacterJumpEnd();
 };

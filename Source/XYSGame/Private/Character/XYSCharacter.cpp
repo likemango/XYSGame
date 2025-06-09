@@ -127,19 +127,19 @@ void AXYSCharacter::Input_Look(const FInputActionValue& InputActionValue)
 	}
 }
 
-void AXYSCharacter::Input_Crouch(const FInputActionValue& InputActionValue)
-{
-	if (!Controller || !XYSMovementComponent) return;
-
-	if (XYSMovementComponent->bWantsToCrouch || bIsCrouched)
-	{
-		UnCrouch();
-	}
-	else if (XYSMovementComponent->IsMovingOnGround())
-	{
-		Crouch();
-	}
-}
+// void AXYSCharacter::Input_Crouch(const FInputActionValue& InputActionValue)
+// {
+// 	if (!Controller || !XYSMovementComponent) return;
+//
+// 	if (XYSMovementComponent->bWantsToCrouch || bIsCrouched)
+// 	{
+// 		UnCrouch();
+// 	}
+// 	else if (XYSMovementComponent->IsMovingOnGround())
+// 	{
+// 		Crouch();
+// 	}
+// }
 
 // void AXYSCharacter::Input_Jump(const FInputActionValue& InputActionValue)
 // {

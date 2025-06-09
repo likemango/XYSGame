@@ -264,7 +264,7 @@ void UXYSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 
 					XYSInputComponent->BindNativeAction(InputConfig, XYSGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, false);
 					XYSInputComponent->BindNativeAction(InputConfig, XYSGameplayTags::InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_LookMouse, false);
-					XYSInputComponent->BindNativeAction(InputConfig, XYSGameplayTags::InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch, false);
+					// XYSInputComponent->BindNativeAction(InputConfig, XYSGameplayTags::InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch, false);
 				}
 			}
 		}
@@ -326,6 +326,7 @@ void UXYSHeroComponent::Input_LookMouse(const FInputActionValue& InputActionValu
 	}
 }
 
+/*
 void UXYSHeroComponent::Input_Crouch(const FInputActionValue& InputActionValue)
 {
 	if (AXYSCharacter* Character = GetPawn<AXYSCharacter>())
@@ -333,6 +334,7 @@ void UXYSHeroComponent::Input_Crouch(const FInputActionValue& InputActionValue)
 		Character->Input_Crouch(InputActionValue);
 	}
 }
+*/
 
 
 

@@ -58,3 +58,8 @@ UXYSCharacterMovementComponent* UXYSGameplayAbility::GetXYSCharacterMovementFrom
 	return CurrentActorInfo ? Cast<UXYSCharacterMovementComponent>(CurrentActorInfo->MovementComponent.Get()) : nullptr;
 }
 
+void UXYSGameplayAbility::NativeOnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const
+{
+	// todo
+}
+

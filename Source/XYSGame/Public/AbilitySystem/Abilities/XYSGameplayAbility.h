@@ -27,6 +27,26 @@ enum class EXYSAbilityActivationPolicy : uint8
 };
 
 /**
+ * EXYSAbilityActivationGroup
+ *
+ *	Defines how an ability activates in relation to other abilities.
+ */
+UENUM(BlueprintType)
+enum class EXYSAbilityActivationGroup : uint8
+{
+	// Ability runs independently of all other abilities.
+	Independent,
+
+	// Ability is canceled and replaced by other exclusive abilities.
+	Exclusive_Replaceable,
+
+	// Ability blocks all other exclusive abilities from activating.
+	Exclusive_Blocking,
+
+	MAX	UMETA(Hidden)
+};
+
+/**
  * 
  */
 UCLASS()
@@ -45,14 +65,31 @@ public:
 	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
 	
 	EXYSAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
+	EXYSAbilityActivationGroup GetActivationGroup() const { return ActivationGroup; }
 
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	AXYSCharacter* GetXYSCharacterFromActorInfo() const;
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	UXYSCharacterMovementComponent* GetXYSCharacterMovementFromActorInfo() const;
+
+	void OnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const
+	{
+		NativeOnAbilityFailedToActivate(FailedReason);
+		K2_OnAbilityFailedToActivate(FailedReason);
+	}
+
+protected:
+	// Called when the ability fails to activate(Native)
+	virtual void NativeOnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const;
+	// Called when the ability fails to activate(Blueprint)
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const;
 	
 protected:
 	// Defines how this ability is meant to activate.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Activation")
 	EXYSAbilityActivationPolicy ActivationPolicy;
+	// Defines the relationship between this ability activating and other abilities activating.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Activation")
+	EXYSAbilityActivationGroup ActivationGroup;
 };

@@ -12,7 +12,8 @@
 				"Engine",
 				"GameplayAbilities",
 				"ModularGameplay",
-				"CoreUObject"
+				"CoreUObject",
+				"DeveloperSettings"
 			]
 		}
 	],

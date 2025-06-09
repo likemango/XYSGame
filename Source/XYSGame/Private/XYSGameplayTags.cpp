@@ -11,15 +11,21 @@ namespace XYSGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InitState_DataInitialized, "InitState.DataInitialized", "3: The available data has been initialized for this actor/component, but it is not ready for full gameplay");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InitState_GameplayReady, "InitState.GameplayReady", "4: The actor/component is fully ready for active gameplay");
 
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Ability_Behavior_SurvivesDeath, "Ability.Behavior.SurvivesDeath", "An ability with this type tag should not be canceled due to death.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Gameplay_AbilityInputBlocked, "Gameplay.AbilityInputBlocked", "Use to Block all ability inputs in `ProcessAbilityInput`.");
 
 	// Native Input
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputTag_Move, "InputTag.Move", "Move input.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputTag_Look_Mouse, "InputTag.Look.Mouse", "Look (mouse) input.");
-	// UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputTag_Look_Stick, "InputTag.Look.Stick", "Look (stick) input.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputTag_Crouch, "InputTag.Crouch", "Crouch input.");
-	// UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputTag_AutoRun, "InputTag.AutoRun", "Auto-run input.");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Crouch, "InputTag.Ability.Crouch");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Jump, "InputTag.Ability.Jump");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Pace, "InputTag.Ability.Pace");
 
+	UE_DEFINE_GAMEPLAY_TAG(CharacterState_Movement_Crouching, "CharacterState.Movement.Crouching");
+	UE_DEFINE_GAMEPLAY_TAG(CharacterState_Movement_Pacing, "CharacterState.Movement.Pacing");
+	
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Ability_Behavior_SurvivesDeath, "Ability.Behavior.SurvivesDeath", "An ability with this type tag should not be canceled due to death.");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Type_Action_Jump, "Ability.Type.Action.Jump");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Type_Action_Crouch, "Ability.Type.Action.Crouch");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Type_Action_Pace, "Ability.Type.Action.Pace");
 	
 }

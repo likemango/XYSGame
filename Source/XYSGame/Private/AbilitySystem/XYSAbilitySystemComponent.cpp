@@ -4,6 +4,8 @@
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 
 #include "XYSGameplayTags.h"
+#include "XYSLogChannels.h"
+#include "AbilitySystem/XYSAbilityTagRelationshipMapping.h"
 #include "AbilitySystem/XYSGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/XYSGameplayAbility.h"
 #include "Animation/XYSAnimInstance.h"
@@ -215,6 +217,69 @@ void UXYSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AAct
 	}
 }
 
+void UXYSAbilitySystemComponent::NotifyAbilityActivated(const FGameplayAbilitySpecHandle Handle,UGameplayAbility* Ability)
+{
+	Super::NotifyAbilityActivated(Handle, Ability);
+
+	if (UXYSGameplayAbility* XYSAbility = Cast<UXYSGameplayAbility>(Ability))
+	{
+		AddAbilityToActivationGroup(XYSAbility->GetActivationGroup(), XYSAbility);
+	}
+}
+
+void UXYSAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability,const FGameplayTagContainer& FailureReason)
+{
+	Super::NotifyAbilityFailed(Handle, Ability, FailureReason);
+
+	if (APawn* Avatar = Cast<APawn>(GetAvatarActor()))
+	{
+		if (!Avatar->IsLocallyControlled() && Ability->IsSupportedForNetworking())
+		{
+			ClientNotifyAbilityFailed(Ability, FailureReason);
+			return;
+		}
+	}
+
+	HandleAbilityFailed(Ability, FailureReason);
+}
+
+void UXYSAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability,bool bWasCancelled)
+{
+	Super::NotifyAbilityEnded(Handle, Ability, bWasCancelled);
+
+	if (UXYSGameplayAbility* XYSAbility = Cast<UXYSGameplayAbility>(Ability))
+	{
+		RemoveAbilityFromActivationGroup(XYSAbility->GetActivationGroup(), XYSAbility);
+	}
+}
+
+void UXYSAbilitySystemComponent::ApplyAbilityBlockAndCancelTags(const FGameplayTagContainer& AbilityTags,
+	UGameplayAbility* RequestingAbility, bool bEnableBlockTags, const FGameplayTagContainer& BlockTags,
+	bool bExecuteCancelTags, const FGameplayTagContainer& CancelTags)
+{
+	
+	FGameplayTagContainer ModifiedBlockTags = BlockTags;
+	FGameplayTagContainer ModifiedCancelTags = CancelTags;
+
+	if (TagRelationshipMapping)
+	{
+		// Use the mapping to expand the ability tags into block and cancel tag
+		TagRelationshipMapping->GetAbilityTagsToBlockAndCancel(AbilityTags, &ModifiedBlockTags, &ModifiedCancelTags);
+	}
+
+	Super::ApplyAbilityBlockAndCancelTags(AbilityTags, RequestingAbility, bEnableBlockTags, ModifiedBlockTags, bExecuteCancelTags, ModifiedCancelTags);
+
+	//@TODO: Apply any special logic like blocking input or movement
+}
+
+void UXYSAbilitySystemComponent::HandleChangeAbilityCanBeCanceled(const FGameplayTagContainer& AbilityTags,
+	UGameplayAbility* RequestingAbility, bool bCanBeCanceled)
+{
+	Super::HandleChangeAbilityCanBeCanceled(AbilityTags, RequestingAbility, bCanBeCanceled);
+
+	//@TODO: Apply any special logic like blocking input or movement
+}
+
 void UXYSAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
 {
 	ABILITYLIST_SCOPE_LOCK();
@@ -224,6 +289,115 @@ void UXYSAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
 		{
 			XYSAbilityCDO->TryActivateAbilityOnSpawn(AbilityActorInfo.Get(), AbilitySpec);
 		}
+	}
+}
+
+void UXYSAbilitySystemComponent::AddAbilityToActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility)
+{
+	check(XYSAbility);
+	check(ActivationGroupCounts[(uint8)Group] < INT32_MAX);
+
+	ActivationGroupCounts[(uint8)Group]++;
+
+	const bool bReplicateCancelAbility = false;
+
+	switch (Group)
+	{
+	case EXYSAbilityActivationGroup::Independent:
+		// Independent abilities do not cancel any other abilities.
+		break;
+
+	case EXYSAbilityActivationGroup::Exclusive_Replaceable:
+	case EXYSAbilityActivationGroup::Exclusive_Blocking:
+		CancelActivationGroupAbilities(EXYSAbilityActivationGroup::Exclusive_Replaceable, XYSAbility, bReplicateCancelAbility);
+		break;
+
+	default:
+		checkf(false, TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"), (uint8)Group);
+		break;
+	}
+
+	const int32 ExclusiveCount = ActivationGroupCounts[(uint8)EXYSAbilityActivationGroup::Exclusive_Replaceable] + ActivationGroupCounts[(uint8)EXYSAbilityActivationGroup::Exclusive_Blocking];
+	if (!ensure(ExclusiveCount <= 1))
+	{
+		UE_LOG(LogXYSAbilitySystem, Error, TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
+	}
+}
+
+void UXYSAbilitySystemComponent::RemoveAbilityFromActivationGroup(EXYSAbilityActivationGroup Group,UXYSGameplayAbility* XYSAbility)
+{
+	check(XYSAbility);
+	check(ActivationGroupCounts[(uint8)Group] > 0);
+
+	ActivationGroupCounts[(uint8)Group]--;
+}
+
+void UXYSAbilitySystemComponent::CancelActivationGroupAbilities(EXYSAbilityActivationGroup Group,
+                                                                UXYSGameplayAbility* IgnoreXYSAbility, bool bReplicateCancelAbility)
+{
+	TShouldCancelAbilityFunc ShouldCancelFunc = [this, Group, IgnoreXYSAbility](const UXYSGameplayAbility* XYSAbility, FGameplayAbilitySpecHandle Handle)
+	{
+		return ((XYSAbility->GetActivationGroup() == Group) && (XYSAbility != IgnoreXYSAbility));
+	};
+
+	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
+}
+
+void UXYSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility)
+{
+	ABILITYLIST_SCOPE_LOCK();
+	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+	{
+		if (!AbilitySpec.IsActive())
+		{
+			continue;
+		}
+
+		UXYSGameplayAbility* XYSAbilityCDO = Cast<UXYSGameplayAbility>(AbilitySpec.Ability);
+		if (!XYSAbilityCDO)
+		{
+			UE_LOG(LogXYSAbilitySystem, Error, TEXT("CancelAbilitiesByFunc: Non-XYSGameplayAbility %s was Granted to ASC. Skipping."), *AbilitySpec.Ability.GetName());
+			continue;
+		}
+
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+				ensureMsgf(AbilitySpec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced, TEXT("CancelAbilitiesByFunc: All Abilities should be Instanced (NonInstanced is being deprecated due to usability issues)."));
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+			
+				// Cancel all the spawned instances.
+				TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
+		for (UGameplayAbility* AbilityInstance : Instances)
+		{
+			UXYSGameplayAbility* XYSAbilityInstance = CastChecked<UXYSGameplayAbility>(AbilityInstance);
+
+			if (ShouldCancelFunc(XYSAbilityInstance, AbilitySpec.Handle))
+			{
+				if (XYSAbilityInstance->CanBeCanceled())
+				{
+					XYSAbilityInstance->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), XYSAbilityInstance->GetCurrentActivationInfo(), bReplicateCancelAbility);
+				}
+				else
+				{
+					UE_LOG(LogXYSAbilitySystem, Error, TEXT("CancelAbilitiesByFunc: Can't cancel ability [%s] because CanBeCanceled is false."), *XYSAbilityInstance->GetName());
+				}
+			}
+		}
+	}
+}
+
+void UXYSAbilitySystemComponent::ClientNotifyAbilityFailed_Implementation(const UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason)
+{
+	HandleAbilityFailed(Ability, FailureReason);
+}
+
+void UXYSAbilitySystemComponent::HandleAbilityFailed(const UGameplayAbility* Ability,
+	const FGameplayTagContainer& FailureReason)
+{
+	UE_LOG(LogXYSAbilitySystem, Warning, TEXT("Ability %s failed to activate (tags: %s)"), *GetPathNameSafe(Ability), *FailureReason.ToString());
+
+	if (const UXYSGameplayAbility* XYSAbility = Cast<const UXYSGameplayAbility>(Ability))
+	{
+		XYSAbility->OnAbilityFailedToActivate(FailureReason);
 	}
 }
 

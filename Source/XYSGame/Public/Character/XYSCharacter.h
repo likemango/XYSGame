@@ -62,7 +62,7 @@ public:
 	 */
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
-	void Input_Crouch(const FInputActionValue& InputActionValue);
+	// void Input_Crouch(const FInputActionValue& InputActionValue);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Input")
 	float TurnRateCamera = 50.0f;
