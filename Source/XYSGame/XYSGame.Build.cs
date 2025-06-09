@@ -16,11 +16,11 @@ public class XYSGame : ModuleRules
 			"InputCore",
 			"EnhancedInput",
 			"GameplayAbilities",
-			"MotionCore",
 			"MetasoundEngine",
 			"GameplayTags",
 			"GameplayTasks",
-			"NetCore"
+			"NetCore",
+			"PhysicsCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
