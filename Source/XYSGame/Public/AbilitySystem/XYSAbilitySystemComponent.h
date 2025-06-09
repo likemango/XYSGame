@@ -28,8 +28,12 @@ public:
 	//~Begin AbilitySystemComponent
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
 	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
+	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 	//~End
 
+private:
+	void TryActivateAbilitiesOnSpawn();
+	
 	
 protected:
 	// If set, this table is used to look up tag relationships for activate and cancel

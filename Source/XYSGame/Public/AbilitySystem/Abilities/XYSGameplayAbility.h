@@ -36,6 +36,13 @@ class XYSGAME_API UXYSGameplayAbility : public UGameplayAbility
 
 public:
 	UXYSGameplayAbility(const FObjectInitializer& ObjectInitializer);
+
+	virtual void OnPawnAvatarSet();
+	/** Called when the ability system is initialized with a pawn avatar. */
+	UFUNCTION(BlueprintImplementableEvent, Category = Ability, DisplayName = "OnPawnAvatarSet")
+	void K2_OnPawnAvatarSet();
+
+	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
 	
 	EXYSAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 

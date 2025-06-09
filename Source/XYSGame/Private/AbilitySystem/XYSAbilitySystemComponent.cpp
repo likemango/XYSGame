@@ -4,7 +4,9 @@
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 
 #include "XYSGameplayTags.h"
+#include "AbilitySystem/XYSGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/XYSGameplayAbility.h"
+#include "Animation/XYSAnimInstance.h"
 
 void UXYSAbilitySystemComponent::SetTagRelationshipMapping(UXYSAbilityTagRelationshipMapping* NewMapping)
 {
@@ -167,3 +169,77 @@ void UXYSAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& 
 		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle, OriginalPredictionKey);
 	}
 }
+
+void UXYSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
+{
+	FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
+	check(ActorInfo);
+	check(InOwnerActor);
+
+	const bool bHasNewPawnAvatar = Cast<APawn>(InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor);
+	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
+
+	if (bHasNewPawnAvatar)
+	{
+		// Notify all abilities that a new pawn avatar has been set
+		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+		{
+			PRAGMA_DISABLE_DEPRECATION_WARNINGS
+						ensureMsgf(AbilitySpec.Ability && AbilitySpec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced, TEXT("InitAbilityActorInfo: All Abilities should be Instanced (NonInstanced is being deprecated due to usability issues)."));
+			PRAGMA_ENABLE_DEPRECATION_WARNINGS
+	
+						TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
+			for (UGameplayAbility* AbilityInstance : Instances)
+			{
+				UXYSGameplayAbility* XYSAbilityInstance = Cast<UXYSGameplayAbility>(AbilityInstance);
+				if (XYSAbilityInstance)
+				{
+					// Ability instances may be missing for replays
+					XYSAbilityInstance->OnPawnAvatarSet();
+				}
+			}
+		}
+
+		// Register with the global system once we actually have a pawn avatar. We wait until this time since some globally-applied effects may require an avatar.
+		if (UXYSGlobalAbilitySystem* GlobalAbilitySystem = UWorld::GetSubsystem<UXYSGlobalAbilitySystem>(GetWorld()))
+		{
+			GlobalAbilitySystem->RegisterASC(this);
+		}
+
+		if (UXYSAnimInstance* XYSAnimInst = Cast<UXYSAnimInstance>(ActorInfo->GetAnimInstance()))
+		{
+			XYSAnimInst->InitializeWithAbilitySystem(this);
+		}
+
+		TryActivateAbilitiesOnSpawn();
+	}
+}
+
+void UXYSAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
+{
+	ABILITYLIST_SCOPE_LOCK();
+	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+	{
+		if (const UXYSGameplayAbility* XYSAbilityCDO = Cast<UXYSGameplayAbility>(AbilitySpec.Ability))
+		{
+			XYSAbilityCDO->TryActivateAbilityOnSpawn(AbilityActorInfo.Get(), AbilitySpec);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

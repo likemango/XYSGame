@@ -17,13 +17,8 @@ UXYSAnimInstance::UXYSAnimInstance(const FObjectInitializer& ObjectInitializer)
 {
 }
 
-void UXYSAnimInstance::InitializeWithOnwerAbilitySystem()
+void UXYSAnimInstance::InitializeWithAbilitySystem(UAbilitySystemComponent* ASC)
 {
-	const AActor* OwningActor = GetOwningActor();
-	check(OwningActor);
-	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor);
-	check(ASC);
-
 	GameplayTagPropertyMap.Initialize(this, ASC);
 }
 
@@ -45,11 +40,10 @@ void UXYSAnimInstance::NativeInitializeAnimation()
 
 	if (const AActor* OwningActor = GetOwningActor())
 	{
-		if (UXYSPawnExtensionComponent* PawnExtensionComponent = UXYSPawnExtensionComponent::FindPawnExtensionComponent(OwningActor))
+		if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor))
 		{
-			PawnExtensionComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &UXYSAnimInstance::InitializeWithOnwerAbilitySystem));
+			InitializeWithAbilitySystem(ASC);
 		}
-		
 	}
 }
 

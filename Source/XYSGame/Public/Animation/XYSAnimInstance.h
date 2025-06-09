@@ -1,4 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// XiaoYao copyright.
+
 
 #pragma once
 
@@ -19,7 +20,7 @@ public:
 
 	UXYSAnimInstance(const FObjectInitializer& ObjectInitializer);
 
-	virtual void InitializeWithOnwerAbilitySystem();
+	virtual void InitializeWithAbilitySystem(UAbilitySystemComponent* ASC);
 
 protected:
 
