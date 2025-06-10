@@ -20,8 +20,12 @@ public:
 	void SetButtonText(FText InText);
 
 private:
-	//~begin UUserWidget interface
+	//~UUserWidget interface
 	virtual void NativePreConstruct() override;
+	//~
+
+	//~UCommonButtonBase
+	virtual void NativeOnCurrentTextStyleChanged() override;
 	//~
 
 	/* Bound Widget */
