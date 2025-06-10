@@ -25,6 +25,10 @@ void UXYSAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& Inpu
 			{
 				InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
 				InputHeldSpecHandles.AddUnique(AbilitySpec.Handle);
+
+				// 当一个按键周期中，只有已经释放过，才会再次加入; 并且记录没有激活过
+				if (!InputStartActivationRecords.Contains(AbilitySpec.Handle))
+					InputStartActivationRecords.Add(AbilitySpec.Handle, false);
 			}
 		}
 	}
@@ -40,6 +44,9 @@ void UXYSAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& Inp
 			{
 				InputReleasedSpecHandles.AddUnique(AbilitySpec.Handle);
 				InputHeldSpecHandles.Remove(AbilitySpec.Handle);
+
+				// 移除时无需判断
+				InputStartActivationRecords.Remove(AbilitySpec.Handle);
 			}
 		}
 	}
@@ -100,6 +107,38 @@ void UXYSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGame
 		}
 	}
 
+	// Process all abilities that had their input start on this press process.
+	for (TTuple<FGameplayAbilitySpecHandle, bool>& Pair : InputStartActivationRecords)
+	{
+		const FGameplayAbilitySpecHandle& SpecHandle = Pair.Key;
+		// 如果已经尝试激活过，那么不执行
+		if (Pair.Value) continue;
+		
+		Pair.Value = true;
+		if (FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (AbilitySpec->Ability)
+			{
+				AbilitySpec->InputPressed = true;
+
+				if (AbilitySpec->IsActive())
+				{
+					// Ability is active so pass along the input event.
+					AbilitySpecInputPressed(*AbilitySpec);
+				}
+				else
+				{
+					const UXYSGameplayAbility* XYSAbilityCDO = Cast<UXYSGameplayAbility>(AbilitySpec->Ability);
+
+					if (XYSAbilityCDO && XYSAbilityCDO->GetActivationPolicy() == EXYSAbilityActivationPolicy::OnInputStarted)
+					{
+						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+					}
+				}
+			}
+		}
+	}
+	
 	// Try to activate all the abilities that are from presses and holds.
 	// We do it all at once so that held inputs don't activate the ability
 	// and then also send a input event to the ability because of the press.

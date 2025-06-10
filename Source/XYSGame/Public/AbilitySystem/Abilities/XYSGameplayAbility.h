@@ -19,6 +19,9 @@ enum class EXYSAbilityActivationPolicy : uint8
 	// Try to activate the ability when the input is triggered.
 	OnInputTriggered,
 
+	// Only trigger once for a press/release button
+	OnInputStarted,
+
 	// Continually try to activate the ability while the input is active.
 	WhileInputActive,
 

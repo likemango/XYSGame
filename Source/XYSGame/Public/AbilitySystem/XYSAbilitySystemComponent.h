@@ -63,9 +63,14 @@ protected:
 	// Handles to abilities that had their input released this frame.
 	TArray<FGameplayAbilitySpecHandle> InputReleasedSpecHandles;
 
+	// Handles to abilities that had their input trigger once at a press action.
+	// TArray<FGameplayAbilitySpecHandle> InputStartSpecHandles;
+
 	// Handles to abilities that have their input held.
 	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
 
 	// Number of abilities running in each activation group.
 	int32 ActivationGroupCounts[(uint8)EXYSAbilityActivationGroup::MAX];
+	
+	TMap<FGameplayAbilitySpecHandle, bool> InputStartActivationRecords;
 };
