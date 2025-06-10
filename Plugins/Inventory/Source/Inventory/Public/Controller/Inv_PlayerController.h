@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Inv_PlayerController.generated.h"
 
+class UInv_HUDWidget;
 /**
  * 
  */
@@ -16,4 +17,16 @@ class INVENTORY_API AInv_PlayerController : public APlayerController
 
 public:
 	AInv_PlayerController(const FObjectInitializer& ObjectInitializer);
+
+protected:
+	virtual void BeginPlay() override;
+
+	void CreateHUDWidget();
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TSubclassOf<UInv_HUDWidget> HUDWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UInv_HUDWidget> HUDWidget;
+	
 };
