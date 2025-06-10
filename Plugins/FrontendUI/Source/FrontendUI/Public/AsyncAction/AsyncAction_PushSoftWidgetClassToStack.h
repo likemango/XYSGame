@@ -22,7 +22,7 @@ class FRONTENDUI_API UAsyncAction_PushSoftWidgetClassToStack : public UBlueprint
 public:
 	UFUNCTION(BlueprintCallable, Category = "FrontendUI|PushSoftWidgetClassToStack", DisplayName="Push Soft Widge tClass To Stack",
 		meta=(BlueprintInternalUseOnly="true",WorldContext="WorldContextObject", HidePin="WorldContextObject"))
-	static UAsyncAction_PushSoftWidgetClassToStack* PushSoftWidget(const UObject* WorldContextObject, APlayerController* PlayerController,
+	static UAsyncAction_PushSoftWidgetClassToStack* PushSoftWidget(const UObject* WorldContextObject, APlayerController* OwningPlayerController,
 		UPARAM(meta=(Categories="Frontend.WidgetStack")) FGameplayTag StackTag, TSoftClassPtr<UWidget_ActivatableBase> SoftWidgetClass, bool bFocusOnNewlyPushedWidget);
 
 	virtual void Activate() override;
@@ -37,7 +37,7 @@ private:
 	UPROPERTY()
 	TWeakObjectPtr<UObject> WorldContextObjectCached;
 	UPROPERTY()
-	TWeakObjectPtr<APlayerController> PlayerControllerCached;
+	TWeakObjectPtr<APlayerController> OwningPlayerControllerCached;
 	UPROPERTY()
 	TSoftClassPtr<UWidget_ActivatableBase> SoftWidgetClassCached;
 	UPROPERTY()

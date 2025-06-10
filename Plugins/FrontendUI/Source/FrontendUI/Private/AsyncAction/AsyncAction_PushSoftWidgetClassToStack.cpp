@@ -7,7 +7,7 @@
 #include "Widgets/Widget_ActivatableBase.h"
 
 UAsyncAction_PushSoftWidgetClassToStack* UAsyncAction_PushSoftWidgetClassToStack::PushSoftWidget(
-	const UObject* WorldContextObject, APlayerController* PlayerController, UPARAM(meta=(Categories="Frontend.WidgetStack")) FGameplayTag StackTag,
+	const UObject* WorldContextObject, APlayerController* OwningPlayerController, UPARAM(meta=(Categories="Frontend.WidgetStack")) FGameplayTag StackTag,
 	TSoftClassPtr<UWidget_ActivatableBase> SoftWidgetClass, bool bFocusOnNewlyPushedWidget)
 {
 	checkf(!SoftWidgetClass.IsNull(), TEXT("Widget class in PushSoftWidgetClassToStack is null!"))
@@ -19,7 +19,7 @@ UAsyncAction_PushSoftWidgetClassToStack* UAsyncAction_PushSoftWidgetClassToStack
 			UAsyncAction_PushSoftWidgetClassToStack* CreatedNode = NewObject<UAsyncAction_PushSoftWidgetClassToStack>();
 
 			CreatedNode->WorldContextObjectCached = World;
-			CreatedNode->PlayerControllerCached = PlayerController;
+			CreatedNode->OwningPlayerControllerCached = OwningPlayerController;
 			CreatedNode->bFocusOnNewlyPushedWidgetCached = bFocusOnNewlyPushedWidget;
 			CreatedNode->SoftWidgetClassCached = SoftWidgetClass;
 			CreatedNode->StackTagCached = StackTag;
@@ -45,13 +45,13 @@ void UAsyncAction_PushSoftWidgetClassToStack::Activate()
 				switch (State)
 				{
 					case EAsyncPushWidgetState::OnCreatedBeforePush:
-						CreatedWidget->SetOwningPlayer(PlayerControllerCached.Get());
+						CreatedWidget->SetOwningPlayer(OwningPlayerControllerCached.Get());
 						CreatedBeforePush.Broadcast(CreatedWidget);
 						break;
 					case EAsyncPushWidgetState::AfterPush:
 						if (bFocusOnNewlyPushedWidgetCached)
 						{
-							if (UWidget* FocusWidget = CreatedWidget->GetDesiredFocusWidget())
+							if (UWidget* FocusWidget = CreatedWidget->GetDesiredFocusTarget())
 							{
 								FocusWidget->SetFocus();
 							}
