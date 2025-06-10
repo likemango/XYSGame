@@ -1,0 +1,30 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "FrontendUI",
+	"Description": "FrontendUI built by CommonUI",
+	"Category": "Other",
+	"CreatedBy": "XiaoYao",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "FrontendUI",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}],
+	"Plugins": [
+		{
+			"Name":"CommonUI",
+			"Enabled":true
+		}
+		
+	]
+}
