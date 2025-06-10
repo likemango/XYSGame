@@ -26,6 +26,8 @@ private:
 
 	//~UCommonButtonBase
 	virtual void NativeOnCurrentTextStyleChanged() override;
+	virtual void NativeOnHovered() override;
+	virtual void NativeOnUnhovered() override;
 	//~
 
 	/* Bound Widget */
