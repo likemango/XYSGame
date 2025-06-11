@@ -19,7 +19,10 @@ public class XYSEditor : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "Slate",
-                "SlateCore"
+                "SlateCore", 
+                "UnrealEd",
+                "ToolMenus",
+                "XYSGame"
             }
         );
     }
