@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActiveGameplayEffectHandle.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
 #include "XYSAbilitySet.generated.h"
 
-struct FActiveGameplayEffectHandle;
-struct FGameplayAbilitySpecHandle;
 class UAttributeSet;
 class UXYSAbilitySystemComponent;
 class UGameplayEffect;
@@ -73,7 +73,6 @@ struct FXYSAbilitySet_GrantedHandles
 	GENERATED_BODY()
 
 public:
-
 	void AddAbilitySpecHandle(const FGameplayAbilitySpecHandle& Handle);
 	void AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle);
 	void AddAttributeSet(UAttributeSet* Set);

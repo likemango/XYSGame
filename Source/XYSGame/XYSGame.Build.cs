@@ -20,10 +20,17 @@ public class XYSGame : ModuleRules
 			"GameplayTags",
 			"GameplayTasks",
 			"NetCore",
-			"PhysicsCore"
+			"PhysicsCore", 
+			"ModularGameplay",
+			"SlateCore",
+			"Niagara"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"GameplayMessageRuntime",
+			"IrisCore"
+		});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
