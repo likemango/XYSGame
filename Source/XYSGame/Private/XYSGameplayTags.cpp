@@ -30,4 +30,21 @@ namespace XYSGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(TAG_XYS_Inventory_Message_StackChanged, "XYS.Inventory.Message.StackChanged")
 	UE_DEFINE_GAMEPLAY_TAG(TAG_XYS_QuickBar_Message_SlotsChanged, "XYS.QuickBar.Message.SlotsChanged")
 	UE_DEFINE_GAMEPLAY_TAG(TAG_XYS_QuickBar_Message_ActiveIndexChanged, "XYS.QuickBar.Message.ActiveIndexChanged")
+	UE_DEFINE_GAMEPLAY_TAG(TAG_XYS_Elimination_Message, "XYS.Elimination.Message");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(GameplayEvent_Death, "GameplayEvent.Death", "Event that fires on death. This event only fires on the server.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_Death_Dying, "Status.Death.Dying", "Target has begun the death process.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Status_Death_Dead, "Status.Death.Dead", "Target has finished the death process.");
+
+	UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_Damage, "Gameplay.Damage");
+	UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_DamageImmunity, "Gameplay.DamageImmunity");
+	UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_DamageSelfDestruct, "Gameplay.Damage.SelfDestruct");
+	UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_FellOutOfWorld, "Gameplay.Damage.FellOutOfWorld");
+	UE_DEFINE_GAMEPLAY_TAG(TAG_XYS_Damage_Message, "XYS.Damage.Message");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCaller_Damage, "SetByCaller.Damage", "SetByCaller tag used by damage gameplay effects.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCaller_Heal, "SetByCaller.Heal", "SetByCaller tag used by healing gameplay effects.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Cheat_GodMode, "Cheat.GodMode", "GodMode cheat is active on the owner.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Cheat_UnlimitedHealth, "Cheat.UnlimitedHealth", "UnlimitedHealth cheat is active on the owner.");
 }
