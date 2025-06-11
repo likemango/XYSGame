@@ -9,6 +9,8 @@
 #include "AbilitySystem/XYSGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/XYSGameplayAbility.h"
 #include "Animation/XYSAnimInstance.h"
+#include "System/XYSAssetManager.h"
+#include "System/XYSGameData.h"
 
 void UXYSAbilitySystemComponent::SetTagRelationshipMapping(UXYSAbilityTagRelationshipMapping* NewMapping)
 {
@@ -175,6 +177,31 @@ void UXYSAbilitySystemComponent::ClearAbilityInput()
 	InputPressedSpecHandles.Reset();
 	InputReleasedSpecHandles.Reset();
 	InputHeldSpecHandles.Reset();
+}
+
+FActiveGameplayEffectHandle UXYSAbilitySystemComponent::AddDynamicTagGameplayEffect(UPARAM(Categories=("CharacterState.Movement")) FGameplayTag Tag)
+{
+	FActiveGameplayEffectHandle ActiveGameplayEffectHandle;
+	const TSubclassOf<UGameplayEffect> DynamicTagGE = UXYSAssetManager::GetSubclass(UXYSGameData::Get().DynamicTagGameplayEffect);
+	if (!DynamicTagGE)
+	{
+		UE_LOG(LogXYSAbilitySystem, Warning, TEXT("AddDynamicTagGameplayEffect: Unable to find DynamicTagGameplayEffect [%s]."), *UXYSGameData::Get().DynamicTagGameplayEffect.GetAssetName());
+		return ActiveGameplayEffectHandle;
+	}
+
+	const FGameplayEffectSpecHandle SpecHandle = MakeOutgoingSpec(DynamicTagGE, 1.0f, MakeEffectContext());
+	FGameplayEffectSpec* Spec = SpecHandle.Data.Get();
+
+	if (!Spec)
+	{
+		UE_LOG(LogXYSAbilitySystem, Warning, TEXT("AddDynamicTagGameplayEffect: Unable to make outgoing spec for [%s]."), *GetNameSafe(DynamicTagGE));
+		return ActiveGameplayEffectHandle;
+	}
+
+	Spec->DynamicGrantedTags.AddTag(Tag);
+
+	ActiveGameplayEffectHandle = ApplyGameplayEffectSpecToSelf(*Spec);
+	return ActiveGameplayEffectHandle;
 }
 
 void UXYSAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)

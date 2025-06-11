@@ -4,6 +4,7 @@
 #include "AbilitySystem/Abilities/XYSGameplayAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "Character/XYSCharacter.h"
 #include "Character/XYSCharacterMovementComponent.h"
 
@@ -56,6 +57,11 @@ AXYSCharacter* UXYSGameplayAbility::GetXYSCharacterFromActorInfo() const
 UXYSCharacterMovementComponent* UXYSGameplayAbility::GetXYSCharacterMovementFromActorInfo() const
 {
 	return CurrentActorInfo ? Cast<UXYSCharacterMovementComponent>(CurrentActorInfo->MovementComponent.Get()) : nullptr;
+}
+
+UXYSAbilitySystemComponent* UXYSGameplayAbility::GetXYSAbilitySystemComponentFromActorInfo() const
+{
+	return CurrentActorInfo ? Cast<UXYSAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr;
 }
 
 void UXYSGameplayAbility::NativeOnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const
