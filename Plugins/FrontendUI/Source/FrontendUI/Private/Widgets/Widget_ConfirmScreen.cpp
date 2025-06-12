@@ -8,7 +8,7 @@
 #include "Components/DynamicEntryBox.h"
 #include "Widgets/Components/FrontendCommonButtonBase.h"
 
-UWidget_ConfirmScreen::FConfirmScreenInfoStruct UWidget_ConfirmScreen::CreateOKScreen(const FText& InScreenTitle,const FText& InScreenMessage)
+UWidget_ConfirmScreen::FConfirmScreenInfoStruct UWidget_ConfirmScreen::CreateOkScreen(const FText& InScreenTitle,const FText& InScreenMessage)
 {
 	FConfirmScreenInfoStruct ConfirmScreenInfo;
 	ConfirmScreenInfo.ScreenTitle = InScreenTitle;

@@ -30,7 +30,7 @@ public:
 		TArray<FConfirmScreenButtonInfo> AvailableScreenButtons {};
 	};
 
-	static FConfirmScreenInfoStruct CreateOKScreen(const FText& InScreenTitle, const FText& InScreenMessage);
+	static FConfirmScreenInfoStruct CreateOkScreen(const FText& InScreenTitle, const FText& InScreenMessage);
 	static FConfirmScreenInfoStruct CreateYesNoScreen(const FText& InScreenTitle, const FText& InScreenMessage);
 	static FConfirmScreenInfoStruct CreateOkCancelScreen(const FText& InScreenTitle, const FText& InScreenMessage);
 

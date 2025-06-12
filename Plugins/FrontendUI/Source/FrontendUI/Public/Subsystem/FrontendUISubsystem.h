@@ -39,9 +39,9 @@ public:
 		TFunction<void(EConfirmScreenButtonType)> ButtonClickedCallback);
 
 	UPROPERTY(BlueprintAssignable)
-	FOnMainMenuButtonHoveredDelegate OnMainMenuButtonHovered;
+	FOnMainMenuButtonHoveredDelegate OnMenuButtonHovered;
 	UPROPERTY(BlueprintAssignable)
-	FOnMainMenuButtonHoveredDelegate OnMainMenuButtonUnHovered;
+	FOnMainMenuButtonHoveredDelegate OnMenuButtonUnHovered;
 	
 protected:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;

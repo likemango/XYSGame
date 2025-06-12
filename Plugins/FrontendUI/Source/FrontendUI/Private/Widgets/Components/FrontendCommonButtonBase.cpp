@@ -34,12 +34,12 @@ void UFrontendCommonButtonBase::NativeOnHovered()
 {
 	Super::NativeOnHovered();
 
-	UFrontendUISubsystem::Get(this)->OnMainMenuButtonHovered.Broadcast(this, ButtonDescriptionText);
+	UFrontendUISubsystem::Get(this)->OnMenuButtonHovered.Broadcast(this, ButtonDescriptionText);
 }
 
 void UFrontendCommonButtonBase::NativeOnUnhovered()
 {
 	Super::NativeOnUnhovered();
 
-	UFrontendUISubsystem::Get(this)->OnMainMenuButtonUnHovered.Broadcast(this, FText::GetEmpty());
+	UFrontendUISubsystem::Get(this)->OnMenuButtonUnHovered.Broadcast(this, FText::GetEmpty());
 }

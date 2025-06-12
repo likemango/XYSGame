@@ -64,7 +64,7 @@ void UFrontendUISubsystem::PushConfirmScreenToModalStackAsync(EConfirmScreenType
 	//1.根据ConfirmScreen的类型需求，构建所需数据结构
 	switch (InScreenType) {
 	case EConfirmScreenType::OK:
-		ScreenInfo = UWidget_ConfirmScreen::CreateOkCancelScreen(InScreenTitle, InScreenMessage);
+		ScreenInfo = UWidget_ConfirmScreen::CreateOkScreen(InScreenTitle, InScreenMessage);
 		break;
 	case EConfirmScreenType::YesNo:
 		ScreenInfo = UWidget_ConfirmScreen::CreateYesNoScreen(InScreenTitle, InScreenMessage);
