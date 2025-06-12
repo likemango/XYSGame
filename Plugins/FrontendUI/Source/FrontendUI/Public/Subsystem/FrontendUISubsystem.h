@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FrontendTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "FrontendUISubsystem.generated.h"
 
@@ -32,7 +33,10 @@ public:
 	static UFrontendUISubsystem* Get(const UObject* WorldContextObject);
 
 	void PushSoftWidgetClassToStackAsync(const FGameplayTag& InTag, TSoftClassPtr<UWidget_ActivatableBase>& InSoftWidgetClass,
-	TFunction<void(EAsyncPushWidgetState,UWidget_ActivatableBase*)> AsyncPushWidgetCallback) const;
+		TFunction<void(EAsyncPushWidgetState,UWidget_ActivatableBase*)> AsyncPushWidgetCallback) const;
+
+	void PushConfirmScreenToModalStackAsync(EConfirmScreenType InScreenType, const FText& InScreenTitle, const FText& InScreenMessage,
+		TFunction<void(EConfirmScreenButtonType)> ButtonClickedCallback);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnMainMenuButtonHoveredDelegate OnMainMenuButtonHovered;

@@ -4,9 +4,12 @@
 #include "Subsystem/FrontendUISubsystem.h"
 
 #include "DebugHelper.h"
+#include "FrontendGameplayTags.h"
 #include "Engine/AssetManager.h"
+#include "FunctionLibrary/FrontendBlueprintFunctionLibrary.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 #include "Widgets/Widget_ActivatableBase.h"
+#include "Widgets/Widget_ConfirmScreen.h"
 #include "Widgets/Widget_PrimaryLayout.h"
 
 UFrontendUISubsystem* UFrontendUISubsystem::Get(const UObject* WorldContextObject)
@@ -53,6 +56,38 @@ void UFrontendUISubsystem::PushSoftWidgetClassToStackAsync(const FGameplayTag& I
 	));
 }
 
+void UFrontendUISubsystem::PushConfirmScreenToModalStackAsync(EConfirmScreenType InScreenType,const FText& InScreenTitle, const FText& InScreenMessage,
+	TFunction<void(EConfirmScreenButtonType)> ButtonClickedCallback)
+{
+	UWidget_ConfirmScreen::FConfirmScreenInfoStruct ScreenInfo;
+
+	//1.根据ConfirmScreen的类型需求，构建所需数据结构
+	switch (InScreenType) {
+	case EConfirmScreenType::OK:
+		ScreenInfo = UWidget_ConfirmScreen::CreateOkCancelScreen(InScreenTitle, InScreenMessage);
+		break;
+	case EConfirmScreenType::YesNo:
+		ScreenInfo = UWidget_ConfirmScreen::CreateYesNoScreen(InScreenTitle, InScreenMessage);
+		break;
+	case EConfirmScreenType::OKCancel:
+		ScreenInfo = UWidget_ConfirmScreen::CreateOkCancelScreen(InScreenTitle, InScreenMessage);
+		break;
+	case EConfirmScreenType::Unknown:
+		break;
+	}
+
+	//2.Load/Create 并且在push前，根据1中生成的数据结构，初始化ConfirmScreen的结构
+	TSoftClassPtr<UWidget_ActivatableBase> ConfirmScreenWidgetClass = UFrontendBlueprintFunctionLibrary::GetFrontendSoftWidgetClassFromDevelopSettingsByTag(FrontendGameplayTags::Frontend_Widget_ConfirmScreen);
+	PushSoftWidgetClassToStackAsync(FrontendGameplayTags::Frontend_WidgetStack_Modal, ConfirmScreenWidgetClass,
+		[ScreenInfo, ButtonClickedCallback](EAsyncPushWidgetState PushWidgetState, UWidget_ActivatableBase* CreatedWidget)
+	{
+		if (PushWidgetState == EAsyncPushWidgetState::OnCreatedBeforePush)
+		{
+			UWidget_ConfirmScreen* ConfirmScreen = CastChecked<UWidget_ConfirmScreen>(CreatedWidget);
+			ConfirmScreen->InitConfirmScreen(ScreenInfo, ButtonClickedCallback);
+		}
+	});
+}
 
 
 void UFrontendUISubsystem::RegisterCreatedPrimaryLayout(UWidget_PrimaryLayout* InLayout)
