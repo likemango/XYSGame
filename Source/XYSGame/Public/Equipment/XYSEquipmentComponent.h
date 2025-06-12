@@ -94,7 +94,7 @@ struct TStructOpsTypeTraits<FXYSEquipmentList> : public TStructOpsTypeTraitsBase
 };
 
 
-UCLASS(BlueprintType, Const)
+UCLASS(BlueprintType, Const, meta=(BlueprintSpawnableComponent))
 class XYSGAME_API UXYSEquipmentComponent : public UPawnComponent
 {
 	GENERATED_BODY()

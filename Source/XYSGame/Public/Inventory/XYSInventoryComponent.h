@@ -110,7 +110,7 @@ struct TStructOpsTypeTraits<FXYSInventoryList> : public TStructOpsTypeTraitsBase
 
 
 
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, meta=(BlueprintSpawnableComponent))
 class XYSGAME_API UXYSInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
