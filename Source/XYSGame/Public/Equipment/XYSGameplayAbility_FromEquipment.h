@@ -6,6 +6,8 @@
 #include "AbilitySystem/Abilities/XYSGameplayAbility.h"
 #include "XYSGameplayAbility_FromEquipment.generated.h"
 
+class UXYSInventoryItemInstance;
+class UXYSEquipmentInstance;
 /**
  * An ability granted by and associated with an equipment instance
  */
