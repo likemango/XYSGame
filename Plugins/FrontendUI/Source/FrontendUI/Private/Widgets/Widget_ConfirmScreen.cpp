@@ -4,6 +4,7 @@
 #include "Widgets/Widget_ConfirmScreen.h"
 
 #include "CommonTextBlock.h"
+#include "DebugHelper.h"
 #include "ICommonInputModule.h"
 #include "Components/DynamicEntryBox.h"
 #include "Widgets/Components/FrontendCommonButtonBase.h"
@@ -85,7 +86,7 @@ void UWidget_ConfirmScreen::InitConfirmScreen(const FConfirmScreenInfoStruct& Sc
 		
 		switch (ButtonInfo.ConfirmScreenButtonType) {
 		case EConfirmScreenButtonType::Confirmed:
-			InputActionRowHandle = ICommonInputModule::GetSettings().GetDefaultClickAction();
+			// InputActionRowHandle = ICommonInputModule::GetSettings().GetDefaultClickAction();
 			break;
 		case EConfirmScreenButtonType::Cancelled:
 			InputActionRowHandle = ICommonInputModule::GetSettings().GetDefaultBackAction();
@@ -99,10 +100,14 @@ void UWidget_ConfirmScreen::InitConfirmScreen(const FConfirmScreenInfoStruct& Sc
 
 		UFrontendCommonButtonBase* AddedButton = DynamicEntryBox_Buttons->CreateEntry<UFrontendCommonButtonBase>();
 		AddedButton->SetButtonText(ButtonInfo.ButtonTextToDisplay);
-		AddedButton->SetTriggeredInputAction(InputActionRowHandle);
+		// AddedButton->SetTriggeredInputAction(InputActionRowHandle);
+		AddedButton->SetTriggeringInputAction(InputActionRowHandle);
 		AddedButton->OnClicked().AddLambda([ClickedButtonCallback, ButtonInfo, this]()
 		{
 			ClickedButtonCallback(ButtonInfo.ConfirmScreenButtonType);
+
+			FString EnumStringName = StaticEnum<EConfirmScreenButtonType>()->GetNameStringByValue(static_cast<int64>(ButtonInfo.ConfirmScreenButtonType));
+			DebugHelper::Print(FString::Printf(TEXT("ButtonText: %s , ButtonType: %s"), *ButtonInfo.ButtonTextToDisplay.ToString(), *EnumStringName));
 			DeactivateWidget();
 		});
 	}
