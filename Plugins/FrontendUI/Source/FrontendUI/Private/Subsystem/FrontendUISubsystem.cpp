@@ -95,6 +95,4 @@ void UFrontendUISubsystem::RegisterCreatedPrimaryLayout(UWidget_PrimaryLayout* I
 	check(InLayout);
 
 	CreatedPrimaryLayout = InLayout;
-
-	DebugHelper::Print(TEXT("PrimaryLayout widget stored by FrontendUISubsystem."));
 }

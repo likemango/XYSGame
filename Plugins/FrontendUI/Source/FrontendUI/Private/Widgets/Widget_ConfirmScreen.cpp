@@ -106,8 +106,8 @@ void UWidget_ConfirmScreen::InitConfirmScreen(const FConfirmScreenInfoStruct& Sc
 		{
 			ClickedButtonCallback(ButtonInfo.ConfirmScreenButtonType);
 
-			FString EnumStringName = StaticEnum<EConfirmScreenButtonType>()->GetNameStringByValue(static_cast<int64>(ButtonInfo.ConfirmScreenButtonType));
-			DebugHelper::Print(FString::Printf(TEXT("ButtonText: %s , ButtonType: %s"), *ButtonInfo.ButtonTextToDisplay.ToString(), *EnumStringName));
+			// FString EnumStringName = StaticEnum<EConfirmScreenButtonType>()->GetNameStringByValue(static_cast<int64>(ButtonInfo.ConfirmScreenButtonType));
+			// DebugHelper::Print(FString::Printf(TEXT("ButtonText: %s , ButtonType: %s"), *ButtonInfo.ButtonTextToDisplay.ToString(), *EnumStringName));
 			DeactivateWidget();
 		});
 	}
