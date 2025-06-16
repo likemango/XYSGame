@@ -32,6 +32,10 @@ public:
 	virtual void CheckDefaultInitialization() override;
 	//~End
 
+	/** Returns the hero component if one exists on the specified actor. */
+	UFUNCTION(BlueprintPure, Category = "Hero")
+	static UXYSHeroComponent* FindHeroComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UXYSHeroComponent>() : nullptr); }
+
 protected:
 	virtual void OnRegister() override;
 	virtual void BeginPlay() override;

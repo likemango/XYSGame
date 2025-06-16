@@ -7,6 +7,7 @@
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "Character/XYSCharacter.h"
 #include "Character/XYSCharacterMovementComponent.h"
+#include "Character/XYSHeroComponent.h"
 
 UXYSGameplayAbility::UXYSGameplayAbility(const FObjectInitializer& ObjectInitializer)
 {
@@ -62,6 +63,42 @@ UXYSCharacterMovementComponent* UXYSGameplayAbility::GetXYSCharacterMovementFrom
 UXYSAbilitySystemComponent* UXYSGameplayAbility::GetXYSAbilitySystemComponentFromActorInfo() const
 {
 	return CurrentActorInfo ? Cast<UXYSAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr;
+}
+
+AController* UXYSGameplayAbility::GetControllerFromActorInfo() const
+{
+	if (CurrentActorInfo)
+	{
+		if (AController* PC = CurrentActorInfo->PlayerController.Get())
+		{
+			return PC;
+		}
+
+		// Look for a player controller or pawn in the owner chain.
+		AActor* TestActor = CurrentActorInfo->OwnerActor.Get();
+		while (TestActor)
+		{
+			if (AController* C = Cast<AController>(TestActor))
+			{
+				return C;
+			}
+
+			if (APawn* Pawn = Cast<APawn>(TestActor))
+			{
+				return Pawn->GetController();
+			}
+
+			TestActor = TestActor->GetOwner();
+		}
+	}
+
+	return nullptr;
+}
+
+UXYSHeroComponent* UXYSGameplayAbility::GetHeroComponentFromActorInfo() const
+{
+	return (CurrentActorInfo ? UXYSHeroComponent::FindHeroComponent(CurrentActorInfo->AvatarActor.Get()) : nullptr);
+	
 }
 
 void UXYSGameplayAbility::NativeOnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const

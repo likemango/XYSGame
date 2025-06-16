@@ -29,7 +29,8 @@ public class XYSGame : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"GameplayMessageRuntime",
-			"IrisCore"
+			"IrisCore", 
+			"AIModule"
 		});
 
 		// Uncomment if you are using Slate UI

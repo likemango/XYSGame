@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "XYSGameplayAbility.generated.h"
 
+class UXYSHeroComponent;
 class UXYSAbilitySystemComponent;
 class AXYSCharacter;
 class UXYSCharacterMovementComponent;
@@ -76,7 +77,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	UXYSCharacterMovementComponent* GetXYSCharacterMovementFromActorInfo() const;
 	UFUNCTION(BlueprintCallable, Category = "Ability")
-	UXYSAbilitySystemComponent* GetXYSAbilitySystemComponentFromActorInfo() const;	
+	UXYSAbilitySystemComponent* GetXYSAbilitySystemComponentFromActorInfo() const;
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	AController* GetControllerFromActorInfo() const;
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	UXYSHeroComponent* GetHeroComponentFromActorInfo() const;
 
 	void OnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const
 	{
