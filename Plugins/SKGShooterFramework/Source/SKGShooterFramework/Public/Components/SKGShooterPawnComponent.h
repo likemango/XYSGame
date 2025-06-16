@@ -18,6 +18,8 @@ class ISKGInfraredInterface;
 class USKGFirearmComponent;
 class USKGProceduralAnimComponent;
 class UCameraComponent;
+// @TODO Uncomment for 5.4+
+class UGameplayCameraComponent;
 class USkeletalMeshComponent;
 class UMaterialParameterCollection;
 class APawn;
@@ -60,159 +62,14 @@ class SKGSHOOTERFRAMEWORK_API USKGShooterPawnComponent : public UActorComponent,
 public:	
 	// Sets default values for this component's properties
 	USKGShooterPawnComponent();
-
-protected:
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
-	bool bUsingLegacyInputScales {true};
-	/** The linked anim layer class to be used instead of the actual anim instance of the mesh
-	 * so you do not need to reparent your animbp. Refer to example project for usage
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
-	TSubclassOf<USKGShooterFrameworkAnimInstance> LinkedAnimLayerClass;
-	/**
-	 * If true, it will auto link the LinkedAnimLayerClass to your mesh anim instance for the procedurals.
-	 * If LinkedAnimLayerClass is invalid, it will automatically try to get the anim instance from your pawns mesh rather than
-	 * link a AnimLayer.
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
-	bool bAutoSetupLinkedAnimLayer {true};
-	// If true, it will use the first found match as the first and third person mesh
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
-	bool bUseSingleMesh {true};
-	// The name of the Pawns Third Person Mesh Component
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
-	FName ThirdPersonMeshComponentName {"CharacterMesh0"};
-	// The name of the Pawns First Person Mesh Component
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
-	FName FirstPersonMeshComponentName {"MeshFP"};
-	// The name of the Pawns Camera Component
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
-	FName CameraComponentName {"CameraComponent"};
-	// The socket the camera is attached to on the pawn's mesh
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
-	FName CameraAttachedSocket {"S_Camera"};
-	// Used for free look, turn in place, etc
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
-	bool bReplicateRemoteYaw {true};
-	// Replication rate for the Yaw. 0 = every frame
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize", meta = (EditCondition = "bReplicateRemoteYaw"))
-	double RemoteYawReplicationRate {0.1};
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGShooterPawnComponent|Initialize")
-	FGameplayTagContainer GameplayTags;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|FreeLook")
-	FSKGFreeLookSettings FreeLookSettings;
-	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Leaning")
-	FSKGLeanLeftRightSettings LeanLeftRightSettings;
-
-	UPROPERTY(BlueprintGetter = GetCameraComponent, Category = "SKGShooterPawnComponent")
-	TObjectPtr<UCameraComponent> CameraComponent;
-	UPROPERTY(BlueprintGetter = GetFirstPersonMesh, Category = "SKGShooterPawnComponent")
-	TObjectPtr<USkeletalMeshComponent> MeshFP;
-	UPROPERTY(BlueprintGetter = GetThirdPersonMesh, Category = "SKGShooterPawnComponent")
-	TObjectPtr<USkeletalMeshComponent> MeshTP;
-	UPROPERTY(BlueprintGetter = GetShooterFrameworkAnimInstance, Category = "SKGShooterPawnComponent")
-	TObjectPtr<USKGShooterFrameworkAnimInstance> ShooterFrameworkAnimInstance;
-	UPROPERTY(BlueprintGetter = GetOwningPawn, Category = "SKGShooterPawnComponent")
-	TObjectPtr<APawn> OwningPawn;
-	float CameraStartingFOV {-1.0f};
-
-	UPROPERTY(BlueprintGetter = GetProceduralShooterPawnData, Category = "SKGShooterPawnComponent")
-	FSKGProceduralShooterPawnData ProceduralShooterPawnData;
-
-	UPROPERTY(ReplicatedUsing = OnRep_TargetLeanAngleCompressed)
-	uint8 TargetLeanAngleCompressed {0};
-	float TargetLeanAngle {0.0f};
-	float TargetLeanLeftAngle {0.0f};
-	float TargetLeanRightAngle {0.0f};
-	bool bLeaningLeft {false};
-	bool bLeaningRight {false};
-	UFUNCTION()
-	void OnRep_TargetLeanAngleCompressed();
-	
-	UPROPERTY(ReplicatedUsing = OnRep_HeldActor, BlueprintGetter = GetHeldActor, Category = "SKGShooterPawnComponent")
-	TObjectPtr<AActor> HeldActor;
-	UPROPERTY(ReplicatedUsing = OnRep_IsAiming, BlueprintGetter = IsAiming, Category = "SKGShooterPawnComponent")
-	bool bIsAiming {false};
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentProceduralPoseData, BlueprintGetter = GetCurrentProceduralPoseReplicationData, Category = "SKGShooterPawnComponent")
-	FSKGProceduralPoseReplicationData CurrentProceduralPoseData;
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_OffhandIKIsLeftHand, BlueprintGetter = GetOffhandIKIsLeftHand, Category = "SKGShooterPawnComponent")
-	bool bOffhandIKIsLeftHand {true};
-
-	UPROPERTY(ReplicatedUsing = OnRep_InFreeLook)
-	bool bInFreeLook {false};
-	UFUNCTION()
-	void OnRep_InFreeLook();
-	FRotator FreeLookStartRotation {FRotator::ZeroRotator};
-	bool bCanAddYaw {true};
-	bool bCanAddPitch {true};
-	
-	UPROPERTY(Replicated)
-	uint8 RemoteViewYaw {0};
-
-	UPROPERTY()
-	TObjectPtr<USKGFirearmComponent> CurrentFirearmComponent;
-	UPROPERTY()
-	TObjectPtr<USKGProceduralAnimComponent> CurrentProceduralAnimComponent;
-	UPROPERTY()
-	TObjectPtr<USKGProceduralAnimComponent> CharactersProceduralAnimComponent;
-
-	FTransform CameraOffset;
-	bool bUseFirstPersonProceduralsAsLocal {true};
-	bool bUsingCustomSwayMultiplier {false};
-	float SwayMultiplier {1.0f};
-	ECollisionChannel FirearmCollisionChannel {ECC_Visibility};
-	
-	UFUNCTION()
-	virtual void OnRep_HeldActor(AActor* OldActor);
-	UFUNCTION()
-	void OnRep_IsAiming();
-	UFUNCTION()
-	void OnRep_CurrentProceduralPoseData() const;
-	UFUNCTION()
-	void OnRep_OffhandIKIsLeftHand();
-
-	FVector2D MouseInput {FVector2D::ZeroVector};
-	
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGShooterPawnComponent* GetShooterPawnComponent(const AActor* Actor);
 	virtual void BeginPlay() override;
 	virtual void PostInitProperties() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
-	void SetupComponents();
-	void SetCameraOffset();
-	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetAiming(bool bAim);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_Lean(const uint8 TargetAngle);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_PerformProceduralPose(const FGameplayTag& Tag, bool bExitPose);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetOffhandIKHand(bool bLeftHand);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetFreeLook(bool bFreeLook);
-	UFUNCTION(Server, Unreliable, WithValidation)
-	void Server_PerformCustomCurveUnreliable(const FSKGFirstAndThirdPersonCurveSettings& CurveData);
-	UFUNCTION(Server, Unreliable, WithValidation)
-	void Server_SetRemoteYaw(uint8 Yaw);
-	
-	UFUNCTION(NetMulticast, Unreliable, WithValidation)
-	void Multi_PlayCustomCurveUnreliable(const FSKGFirstAndThirdPersonCurveSettings& CurveData);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_PerformCustomCurve(const FSKGFirstAndThirdPersonCurveSettings& CurveData);
-	UFUNCTION(NetMulticast, Reliable, WithValidation)
-	void Multi_PlayCustomCurve(const FSKGFirstAndThirdPersonCurveSettings& CurveData);
 
-	void ReplicateYaw(bool bForce);
-	
-	// Called from only the anim instance so a delegate can be fired
-	void PoseComplete() const;
-	void OnFirearmRequestedCycleAimingPoint() const;
-	void AnimLayerLinked();
-	void FirearmCollisionChanged(const bool bIsColliding) const;
-
-public:
 	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
 	UFUNCTION(BlueprintCallable, Category = "SKGShooterPawnComponent|HeldActor")
 	void SetHeldActor(AActor* Actor);
@@ -247,6 +104,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SKGShooterPawnComponent|MouseInput")
 	void SetMouseInput(float X, float Y);
 
+	bool NeedsToContinuallyUpdateCameraOffset() const { return bConstantlyUpdateCameraOffset; }
+	void SetCameraOffset();
 	FORCEINLINE FTransform GetCameraOffset() const { return CameraOffset; }
 	FSKGProceduralAnimInstanceData GetProceduralData();
 
@@ -341,6 +200,9 @@ public:
 	const FSKGProceduralShooterPawnData& GetProceduralShooterPawnData() const { return ProceduralShooterPawnData; }
 	UFUNCTION(BlueprintGetter)
 	UCameraComponent* GetCameraComponent() const { return CameraComponent; }
+	// @TODO Uncomment for 5.4+ since #if ENGINE_MINOR_VERSION >= 4 doesnt work with UE header tool.
+	UFUNCTION(BlueprintGetter)
+	UGameplayCameraComponent* GetGameplayCameraComponent() const { return GameplayCameraComponent; }
 	UFUNCTION(BlueprintGetter)
 	APawn* GetOwningPawn() const { return OwningPawn; }
 	template< typename T >
@@ -388,4 +250,158 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterFramework|Debug")
 	bool bDrawDebugTrace {false};
 #endif
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	bool bUsingLegacyInputScales {true};
+	/** The linked anim layer class to be used instead of the actual anim instance of the mesh
+	 * so you do not need to reparent your animbp. Refer to example project for usage
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	TSubclassOf<USKGShooterFrameworkAnimInstance> LinkedAnimLayerClass;
+	/**
+	 * If true, it will auto link the LinkedAnimLayerClass to your mesh anim instance for the procedurals.
+	 * If LinkedAnimLayerClass is invalid, it will automatically try to get the anim instance from your pawns mesh rather than
+	 * link a AnimLayer.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	bool bAutoSetupLinkedAnimLayer {true};
+	// If true, it will use the first found match as the first and third person mesh
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	bool bUseSingleMesh {true};
+	// The name of the Pawns Third Person Mesh Component
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	FName ThirdPersonMeshComponentName {"CharacterMesh0"};
+	// The name of the Pawns First Person Mesh Component
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	FName FirstPersonMeshComponentName {"MeshFP"};
+	// The name of the Pawns Camera Component
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	FName CameraComponentName {"CameraComponent"};
+	// If the CameraComponent is invalid/not found, this socket will be used as the CameraOffset for aiming and such
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	FName CameraAttachedSocket {"S_Camera"};
+	// If true, the camera offset will be continually updated (such as if your camera is moving from the head)
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	bool bConstantlyUpdateCameraOffset {false};
+	// Used for free look, turn in place, etc
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize")
+	bool bReplicateRemoteYaw {true};
+	// Replication rate for the Yaw. 0 = every frame
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Initialize", meta = (EditCondition = "bReplicateRemoteYaw"))
+	double RemoteYawReplicationRate {0.1};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGShooterPawnComponent|Initialize")
+	FGameplayTagContainer GameplayTags;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|FreeLook")
+	FSKGFreeLookSettings FreeLookSettings;
+	UPROPERTY(EditDefaultsOnly, Category = "SKGShooterPawnComponent|Leaning")
+	FSKGLeanLeftRightSettings LeanLeftRightSettings;
+
+	UPROPERTY(BlueprintGetter = GetCameraComponent, Category = "SKGShooterPawnComponent")
+	TObjectPtr<UCameraComponent> CameraComponent;
+	// @TODO Uncomment for 5.4+ since #if ENGINE_MINOR_VERSION >= 4 doesnt work for with UE header tool.
+	UPROPERTY(BlueprintGetter = GetGameplayCameraComponent, Category = "SKGShooterPawnComponent")
+	TObjectPtr<UGameplayCameraComponent> GameplayCameraComponent;
+	UPROPERTY(BlueprintGetter = GetFirstPersonMesh, Category = "SKGShooterPawnComponent")
+	TObjectPtr<USkeletalMeshComponent> MeshFP;
+	UPROPERTY(BlueprintGetter = GetThirdPersonMesh, Category = "SKGShooterPawnComponent")
+	TObjectPtr<USkeletalMeshComponent> MeshTP;
+	UPROPERTY(BlueprintGetter = GetShooterFrameworkAnimInstance, Category = "SKGShooterPawnComponent")
+	TObjectPtr<USKGShooterFrameworkAnimInstance> ShooterFrameworkAnimInstance;
+	UPROPERTY(BlueprintGetter = GetOwningPawn, Category = "SKGShooterPawnComponent")
+	TObjectPtr<APawn> OwningPawn;
+	float CameraStartingFOV {-1.0f};
+
+	UPROPERTY(BlueprintGetter = GetProceduralShooterPawnData, Category = "SKGShooterPawnComponent")
+	FSKGProceduralShooterPawnData ProceduralShooterPawnData;
+
+	UPROPERTY(ReplicatedUsing = OnRep_TargetLeanAngleCompressed)
+	uint8 TargetLeanAngleCompressed {0};
+	float TargetLeanAngle {0.0f};
+	float TargetLeanLeftAngle {0.0f};
+	float TargetLeanRightAngle {0.0f};
+	bool bLeaningLeft {false};
+	bool bLeaningRight {false};
+	UFUNCTION()
+	void OnRep_TargetLeanAngleCompressed();
+	
+	UPROPERTY(ReplicatedUsing = OnRep_HeldActor, BlueprintGetter = GetHeldActor, Category = "SKGShooterPawnComponent")
+	TObjectPtr<AActor> HeldActor;
+	UPROPERTY(ReplicatedUsing = OnRep_IsAiming, BlueprintGetter = IsAiming, Category = "SKGShooterPawnComponent")
+	bool bIsAiming {false};
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentProceduralPoseData, BlueprintGetter = GetCurrentProceduralPoseReplicationData, Category = "SKGShooterPawnComponent")
+	FSKGProceduralPoseReplicationData CurrentProceduralPoseData;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_OffhandIKIsLeftHand, BlueprintGetter = GetOffhandIKIsLeftHand, Category = "SKGShooterPawnComponent")
+	bool bOffhandIKIsLeftHand {true};
+
+	UPROPERTY(ReplicatedUsing = OnRep_InFreeLook)
+	bool bInFreeLook {false};
+	UFUNCTION()
+	void OnRep_InFreeLook();
+	FRotator FreeLookStartRotation {FRotator::ZeroRotator};
+	bool bCanAddYaw {true};
+	bool bCanAddPitch {true};
+	
+	UPROPERTY(Replicated)
+	uint8 RemoteViewYaw {0};
+
+	UPROPERTY()
+	TObjectPtr<USKGFirearmComponent> CurrentFirearmComponent;
+	UPROPERTY()
+	TObjectPtr<USKGProceduralAnimComponent> CurrentProceduralAnimComponent;
+	// If there is no firearm component on the held actor, we atleast have a pointer to a possible existing OffhandIKComponent to use
+	UPROPERTY()
+	TObjectPtr<USKGOffhandIKComponent> CurrentOffhandIKComponent;
+	UPROPERTY()
+	TObjectPtr<USKGProceduralAnimComponent> CharactersProceduralAnimComponent;
+
+	FTransform CameraOffset;
+	bool bUseFirstPersonProceduralsAsLocal {true};
+	bool bUsingCustomSwayMultiplier {false};
+	float SwayMultiplier {1.0f};
+	ECollisionChannel FirearmCollisionChannel {ECC_Visibility};
+	
+	UFUNCTION()
+	virtual void OnRep_HeldActor(AActor* OldActor);
+	UFUNCTION()
+	void OnRep_IsAiming();
+	UFUNCTION()
+	void OnRep_CurrentProceduralPoseData() const;
+	UFUNCTION()
+	void OnRep_OffhandIKIsLeftHand();
+
+	FVector2D MouseInput {FVector2D::ZeroVector};
+	
+	void SetupComponents();
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetAiming(bool bAim);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_Lean(const uint8 TargetAngle);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_PerformProceduralPose(const FGameplayTag& Tag, bool bExitPose);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetOffhandIKHand(bool bLeftHand);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetFreeLook(bool bFreeLook);
+	UFUNCTION(Server, Unreliable, WithValidation)
+	void Server_PerformCustomCurveUnreliable(const FSKGFirstAndThirdPersonCurveSettings& CurveData);
+	UFUNCTION(Server, Unreliable, WithValidation)
+	void Server_SetRemoteYaw(uint8 Yaw);
+	
+	UFUNCTION(NetMulticast, Unreliable, WithValidation)
+	void Multi_PlayCustomCurveUnreliable(const FSKGFirstAndThirdPersonCurveSettings& CurveData);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_PerformCustomCurve(const FSKGFirstAndThirdPersonCurveSettings& CurveData);
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void Multi_PlayCustomCurve(const FSKGFirstAndThirdPersonCurveSettings& CurveData);
+
+	void ReplicateYaw(bool bForce);
+	
+	// Called from only the anim instance so a delegate can be fired
+	void PoseComplete() const;
+	void OnFirearmRequestedCycleAimingPoint() const;
+	void AnimLayerLinked();
+	void FirearmCollisionChanged(const bool bIsColliding) const;
 };

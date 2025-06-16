@@ -6,14 +6,17 @@
 #include "Components/SKGFirearmComponent.h"
 #include "Components/SKGOpticComponent.h"
 #include "Components/SKGProceduralAnimComponent.h"
-#include "Statics/SKGShooterFrameworkHelpers.h"
+#include "Components/SKGLightLaserComponent.h"
+#include "Components/SKGOffhandIKComponent.h"
 #include "Statics/SKGShooterFrameworkCoreNetworkStatics.h"
 #include "DeveloperSettings/SKGShooterFrameworkDeveloperSettings.h"
 
 #include "Camera/CameraComponent.h"
+#include "Runtime/Launch/Resources/Version.h"
+// @TODO Uncomment for 5.4+
+#include "GameFramework/GameplayCameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Pawn.h"
-#include "Engine/World.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -27,6 +30,11 @@ USKGShooterPawnComponent::USKGShooterPawnComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 	SetIsReplicatedByDefault(true);
+}
+
+USKGShooterPawnComponent* USKGShooterPawnComponent::GetShooterPawnComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGShooterPawnComponent>() : nullptr;
 }
 
 void USKGShooterPawnComponent::BeginPlay()
@@ -109,8 +117,16 @@ void USKGShooterPawnComponent::SetupComponents()
 			{
 				if (Component->GetFName() == CameraComponentName)
 				{
-					CameraComponent = Cast<UCameraComponent>(Component);
-					CameraStartingFOV = CameraComponent->FieldOfView;
+					if (UCameraComponent* Camera = Cast<UCameraComponent>(Component))
+					{
+						CameraComponent = Camera;
+						CameraStartingFOV = CameraComponent->FieldOfView;
+					}
+					// @TODO Uncomment for 5.4+
+					else if (UGameplayCameraComponent* GameplayCamera = Cast<UGameplayCameraComponent>(Component))
+					{
+						GameplayCameraComponent = GameplayCamera;
+					}
 				}
 				else if (Component->GetFName() == FirstPersonMeshComponentName)
 				{
@@ -145,9 +161,23 @@ void USKGShooterPawnComponent::SetupComponents()
 
 void USKGShooterPawnComponent::SetCameraOffset()
 {
-	CameraOffset = GetPawnMesh()->GetSocketTransform(CameraAttachedSocket, RTS_ParentBoneSpace);
+	if (CameraComponent)
+	{
+		CameraOffset = CameraComponent->GetComponentTransform().GetRelativeTransform(GetPawnMesh()->GetSocketTransform(FName("head")));
+	}
+	//@TODO Uncomment for 5.4 and beyond
+	else if (GameplayCameraComponent)
+	{
+		CameraOffset = GameplayCameraComponent->GetComponentTransform().GetRelativeTransform(GetPawnMesh()->GetSocketTransform(FName("head")));
+	}
+	else
+	{
+		CameraOffset = GetPawnMesh()->GetSocketTransform(CameraAttachedSocket, RTS_ParentBoneSpace);
+	}
+
 	FRotator TempRotator = CameraOffset.Rotator();
 	TempRotator.Pitch -= 90.0f;
+	TempRotator.Roll = -90.0f;
 	CameraOffset.SetRotation(TempRotator.Quaternion());
 	CameraOffset.SetScale3D(FVector::OneVector);
 }
@@ -155,17 +185,19 @@ void USKGShooterPawnComponent::SetCameraOffset()
 void USKGShooterPawnComponent::AnimInstanceTicked(float DeltaSeconds)
 {
 	OnAnimInstanceTicked.Broadcast(DeltaSeconds);
-
-	if (IsLocallyControlled())
+	
+	if (IsLocallyControlled() && CameraComponent)
 	{
-		const USKGProceduralAnimComponent* ProceduralAnimComponent = GetCurrentProceduralAnimComponent();
-		if (CameraComponent && ProceduralAnimComponent)
+		if (const USKGProceduralAnimComponent* ProceduralAnimComponent = GetCurrentProceduralAnimComponent())
 		{
-			const FSKGProceduralAimingSettings AimingSettings = ProceduralAnimComponent->GetProceduralAimingSettings();
-			const float ZoomPercentage = AimingSettings.CameraZoomPercentage;
-			const float Target = bIsAiming ? USKGShooterFrameworkHelpers::GetPercentageDecrease(CameraStartingFOV, ZoomPercentage) : CameraStartingFOV;
-			const float Interped = UKismetMathLibrary::FInterpTo(CameraComponent->FieldOfView, Target, DeltaSeconds, AimingSettings.CameraZoomInterpSpeed);
-			CameraComponent->SetFieldOfView(Interped);
+			const FSKGProceduralAimingSettings& AimingSettings = ProceduralAnimComponent->GetProceduralAimingSettings();
+			if (AimingSettings.bAllowCameraZoom)
+			{
+				const float ZoomPercentage = AimingSettings.CameraZoomPercentage;
+				const float Target = bIsAiming ? CameraStartingFOV * (1.0 - ZoomPercentage / 100.0f) : CameraStartingFOV;
+				const float InterpolatedFOV = UKismetMathLibrary::FInterpTo(CameraComponent->FieldOfView, Target, DeltaSeconds, AimingSettings.CameraZoomInterpSpeed);
+				CameraComponent->SetFieldOfView(InterpolatedFOV);
+			}
 		}
 	}
 }
@@ -200,7 +232,7 @@ USKGOpticComponent* USKGShooterPawnComponent::GetCurrentOpticComponent() const
 	{
 		return CurrentFirearmComponent->GetCurrentOpticComponent();
 	}
-	return USKGShooterFrameworkHelpers::GetOpticComponent(HeldActor);
+	return USKGOpticComponent::GetOpticComponent(HeldActor);
 }
 
 TArray<USKGLightLaserComponent*> USKGShooterPawnComponent::GetCurrentLightLaserComponents() const
@@ -209,7 +241,7 @@ TArray<USKGLightLaserComponent*> USKGShooterPawnComponent::GetCurrentLightLaserC
 	{
 		return CurrentFirearmComponent->GetLightLaserComponents();
 	}
-	return TArray({ USKGShooterFrameworkHelpers::GetLightLaserComponent(HeldActor) });
+	return TArray({ USKGLightLaserComponent::GetLightLaserComponent(HeldActor) });
 }
 
 void USKGShooterPawnComponent::ReplicateYaw(bool bForce)
@@ -383,7 +415,12 @@ FRotator USKGShooterPawnComponent::GetControlRotation() const
 		else
 		{
 			const float Yaw = RemoteViewYaw == 0 ? OwningPawn->GetActorRotation().Yaw : USKGShooterFrameworkCoreNetworkStatics::DecompressByteToFloat(RemoteViewYaw);
+#if ENGINE_MINOR_VERSION >= 6
+			return FRotator(USKGShooterFrameworkCoreNetworkStatics::DecompressByteToFloat(OwningPawn->GetRemoteViewPitch()), Yaw, 0.0f);
+#else
 			return FRotator(USKGShooterFrameworkCoreNetworkStatics::DecompressByteToFloat(OwningPawn->RemoteViewPitch), Yaw, 0.0f);
+#endif
+			
 		}
 	}
 	return FRotator::ZeroRotator;
@@ -391,7 +428,7 @@ FRotator USKGShooterPawnComponent::GetControlRotation() const
 
 FSKGProceduralAnimInstanceData USKGShooterPawnComponent::GetProceduralData()
 {
-	SCOPE_CYCLE_COUNTER(STAT_SKGGetProceduralDataFunc);
+	SCOPED_NAMED_EVENT(ShooterPawnComponentGetProceduralData, FColor::Blue);
 	FSKGProceduralAnimInstanceData AnimInstanceData = FSKGProceduralAnimInstanceData();
 	ProceduralShooterPawnData = FSKGProceduralShooterPawnData();
 
@@ -407,27 +444,31 @@ FSKGProceduralAnimInstanceData USKGShooterPawnComponent::GetProceduralData()
 			ProceduralShooterPawnData.ProceduralAnimGameplayTag = CurrentFirearmComponent->GetProceduralGameplayTag();
 			ProceduralShooterPawnData.bHasHeldActor = true;
 		}
-		else if (CurrentProceduralAnimComponent)
+		else
 		{
-			CurrentProceduralAnimComponent->UpdateAimOffset(nullptr);
-			AnimInstanceData.AimOffset = CurrentProceduralAnimComponent->GetAimOffset();
-			AnimInstanceData.BasePoseOffset = CurrentProceduralAnimComponent->GetBasePoseOffset();
-			AnimInstanceData.ThirdPersonAimingOffset = CurrentProceduralAnimComponent->GetThirdPersonAimingOffset(bOffhandIKIsLeftHand);
-			AnimInstanceData.CycleAimingPointSettings = CurrentProceduralAnimComponent->GetCycleAimingPointSettings();
-			AnimInstanceData.MovementSwaySettings = CurrentProceduralAnimComponent->GetMovementSwaySettings();
-			AnimInstanceData.RotationLagSettings = CurrentProceduralAnimComponent->GetRotationSettings();
-			AnimInstanceData.DeadzoneSettings = CurrentProceduralAnimComponent->GetDeadzoneSettings();
-			AnimInstanceData.RecoilSettings = CurrentProceduralAnimComponent->GetRecoilSettings();
-			AnimInstanceData.bProceduralAnimDataSet = true;
-			AnimInstanceData.ProceduralStats.AimInterpolationRate = CurrentProceduralAnimComponent->GetProceduralAimingSettings().DefaultAimingSpeed;
-			ProceduralShooterPawnData.ProceduralAnimGameplayTag = CurrentProceduralAnimComponent->GetProceduralGameplayTag();
-			ProceduralShooterPawnData.bHasHeldActor = true;
-		}
-		
-		if (bUsingCustomSwayMultiplier)
-		{
-			AnimInstanceData.MovementSwaySettings.LocationSettings.Multiplier = SwayMultiplier;
-			AnimInstanceData.MovementSwaySettings.RotationSettings.Multiplier = SwayMultiplier;
+			if (CurrentProceduralAnimComponent)
+			{
+				CurrentProceduralAnimComponent->UpdateAimOffset(nullptr);
+				AnimInstanceData.AimOffset = CurrentProceduralAnimComponent->GetAimOffset();
+				AnimInstanceData.BasePoseOffset = CurrentProceduralAnimComponent->GetBasePoseOffset();
+				AnimInstanceData.ThirdPersonAimingOffset = CurrentProceduralAnimComponent->GetThirdPersonAimingOffset(bOffhandIKIsLeftHand);
+				AnimInstanceData.CycleAimingPointSettings = CurrentProceduralAnimComponent->GetCycleAimingPointSettings();
+				AnimInstanceData.MovementSwaySettings = CurrentProceduralAnimComponent->GetMovementSwaySettings();
+				AnimInstanceData.MovementLagSettings = CurrentProceduralAnimComponent->GetMovementLagSettings();
+				AnimInstanceData.RotationLagSettings = CurrentProceduralAnimComponent->GetRotationLagSettings();
+				AnimInstanceData.DeadzoneSettings = CurrentProceduralAnimComponent->GetDeadzoneSettings();
+				AnimInstanceData.RecoilSettings = CurrentProceduralAnimComponent->GetRecoilSettings();
+				AnimInstanceData.bProceduralAnimDataSet = true;
+				AnimInstanceData.ProceduralStats.AimInterpolationRate = CurrentProceduralAnimComponent->GetProceduralAimingSettings().DefaultAimingSpeed;
+				ProceduralShooterPawnData.ProceduralAnimGameplayTag = CurrentProceduralAnimComponent->GetProceduralGameplayTag();
+				ProceduralShooterPawnData.bHasHeldActor = true;
+			}
+			if (CurrentOffhandIKComponent)
+			{
+				CurrentOffhandIKComponent->UpdateOffhandIK(nullptr, bOffhandIKIsLeftHand);
+				AnimInstanceData.OffhandIKOffset = CurrentOffhandIKComponent->GetOffhandIKOffset();
+				AnimInstanceData.OffhandIKPose = CurrentOffhandIKComponent->GetOffhandIKPose();
+			}
 		}
 	}
 	else if (CharactersProceduralAnimComponent)
@@ -437,12 +478,19 @@ FSKGProceduralAnimInstanceData USKGShooterPawnComponent::GetProceduralData()
 		AnimInstanceData.ThirdPersonAimingOffset = CharactersProceduralAnimComponent->GetThirdPersonAimingOffset(bOffhandIKIsLeftHand);
 		AnimInstanceData.CycleAimingPointSettings = CharactersProceduralAnimComponent->GetCycleAimingPointSettings();
 		AnimInstanceData.MovementSwaySettings = CharactersProceduralAnimComponent->GetMovementSwaySettings();
-		AnimInstanceData.RotationLagSettings = CharactersProceduralAnimComponent->GetRotationSettings();
+		AnimInstanceData.MovementLagSettings = CharactersProceduralAnimComponent->GetMovementLagSettings();
+		AnimInstanceData.RotationLagSettings = CharactersProceduralAnimComponent->GetRotationLagSettings();
 		AnimInstanceData.DeadzoneSettings = CharactersProceduralAnimComponent->GetDeadzoneSettings();
 		AnimInstanceData.RecoilSettings = CharactersProceduralAnimComponent->GetRecoilSettings();
 		AnimInstanceData.bProceduralAnimDataSet = true;
 	}
 
+	if (bUsingCustomSwayMultiplier)
+	{
+		AnimInstanceData.MovementSwaySettings.LocationSettings.Multiplier = SwayMultiplier;
+		AnimInstanceData.MovementSwaySettings.RotationSettings.Multiplier = SwayMultiplier;
+	}
+	
 	AnimInstanceData.FirearmCollisionSettings.CollisionChannel = FirearmCollisionChannel;
 	AnimInstanceData.MouseInput = MouseInput;
 	AnimInstanceData.bInFreeLook = bInFreeLook;
@@ -792,7 +840,7 @@ void USKGShooterPawnComponent::OnRep_HeldActor(AActor* OldActor)
 {
 	if (HeldActor)
 	{
-		CurrentFirearmComponent = USKGShooterFrameworkHelpers::GetFirearmComponent(HeldActor);
+		CurrentFirearmComponent = USKGFirearmComponent::GetFirearmComponent(HeldActor);
 		if (CurrentFirearmComponent)
 		{
 			CurrentProceduralAnimComponent = CurrentFirearmComponent->GetCurrentProceduralAnimComponent();
@@ -800,12 +848,14 @@ void USKGShooterPawnComponent::OnRep_HeldActor(AActor* OldActor)
 		}
 		else
 		{
-			CurrentProceduralAnimComponent = USKGShooterFrameworkHelpers::GetProceduralAnimComponent(HeldActor);
+			CurrentProceduralAnimComponent = USKGProceduralAnimComponent::GetProceduralAnimComponent(HeldActor);
+			CurrentOffhandIKComponent = USKGOffhandIKComponent::GetOffhandIKComponent(HeldActor);
 		}
 	}
 	else
 	{
 		CurrentProceduralAnimComponent = nullptr;
+		CurrentOffhandIKComponent = nullptr;
 		CurrentFirearmComponent = nullptr;
 	}
 

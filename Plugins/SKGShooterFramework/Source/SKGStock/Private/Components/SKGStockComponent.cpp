@@ -13,6 +13,11 @@ USKGStockComponent::USKGStockComponent()
 	SetIsReplicatedByDefault(true);
 }
 
+USKGStockComponent* USKGStockComponent::GetStockComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGStockComponent>() : nullptr;
+}
+
 void USKGStockComponent::BeginPlay()
 {
 	Super::BeginPlay();

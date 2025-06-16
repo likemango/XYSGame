@@ -59,7 +59,7 @@ void USKGPhysicalMaterial::PlaySoundEffect(const UWorld* World, const FHitResult
 		}
 		if (!bUseSpeedOfSound || SoundDelay < SpeedOfSoundTolerance)
 		{
-			UGameplayStatics::SpawnSoundAtLocation(World, Settings.Sound, HitResult.Location, FRotator::ZeroRotator, Settings.VolumeMultiplier, Settings.PitchMultiplier, 0.0f, Settings.Sound->AttenuationSettings);
+			UGameplayStatics::PlaySoundAtLocation(World, Settings.Sound, HitResult.Location, FRotator::ZeroRotator, Settings.VolumeMultiplier, Settings.PitchMultiplier, 0.0f, Settings.Sound->AttenuationSettings);
 		}
 		else
 		{

@@ -24,6 +24,10 @@ class SKGSHOOTERFRAMEWORKACTORS_API ASKGFirearm : public ASKGBaseActor
 
 public:
 	ASKGFirearm();
+	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void SetConstructionDataAsset(UDataAsset* DataAsset) override;
+	virtual UPrimaryDataAsset* GetConstructionDataAsset() override;
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Firearm")
@@ -34,7 +38,7 @@ protected:
 	TObjectPtr<USKGAttachmentManagerComponent> AttachmentManagerComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Firearm")
 	TObjectPtr<USKGProceduralAnimComponent> ProceduralAnimComponent;
-	UPROPERTY(BlueprintReadOnly, Category = "Firearm")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Firearm")
 	TObjectPtr<USKGMuzzleComponent> MuzzleComponent;
 	UPROPERTY(BlueprintReadOnly, Category = "Firearm")
 	TObjectPtr<USKGOffhandIKComponent> OffhandIKComponent;
@@ -46,11 +50,5 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_DAConstruction();
 	
-	virtual void BeginPlay() override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void OnBundlesLoaded() override;
-	
-public:
-	virtual void SetConstructionDataAsset(UDataAsset* DataAsset) override;
-	virtual UPrimaryDataAsset* GetConstructionDataAsset() override;
 };

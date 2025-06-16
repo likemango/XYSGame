@@ -36,63 +36,12 @@ class SKGOPTIC_API USKGOpticComponent : public UActorComponent, public IGameplay
 public:
 	// Sets default values for this component's properties
 	USKGOpticComponent();
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGOpticComponent* GetOpticComponent(const AActor* Actor);
+	virtual void BeginPlay() override;
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
 	void InitializeOpticComponent();
 
-	// if true, the component will auto initialize itself upon creation
-	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Initialize")
-	bool bAutoInitialize {true};
-	// if true, this assumes you will set the OpticMeshName and OpticSceneCaptureComponentName in code before initialization
-	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Initialize")
-	bool bOverrideComponentNames {false};
-	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Initialize")
-	TObjectPtr<USKGPDAOpticInitialize> InitializationSettingsDataAsset;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Settings")
-	TObjectPtr<USKGPDAOpticReticleSettings> ReticleSettingsDataAsset;
-	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Settings")
-	TObjectPtr<USKGPDAOpticMagnificationSettings> MagnificationSettingsDataAsset;
-	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Settings")
-	TObjectPtr<USKGPDAOpticZeroSettings> OpticZeroSettingsDataAsset;
-	
-	// The name of the mesh that is used for the optic itself (contains the reticle)
-	FName OpticMeshName {"StaticMesh"};
-	// Optional Scene Capture Component that gets controlled through this class
-	FName OpticSceneCaptureComponentName {"SKGOpticSceneCapture"};
-	// This is just to aid in use for creating magnifiers
-	bool bIsMagnifier {false};
-	FGameplayTagContainer GameplayTags;
-
-protected:
-	FSKGOpticReticleSettings ReticleSettings;
-	FSKGOpticMagnificationSettings MagnificationSettings;
-	FSKGOpticZeroSettings OpticZeroSettings;
-	
-	// Useful if your NetUpdateFrequency is set super low
-	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Settings")
-	bool bAutoCallForceNetUpdate {true};
-	
-	UPROPERTY(BlueprintGetter = GetOpticMesh, Category = "SKGOptic|Mesh")
-	TObjectPtr<UMeshComponent> OpticMesh;
-	UPROPERTY()
-	TObjectPtr<USKGOpticSceneCaptureComponent> OpticSceneCaptureComponent;
-
-	int32 ZeroUpDownClicks {0};
-	int32 ZeroLeftRightClicks {0};
-	FTimerHandle UnAimedTimerHandle;
-	
-	virtual void BeginPlay() override;
-	virtual void InitializeComponent() override;
-	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
-	FORCEINLINE void TryForceNetUpdate() const;
-	void SetComponents();
-	void SetStartingZero();
-	void UpdateOpticMaterialInstance();
-	void UpdateReticleBrightness();
-
-	void StartSceneCapture();
-	void StopSceneCapture();
-	
-public:
 	void InitializeComponentFromData();
 	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
 	// Should only be used when manually setting the value for construction
@@ -219,4 +168,56 @@ public:
 	// This fires for the local client when night vision mode changes
 	UPROPERTY(BlueprintAssignable, Category = "SKGProceduralAnimComponent|Events")
 	FOnNightVisionModeChanged OnNightVisionModeChanged;
+
+	// if true, the component will auto initialize itself upon creation
+	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Initialize")
+	bool bAutoInitialize {true};
+	// if true, this assumes you will set the OpticMeshName and OpticSceneCaptureComponentName in code before initialization
+	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Initialize")
+	bool bOverrideComponentNames {false};
+	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Initialize")
+	TObjectPtr<USKGPDAOpticInitialize> InitializationSettingsDataAsset;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Settings")
+	TObjectPtr<USKGPDAOpticReticleSettings> ReticleSettingsDataAsset;
+	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Settings")
+	TObjectPtr<USKGPDAOpticMagnificationSettings> MagnificationSettingsDataAsset;
+	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Settings")
+	TObjectPtr<USKGPDAOpticZeroSettings> OpticZeroSettingsDataAsset;
+	
+	// The name of the mesh that is used for the optic itself (contains the reticle)
+	FName OpticMeshName {"StaticMesh"};
+	// Optional Scene Capture Component that gets controlled through this class
+	FName OpticSceneCaptureComponentName {"SKGOpticSceneCapture"};
+	// This is just to aid in use for creating magnifiers
+	bool bIsMagnifier {false};
+	FGameplayTagContainer GameplayTags;
+
+protected:
+	UPROPERTY()
+	FSKGOpticReticleSettings ReticleSettings;
+	FSKGOpticMagnificationSettings MagnificationSettings;
+	FSKGOpticZeroSettings OpticZeroSettings;
+	
+	// Useful if your NetUpdateFrequency is set super low
+	UPROPERTY(EditDefaultsOnly, Category = "SKGOptic|Settings")
+	bool bAutoCallForceNetUpdate {true};
+	
+	UPROPERTY(BlueprintGetter = GetOpticMesh, Category = "SKGOptic|Mesh")
+	TObjectPtr<UMeshComponent> OpticMesh;
+	UPROPERTY()
+	TObjectPtr<USKGOpticSceneCaptureComponent> OpticSceneCaptureComponent;
+
+	int32 ZeroUpDownClicks {0};
+	int32 ZeroLeftRightClicks {0};
+	FTimerHandle UnAimedTimerHandle;
+	
+	FORCEINLINE void TryForceNetUpdate() const;
+	void SetComponents();
+	void SetStartingZero();
+	void UpdateOpticMaterialInstance();
+	void UpdateReticleBrightness();
+
+	void StartSceneCapture();
+	void StopSceneCapture();
 };

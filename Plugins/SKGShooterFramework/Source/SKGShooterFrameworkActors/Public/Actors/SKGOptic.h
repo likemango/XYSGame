@@ -20,7 +20,11 @@ class SKGSHOOTERFRAMEWORKACTORS_API ASKGOptic : public ASKGBaseActor
 
 public:
 	ASKGOptic();
-
+	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void SetConstructionDataAsset(UDataAsset* DataAsset) override;
+	virtual UPrimaryDataAsset* GetConstructionDataAsset() override;
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Optic")
 	TObjectPtr<USceneComponent> RootSceneComponent;
@@ -47,11 +51,5 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_DAConstruction();
 	
-	virtual void BeginPlay() override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void OnBundlesLoaded() override;
-
-public:
-	virtual void SetConstructionDataAsset(UDataAsset* DataAsset) override;
-	virtual UPrimaryDataAsset* GetConstructionDataAsset() override;
 };

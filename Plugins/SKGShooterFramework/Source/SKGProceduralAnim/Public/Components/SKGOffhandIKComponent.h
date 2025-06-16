@@ -32,7 +32,33 @@ class SKGPROCEDURALANIM_API USKGOffhandIKComponent : public UActorComponent, pub
 public:
 	// Sets default values for this component's properties
 	USKGOffhandIKComponent();
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGOffhandIKComponent* GetOffhandIKComponent(const AActor* Actor);
+	
+	virtual void BeginPlay() override;
+	virtual void InitializeComponent() override;
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
 	void InitializeOffhandIKComponent();
+
+	void InitializeComponentFromData();
+	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
+	// Should only be used when manually setting the value for construction
+	void SetOffhandIKMeshName(const FName& Name) { OffhandIKMeshName = Name; }
+	// Should only be used when manually setting the value for construction
+	void SetLeftHandIKSocketName(const FName& Name) { LeftHandIKSocketName = Name; }
+	// Should only be used when manually setting the value for construction
+	void SetRightHandIKSocketName(const FName& Name) { RightHandIKSocketName = Name; }
+	
+	UFUNCTION(BlueprintCallable, Category = "SKGOffhandIK")
+	void UpdateOffhandIK(UPrimitiveComponent* ComponentRelativeTo, bool bLeftHand);
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE FTransform GetOffhandIKOffset() const { return OffhandIKOffset; }
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE UAnimSequence* GetOffhandIKPose() const { return OffhandIKPose; }
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE UMeshComponent* GetOffhandIKMesh() const { return OffhandIKMesh; }
+	template< typename T >
+	FORCEINLINE T* GetOffhandIKMesh() const { return Cast<T>(OffhandIKMesh); }
 
 	// if true, the component will auto initialize itself upon creation
 	UPROPERTY(EditDefaultsOnly, Category = "SKGOffhandIK|Initialize")
@@ -70,9 +96,6 @@ protected:
 	UPROPERTY(BlueprintGetter = GetOffhandIKMesh, Category = "SKGOffhandIK|Mesh")
 	TObjectPtr<UMeshComponent> OffhandIKMesh;
 	
-	virtual void BeginPlay() override;
-	virtual void InitializeComponent() override;
-	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
 	void SetupComponents();
 	FTransform GetOffhandIKWorldTransform(bool bLeftHand) const;
 
@@ -82,25 +105,4 @@ protected:
 	TObjectPtr<UAnimSequence> OffhandIKPose;
 
 	FORCEINLINE const FName& GetHandSocketName(bool bLeftHand) const;
-	
-public:
-	void InitializeComponentFromData();
-	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
-	// Should only be used when manually setting the value for construction
-	void SetOffhandIKMeshName(const FName& Name) { OffhandIKMeshName = Name; }
-	// Should only be used when manually setting the value for construction
-	void SetLeftHandIKSocketName(const FName& Name) { LeftHandIKSocketName = Name; }
-	// Should only be used when manually setting the value for construction
-	void SetRightHandIKSocketName(const FName& Name) { RightHandIKSocketName = Name; }
-	
-	UFUNCTION(BlueprintCallable, Category = "SKGOffhandIK")
-	void UpdateOffhandIK(UPrimitiveComponent* ComponentRelativeTo, bool bLeftHand);
-	UFUNCTION(BlueprintGetter)
-	FORCEINLINE FTransform GetOffhandIKOffset() const { return OffhandIKOffset; }
-	UFUNCTION(BlueprintGetter)
-	FORCEINLINE UAnimSequence* GetOffhandIKPose() const { return OffhandIKPose; }
-	UFUNCTION(BlueprintGetter)
-	FORCEINLINE UMeshComponent* GetOffhandIKMesh() const { return OffhandIKMesh; }
-	template< typename T >
-	FORCEINLINE T* GetOffhandIKMesh() const { return Cast<T>(OffhandIKMesh); }
 };

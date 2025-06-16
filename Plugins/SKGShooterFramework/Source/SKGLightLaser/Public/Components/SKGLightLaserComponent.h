@@ -28,90 +28,14 @@ class SKGLIGHTLASER_API USKGLightLaserComponent : public UActorComponent, public
 public:
 	// Sets default values for this component's properties
 	USKGLightLaserComponent();
-	void InitializeLightLaserComponent();
-
-	// if true, the component will auto initialize itself upon creation
-	bool bAutoInitialize {true};
-	// if true, this assumes you will set the LightComponentName, LaserMeshComponentName, and LaserDotComponentName in code before initialization
-	bool bOverrideComponentNames {false};
-
-	UPROPERTY(EditDefaultsOnly, Category = "SKGLightLaser|Initialize")
-	TObjectPtr<USKGPDALightLaserInitialize> InitializationSettingsDataAsset;
-	UPROPERTY(EditDefaultsOnly, Category = "SKGLightLaser|Settings")
-	TObjectPtr<USKGPDALightLaserSettings> LightLaserSettingsDataAsset;
-
-	// Optional name of the Light Component (Such as SpotLight) to be used
-	FName LightComponentName {"SpotLight"};
-	// Optional name of the laser mesh component to be used
-	FName LaserMeshComponentName {"LaserMesh"};
-	// Optional name of the laser dot mesh component to be used
-	FName LaserDotComponentName {"LaserDot"};
-	// Whether this device supports infrared mode
-	bool bHasInfraredMode {false};
-	// Useful if your NetUpdateFrequency is set super low
-	bool bAutoCallForceNetUpdate {true};
-	FGameplayTagContainer GameplayTags;
-protected:
-	// Deprecated, Utilize Light Laser Settings instead
-	FSKGLaserSettings LaserSettings;
-	// Deprecated, Utilize Light Laser Settings instead
-	FSKGLightSettings LightSettings;
-	// Deprecated, Utilize Light Laser Settings instead
-	FSKGLightLaserCycleModes LightLaserCycleModes;
-	
-	UPROPERTY(BlueprintGetter = GetLightSource, Category = "SKGLightLaser|Data")
-	TObjectPtr<ULightComponent> LightSource;
-	UPROPERTY(BlueprintGetter = GetLaserMesh, Category = "SKGLightLaser|Data")
-	TObjectPtr<UStaticMeshComponent> LaserMesh;
-	UPROPERTY(BlueprintGetter = GetLaserDot, Category = "SKGLightLaser|Data")
-	TObjectPtr<UStaticMeshComponent> LaserDot;
-
-	FVector LaserScale {FVector::OneVector};
-
-	UPROPERTY()
-	TObjectPtr<APlayerController> LocalPlayerController;
-
-	UPROPERTY(ReplicatedUsing = OnRep_DeviceInfraredOn, BlueprintGetter = IsInInfraredMode, Category = "SKGLightLaser|Data")
-	bool bDeviceInfraredOn {false};
-	UFUNCTION()
-	void OnRep_DeviceInfraredOn();
-	
-	UPROPERTY(ReplicatedUsing = OnRep_LaserState)
-	FSKGLaserState LaserState;
-	UFUNCTION()
-	void OnRep_LaserState();
-	
-	UPROPERTY(ReplicatedUsing = OnRep_LightState)
-	FSKGLightState LightState;
-	UFUNCTION()
-	void OnRep_LightState();
-	double PreviousStrobeTimeStamp {0.0f};
-	
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGLightLaserComponent* GetLightLaserComponent(const AActor* Actor);
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
-	FORCEINLINE void TryForceNetUpdate() const;
-	void SetComponentsAndState();
-	void RegisterAsInfraredDevice();
-	void UnregisterAsInfraredDevice();
-	void PerformLaserScaling();
-	void PerformLightStrobing();
+	void InitializeLightLaserComponent();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetInfraredMode(bool bInfraredOn);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetLaserMode(ESKGLaserMode LaserMode);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetLightMode(ESKGLightMode LightMode);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetLightIntensityIndex(int32 Index);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetLightLaserMode(const FSKGLightLaserCycleMode& LightLaserMode);
-
-	void SetLightLaserMode(const FSKGLightLaserCycleMode& LightLaserMode);
-
-public:
 	void InitializeComponentFromData();
 	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
 	// Called every frame
@@ -187,4 +111,81 @@ public:
 	FOnLightStrobed OnLightStrobed;
 	UPROPERTY(BlueprintAssignable, Category = "SKGLightLaser|Events")
 	FOnLaserImpact OnLaserImpact;
+
+	// if true, the component will auto initialize itself upon creation
+	bool bAutoInitialize {true};
+	// if true, this assumes you will set the LightComponentName, LaserMeshComponentName, and LaserDotComponentName in code before initialization
+	bool bOverrideComponentNames {false};
+
+	UPROPERTY(EditDefaultsOnly, Category = "SKGLightLaser|Initialize")
+	TObjectPtr<USKGPDALightLaserInitialize> InitializationSettingsDataAsset;
+	UPROPERTY(EditDefaultsOnly, Category = "SKGLightLaser|Settings")
+	TObjectPtr<USKGPDALightLaserSettings> LightLaserSettingsDataAsset;
+
+	// Optional name of the Light Component (Such as SpotLight) to be used
+	FName LightComponentName {"SpotLight"};
+	// Optional name of the laser mesh component to be used
+	FName LaserMeshComponentName {"LaserMesh"};
+	// Optional name of the laser dot mesh component to be used
+	FName LaserDotComponentName {"LaserDot"};
+	// Whether this device supports infrared mode
+	bool bHasInfraredMode {false};
+	// Useful if your NetUpdateFrequency is set super low
+	bool bAutoCallForceNetUpdate {true};
+	FGameplayTagContainer GameplayTags;
+protected:
+	// Deprecated, Utilize Light Laser Settings instead
+	FSKGLaserSettings LaserSettings;
+	// Deprecated, Utilize Light Laser Settings instead
+	FSKGLightSettings LightSettings;
+	// Deprecated, Utilize Light Laser Settings instead
+	FSKGLightLaserCycleModes LightLaserCycleModes;
+	
+	UPROPERTY(BlueprintGetter = GetLightSource, Category = "SKGLightLaser|Data")
+	TObjectPtr<ULightComponent> LightSource;
+	UPROPERTY(BlueprintGetter = GetLaserMesh, Category = "SKGLightLaser|Data")
+	TObjectPtr<UStaticMeshComponent> LaserMesh;
+	UPROPERTY(BlueprintGetter = GetLaserDot, Category = "SKGLightLaser|Data")
+	TObjectPtr<UStaticMeshComponent> LaserDot;
+
+	FVector LaserScale {FVector::OneVector};
+
+	UPROPERTY()
+	TObjectPtr<APlayerController> LocalPlayerController;
+
+	UPROPERTY(ReplicatedUsing = OnRep_DeviceInfraredOn, BlueprintGetter = IsInInfraredMode, Category = "SKGLightLaser|Data")
+	bool bDeviceInfraredOn {false};
+	UFUNCTION()
+	void OnRep_DeviceInfraredOn();
+	
+	UPROPERTY(ReplicatedUsing = OnRep_LaserState)
+	FSKGLaserState LaserState;
+	UFUNCTION()
+	void OnRep_LaserState();
+	
+	UPROPERTY(ReplicatedUsing = OnRep_LightState)
+	FSKGLightState LightState;
+	UFUNCTION()
+	void OnRep_LightState();
+	double PreviousStrobeTimeStamp {0.0f};
+	
+	FORCEINLINE void TryForceNetUpdate() const;
+	void SetComponentsAndState();
+	void RegisterAsInfraredDevice();
+	void UnregisterAsInfraredDevice();
+	void PerformLaserScaling();
+	void PerformLightStrobing();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetInfraredMode(bool bInfraredOn);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetLaserMode(ESKGLaserMode LaserMode);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetLightMode(ESKGLightMode LightMode);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetLightIntensityIndex(int32 Index);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetLightLaserMode(const FSKGLightLaserCycleMode& LightLaserMode);
+
+	void SetLightLaserMode(const FSKGLightLaserCycleMode& LightLaserMode);
 };

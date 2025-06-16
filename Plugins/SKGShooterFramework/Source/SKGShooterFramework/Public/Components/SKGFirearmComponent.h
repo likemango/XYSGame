@@ -43,140 +43,21 @@ class SKGSHOOTERFRAMEWORK_API USKGFirearmComponent : public UActorComponent, pub
 public:
 	// Sets default values for this component's properties
 	USKGFirearmComponent();
-	void InitializeFirearmComponent();
-
-	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|Initialize")
-	bool bAutoInitialize {true};
-	// The name of the mesh to be used/considered the firearm
-	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|Initialize")
-	FName FirearmMeshComponentName {NAME_None};
-	// The name of the OPTIONAL attachment manager added to this parent actor class
-	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|Initialize")
-	FName AttachmentManagerComponentName {NAME_None};
-	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|Initialize")
-	TObjectPtr<USKGPDAFirearmStats> FirearmStatsDataAsset;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGFirearmComponent|Initialize")
-	FGameplayTagContainer GameplayTags;
-	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|FirearmCollision")
-	TObjectPtr<USKGPDAFirearmCollisionSettings> FirearmCollisionSettingsDataAsset;
-
-protected:
-	FSKGFirearmCollisionSettings FirearmCollisionSettings;
-
-	UPROPERTY()
-	TObjectPtr<UMeshComponent> FirearmMesh;
-	UPROPERTY(BlueprintGetter = GetAttachmentManagerComponent, Category = "SKGFirearmComponent|Components")
-	TObjectPtr<USKGAttachmentManagerComponent> AttachmentManager;
-
-	UPROPERTY(ReplicatedUsing = OnRep_FirearmStats, BlueprintGetter = GetFirearmStats, Category = "SKGFirearmComponent|FirearmStats")
-	FSKGFirearmStats FirearmStats;
-	UFUNCTION()
-	void OnRep_FirearmStats();
-	
-	// Consider removing and making Index 0 reserved for firearm specific components
-	UPROPERTY(BlueprintGetter = GetFirearmProceduralAnimComponent, Category = "SKGFirearmComponent|Components")
-	TObjectPtr<USKGProceduralAnimComponent> FirearmProceduralAnimComponent;
-	UPROPERTY(BlueprintGetter = GetFirearmOffhandIKComponent, Category = "SKGFirearmComponent|Components")
-	TObjectPtr<USKGOffhandIKComponent> FirearmOffhandIKComponent;
-	UPROPERTY(BlueprintGetter = GetFirearmMuzzleComponent, Category = "SKGFirearmComponent|Components")
-	TObjectPtr<USKGMuzzleComponent> FirearmMuzzleComponent;
-
-	bool bIsInitialized {false};
-	
-	int32 ProceduralAnimComponentIndex {0};
-	UPROPERTY(BlueprintGetter = GetProceduralAnimComponents, ReplicatedUsing = OnRep_ProceduralAnimComponents, Category = "SKGFirearmComponent|Components")
-	TArray<TObjectPtr<USKGProceduralAnimComponent>> ProceduralAnimComponents;
-	UFUNCTION()
-	virtual void OnRep_ProceduralAnimComponents();
-	
-	UPROPERTY(BlueprintGetter = GetOffhandIKComponents, ReplicatedUsing = OnRep_OffhandIKComponents, Category = "SKGFirearmComponent|Components")
-	TArray<TObjectPtr<USKGOffhandIKComponent>> OffhandIKComponents;
-	UFUNCTION()
-	virtual void OnRep_OffhandIKComponents() {}
-	
-	UPROPERTY(BlueprintGetter = GetLightLaserComponents, ReplicatedUsing = OnRep_LightLaserComponents, Category = "SKGFirearmComponent|Components")
-	TArray<TObjectPtr<USKGLightLaserComponent>> LightLaserComponents;
-	UFUNCTION()
-	virtual void OnRep_LightLaserComponents() {}
-	
-	UPROPERTY(BlueprintGetter = GetMuzzleComponents, ReplicatedUsing = OnRep_MuzzleComponents, Category = "SKGFirearmComponent|Components")
-	TArray<TObjectPtr<USKGMuzzleComponent>> MuzzleComponents;
-	UFUNCTION()
-	virtual void OnRep_MuzzleComponents() {}
-
-	UPROPERTY(BlueprintGetter = GetAttachmentStatComponents, ReplicatedUsing = OnRep_AttachmentStatComponents, Category = "SKGFirearmComponent|Components")
-	TArray<TObjectPtr<USKGFirearmAttachmentStatComponent>> AttachmentStatComponents;
-	UFUNCTION()
-	virtual void OnRep_AttachmentStatComponents();
-	
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentProceduralAnimComponent, BlueprintGetter = GetCurrentProceduralAnimComponent, Category = "SKGFirearmComponent|Components")
-	TObjectPtr<USKGProceduralAnimComponent> CurrentProceduralAnimComponent;
-	UFUNCTION()
-	virtual void OnRep_CurrentProceduralAnimComponent();
-	
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentOffhandIKComponent, BlueprintGetter = GetCurrentOffhandIKComponent, Category = "SKGFirearmComponent|Components")
-	TObjectPtr<USKGOffhandIKComponent> CurrentOffhandIKComponent;
-	UFUNCTION()
-	virtual void OnRep_CurrentOffhandIKComponent() {}
-	
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentMuzzleComponent, BlueprintGetter = GetCurrentMuzzleComponent, Category = "SKGFirearmComponent|Components")
-	TObjectPtr<USKGMuzzleComponent> CurrentMuzzleComponent;
-	UFUNCTION()
-	virtual void OnRep_CurrentMuzzleComponent();
-	
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentOpticComponent, BlueprintGetter = GetCurrentOpticComponent, Category = "SKGFirearmComponent|Components")
-	TObjectPtr<USKGOpticComponent> CurrentOpticComponent;
-	UFUNCTION()
-	virtual void OnRep_CurrentOpticComponent() {}
-
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentStockComponent, BlueprintGetter = GetCurrentStockComponent, Category = "SKGFirearmComponent|Components")
-	TObjectPtr<USKGStockComponent> CurrentStockComponent;
-	UFUNCTION()
-	virtual void OnRep_CurrentStockComponent() {}
-
-	UPROPERTY()
-	TObjectPtr<USKGProceduralAnimComponent> BeforePointAimProceduralAnimComponent;
-	bool bIsPointAiming {false};
-
-	FSKGProceduralAnimInstanceData ProceduralAnimData;
-	FVector CachedAimingOffset {-FVector::OneVector};
-	void CacheAimingOffset();
-	
-	bool bOldOffhandIKIsLeftHand {true};
-	
-	void SetBestMuzzleComponent();
-	void SetBestOffhandIKComponent();
-	void SetBestProceduralAnimComponent();
-	
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGFirearmComponent* GetFirearmComponent(const AActor* Actor);
+	// Searches for the firearm component from the Actor that it is attached to
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGFirearmComponent* GetParentFirearmComponent(const AActor* Actor);
+	// Searches for the firearm that Actor is attached to
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static AActor* GetParentWithFirearmComponent(const AActor* Actor);
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
-	void SetupComponents();
-	// Returns true if changed
-	bool SetOpticComponent();
+	void InitializeFirearmComponent();
 
-	UFUNCTION(BlueprintNativeEvent, Category = "SKGFirearmComponent|Stats")
-	void AddFirearmAttachmentStats(USKGFirearmAttachmentStatComponent* StatComponent);
-	virtual void AddFirearmAttachmentStats_Implementation(USKGFirearmAttachmentStatComponent* StatComponent);
-	UFUNCTION(BlueprintNativeEvent, Category = "SKGFirearmComponent|Stats")
-	void RemoveFirearmAttachmentStats(USKGFirearmAttachmentStatComponent* StatComponent);
-	virtual void RemoveFirearmAttachmentStats_Implementation(USKGFirearmAttachmentStatComponent* StatComponent);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SKGFirearmComponent|Stats")
-	void CalculateProceduralValues();
-	virtual void CalculateProceduralValues_Implementation();
-
-	// DELEGATES BOUND FROM COMPONENTS
-	UFUNCTION()
-	void OnAttachmentAdded(AActor* Attachment);
-	UFUNCTION()
-	void OnAttachmentRemoved(AActor* Attachment);
-	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetAimingDevice(USKGProceduralAnimComponent* AnimComponent);
-	bool SetupNewAimingDevice(USKGProceduralAnimComponent* AnimComponent, const bool bIsAiming);
-	
-public:
 	// This function will set the cached procedural data used by various firearm components
+	UFUNCTION()
 	void SetInitialProceduralData();
 	void InitializeComponentFromData();
 	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
@@ -288,4 +169,131 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "SKGFirearmComponent|Events")
 	FCalculateProceduralStats CalculateProceduralStats;
+
+	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|Initialize")
+	bool bAutoInitialize {true};
+	// The name of the mesh to be used/considered the firearm
+	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|Initialize")
+	FName FirearmMeshComponentName {NAME_None};
+	// The name of the OPTIONAL attachment manager added to this parent actor class
+	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|Initialize")
+	FName AttachmentManagerComponentName {NAME_None};
+	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|Initialize")
+	TObjectPtr<USKGPDAFirearmStats> FirearmStatsDataAsset;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGFirearmComponent|Initialize")
+	FGameplayTagContainer GameplayTags;
+	UPROPERTY(EditDefaultsOnly, Category = "SKGFirearmComponent|FirearmCollision")
+	TObjectPtr<USKGPDAFirearmCollisionSettings> FirearmCollisionSettingsDataAsset;
+
+protected:
+	FSKGFirearmCollisionSettings FirearmCollisionSettings;
+
+	UPROPERTY()
+	TObjectPtr<UMeshComponent> FirearmMesh;
+	UPROPERTY(BlueprintGetter = GetAttachmentManagerComponent, Category = "SKGFirearmComponent|Components")
+	TObjectPtr<USKGAttachmentManagerComponent> AttachmentManager;
+
+	UPROPERTY(ReplicatedUsing = OnRep_FirearmStats, BlueprintGetter = GetFirearmStats, Category = "SKGFirearmComponent|FirearmStats")
+	FSKGFirearmStats FirearmStats;
+	UFUNCTION()
+	void OnRep_FirearmStats();
+	
+	// Consider removing and making Index 0 reserved for firearm specific components
+	UPROPERTY(BlueprintGetter = GetFirearmProceduralAnimComponent, Category = "SKGFirearmComponent|Components")
+	TObjectPtr<USKGProceduralAnimComponent> FirearmProceduralAnimComponent;
+	UPROPERTY(BlueprintGetter = GetFirearmOffhandIKComponent, Category = "SKGFirearmComponent|Components")
+	TObjectPtr<USKGOffhandIKComponent> FirearmOffhandIKComponent;
+	UPROPERTY(BlueprintGetter = GetFirearmMuzzleComponent, Category = "SKGFirearmComponent|Components")
+	TObjectPtr<USKGMuzzleComponent> FirearmMuzzleComponent;
+
+	bool bIsInitialized {false};
+	
+	int32 ProceduralAnimComponentIndex {0};
+	UPROPERTY(BlueprintGetter = GetProceduralAnimComponents, ReplicatedUsing = OnRep_ProceduralAnimComponents, Category = "SKGFirearmComponent|Components")
+	TArray<TObjectPtr<USKGProceduralAnimComponent>> ProceduralAnimComponents;
+	UFUNCTION()
+	virtual void OnRep_ProceduralAnimComponents();
+	
+	UPROPERTY(BlueprintGetter = GetOffhandIKComponents, ReplicatedUsing = OnRep_OffhandIKComponents, Category = "SKGFirearmComponent|Components")
+	TArray<TObjectPtr<USKGOffhandIKComponent>> OffhandIKComponents;
+	UFUNCTION()
+	virtual void OnRep_OffhandIKComponents() {}
+	
+	UPROPERTY(BlueprintGetter = GetLightLaserComponents, ReplicatedUsing = OnRep_LightLaserComponents, Category = "SKGFirearmComponent|Components")
+	TArray<TObjectPtr<USKGLightLaserComponent>> LightLaserComponents;
+	UFUNCTION()
+	virtual void OnRep_LightLaserComponents() {}
+	
+	UPROPERTY(BlueprintGetter = GetMuzzleComponents, ReplicatedUsing = OnRep_MuzzleComponents, Category = "SKGFirearmComponent|Components")
+	TArray<TObjectPtr<USKGMuzzleComponent>> MuzzleComponents;
+	UFUNCTION()
+	virtual void OnRep_MuzzleComponents() {}
+
+	UPROPERTY(BlueprintGetter = GetAttachmentStatComponents, ReplicatedUsing = OnRep_AttachmentStatComponents, Category = "SKGFirearmComponent|Components")
+	TArray<TObjectPtr<USKGFirearmAttachmentStatComponent>> AttachmentStatComponents;
+	UFUNCTION()
+	virtual void OnRep_AttachmentStatComponents();
+	
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentProceduralAnimComponent, BlueprintGetter = GetCurrentProceduralAnimComponent, Category = "SKGFirearmComponent|Components")
+	TObjectPtr<USKGProceduralAnimComponent> CurrentProceduralAnimComponent;
+	UFUNCTION()
+	virtual void OnRep_CurrentProceduralAnimComponent();
+	
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentOffhandIKComponent, BlueprintGetter = GetCurrentOffhandIKComponent, Category = "SKGFirearmComponent|Components")
+	TObjectPtr<USKGOffhandIKComponent> CurrentOffhandIKComponent;
+	UFUNCTION()
+	virtual void OnRep_CurrentOffhandIKComponent() {}
+	
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentMuzzleComponent, BlueprintGetter = GetCurrentMuzzleComponent, Category = "SKGFirearmComponent|Components")
+	TObjectPtr<USKGMuzzleComponent> CurrentMuzzleComponent;
+	UFUNCTION()
+	virtual void OnRep_CurrentMuzzleComponent();
+	
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentOpticComponent, BlueprintGetter = GetCurrentOpticComponent, Category = "SKGFirearmComponent|Components")
+	TObjectPtr<USKGOpticComponent> CurrentOpticComponent;
+	UFUNCTION()
+	virtual void OnRep_CurrentOpticComponent() {}
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentStockComponent, BlueprintGetter = GetCurrentStockComponent, Category = "SKGFirearmComponent|Components")
+	TObjectPtr<USKGStockComponent> CurrentStockComponent;
+	UFUNCTION()
+	virtual void OnRep_CurrentStockComponent() {}
+
+	UPROPERTY()
+	TObjectPtr<USKGProceduralAnimComponent> BeforePointAimProceduralAnimComponent;
+	bool bIsPointAiming {false};
+
+	FSKGProceduralAnimInstanceData ProceduralAnimData;
+	FVector CachedAimingOffset {-FVector::OneVector};
+	void CacheAimingOffset();
+	
+	bool bOldOffhandIKIsLeftHand {true};
+	
+	void SetBestMuzzleComponent();
+	void SetBestOffhandIKComponent();
+	void SetBestProceduralAnimComponent();
+	
+	void SetupComponents();
+	// Returns true if changed
+	bool SetOpticComponent();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "SKGFirearmComponent|Stats")
+	void AddFirearmAttachmentStats(USKGFirearmAttachmentStatComponent* StatComponent);
+	virtual void AddFirearmAttachmentStats_Implementation(USKGFirearmAttachmentStatComponent* StatComponent);
+	UFUNCTION(BlueprintNativeEvent, Category = "SKGFirearmComponent|Stats")
+	void RemoveFirearmAttachmentStats(USKGFirearmAttachmentStatComponent* StatComponent);
+	virtual void RemoveFirearmAttachmentStats_Implementation(USKGFirearmAttachmentStatComponent* StatComponent);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SKGFirearmComponent|Stats")
+	void CalculateProceduralValues();
+	virtual void CalculateProceduralValues_Implementation();
+
+	// DELEGATES BOUND FROM COMPONENTS
+	UFUNCTION()
+	void OnAttachmentAdded(AActor* Attachment);
+	UFUNCTION()
+	void OnAttachmentRemoved(AActor* Attachment);
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetAimingDevice(USKGProceduralAnimComponent* AnimComponent);
+	bool SetupNewAimingDevice(USKGProceduralAnimComponent* AnimComponent, const bool bIsAiming);
 };

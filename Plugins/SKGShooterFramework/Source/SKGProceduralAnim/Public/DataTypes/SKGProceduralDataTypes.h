@@ -280,11 +280,13 @@ struct FSKGProceduralAimingSettings
 	// This is the base speed used for aiming. If you have a firearm with an optic, the value for the firearm is used.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural")
 	float DefaultAimingSpeed {10.0f};
-	// Amount the camera will zoom in when you aim
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural")
+	bool bAllowCameraZoom {false};
+	// Amount the camera will zoom in when you aim
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural", meta = (EditCondition = "bAllowCameraZoom"))
 	float CameraZoomPercentage {0.0f};
 	// Amount the camera will zoom in when you aim
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural", meta = (EditCondition = "bAllowCameraZoom"))
 	float CameraZoomInterpSpeed {10.0f};
 	// If false, this aiming device will not be used when cycling aiming devices
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural")
@@ -309,6 +311,10 @@ struct FSKGDeadzoneSettings
 	float InterpolationSpeed {10.0f};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural", meta = (EditCondition = "bUseDeadzone"))
 	bool bDisableDeadzoneWhenAiming {false};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural", meta = (EditCondition = "bUseDeadzone"))
+	bool bAlwaysInterpolateBackToCenter {false};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural", meta = (EditCondition = "bUseDeadzone && bAlwaysInterpolateBackToCenter"))
+	float InterpolateBackToCenterSpeed {6.0f};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGProcedural", meta = (EditCondition = "bUseDeadzone && bDisableDeadzoneWhenAiming"))
 	float DeadzoneAimingDisableInterpolationSpeed {6.0f};
 };

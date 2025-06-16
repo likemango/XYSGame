@@ -18,6 +18,11 @@ USKGRangeFinderComponent::USKGRangeFinderComponent()
 	bWantsInitializeComponent = true;
 }
 
+USKGRangeFinderComponent* USKGRangeFinderComponent::GetRangeFinderComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGRangeFinderComponent>() : nullptr;
+}
+
 void USKGRangeFinderComponent::BeginPlay()
 {
 	Super::BeginPlay();

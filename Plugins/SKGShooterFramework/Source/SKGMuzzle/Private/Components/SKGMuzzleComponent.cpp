@@ -19,6 +19,11 @@ USKGMuzzleComponent::USKGMuzzleComponent()
 	bWantsInitializeComponent = true;
 }
 
+USKGMuzzleComponent* USKGMuzzleComponent::GetMuzzleComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGMuzzleComponent>() : nullptr;
+}
+
 void USKGMuzzleComponent::InitializeMuzzleComponent()
 {
 	InitializeComponentFromData();

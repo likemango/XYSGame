@@ -27,54 +27,12 @@ class SKGATTACHMENT_API USKGAttachmentManagerComponent : public UActorComponent,
 public:
 	// Sets default values for this component's properties
 	USKGAttachmentManagerComponent();
-	static TArray<USKGAttachmentComponent*> GetAllActorAttachmentComponentsWithAttachments(const AActor* Actor);
-	static TArray<USKGAttachmentComponent*> GetActorAttachmentComponentsWithAttachments(const AActor* Actor);
-
-	// Can be used for whatever. In the example it is used for the save directory of saving/loading presets
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetManagerName, Category = "SKGAttachmentManager|Initialize")
-	FName ManagerName {""};
-	// If true, clients can trigger a replicated hide/unhide and collision/nocollision to all attachments
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachmentManager|Initialize")
-	bool bAllowClientSideModification {true};
-	// Useful if your NetUpdateFrequency is set super low
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachmentManager|Initialize")
-	bool bAutoCallForceNetUpdate {false};
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGAttachmentManager|Initialize")
-	FGameplayTagContainer GameplayTags;
-
-protected:
-	UPROPERTY(ReplicatedUsing = OnRep_AttachmentComponents)
-	FSKGAttachmentComponentItems AttachmentComponents;
-	UFUNCTION()
-	void OnRep_AttachmentComponents();
-
-	// Array of all attachments added to the parent
-	UPROPERTY(ReplicatedUsing = OnRep_Attachments)
-	TArray<TObjectPtr<AActor>> Attachments;
-	UFUNCTION()
-	void OnRep_Attachments(TArray<AActor*> OldAttachments);
-
-	UPROPERTY(ReplicatedUsing = OnRep_AttachmentsStates)
-	bool bIsHidden {false};
-	UPROPERTY(ReplicatedUsing = OnRep_AttachmentsStates)
-	bool bHasCollision {true};
-	UFUNCTION()
-	void OnRep_AttachmentsStates();
-	void SetAttachmentsToState();
-
-	bool bCanSpawnDefaultAttachments {true};
-	
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
-	FORCEINLINE void TryForceNetUpdate() const;
-	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_HideAllAttachments(bool Hide);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetAllAttachmentsCollision(bool EnableCollision);
+	static TArray<USKGAttachmentComponent*> GetAllActorAttachmentComponentsWithAttachments(const AActor* Actor);
+	static TArray<USKGAttachmentComponent*> GetActorAttachmentComponentsWithAttachments(const AActor* Actor);
 
-public:
 	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
 	void RegisterAttachmentComponent(USKGAttachmentComponent* AttachmentComponent);
 	void UnregisterAttachmentComponent(USKGAttachmentComponent* AttachmentComponent);
@@ -160,4 +118,45 @@ public:
 	// Called on the server only when an attachment component is added
 	UPROPERTY(BlueprintAssignable, Category = "SKGAttachmentManagerComponent|Events")
 	FOnAttachmentComponentAttachmentRemoved OnAttachmentComponentAttachmentRemoved;
+
+	// Can be used for whatever. In the example it is used for the save directory of saving/loading presets
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetManagerName, Category = "SKGAttachmentManager|Initialize")
+	FName ManagerName {""};
+	// If true, clients can trigger a replicated hide/unhide and collision/nocollision to all attachments
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachmentManager|Initialize")
+	bool bAllowClientSideModification {true};
+	// Useful if your NetUpdateFrequency is set super low
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachmentManager|Initialize")
+	bool bAutoCallForceNetUpdate {false};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGAttachmentManager|Initialize")
+	FGameplayTagContainer GameplayTags;
+
+protected:
+	UPROPERTY(ReplicatedUsing = OnRep_AttachmentComponents)
+	FSKGAttachmentComponentItems AttachmentComponents;
+	UFUNCTION()
+	void OnRep_AttachmentComponents();
+
+	// Array of all attachments added to the parent
+	UPROPERTY(ReplicatedUsing = OnRep_Attachments)
+	TArray<TObjectPtr<AActor>> Attachments;
+	UFUNCTION()
+	void OnRep_Attachments(TArray<AActor*> OldAttachments);
+
+	UPROPERTY(ReplicatedUsing = OnRep_AttachmentsStates)
+	bool bIsHidden {false};
+	UPROPERTY(ReplicatedUsing = OnRep_AttachmentsStates)
+	bool bHasCollision {true};
+	UFUNCTION()
+	void OnRep_AttachmentsStates();
+	void SetAttachmentsToState();
+
+	bool bCanSpawnDefaultAttachments {true};
+	
+	FORCEINLINE void TryForceNetUpdate() const;
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_HideAllAttachments(bool Hide);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetAllAttachmentsCollision(bool EnableCollision);
 };

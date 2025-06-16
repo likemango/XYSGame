@@ -24,6 +24,11 @@ USKGLightLaserComponent::USKGLightLaserComponent()
 	SetIsReplicatedByDefault(true);
 }
 
+USKGLightLaserComponent* USKGLightLaserComponent::GetLightLaserComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGLightLaserComponent>() : nullptr;
+}
+
 void USKGLightLaserComponent::InitializeLightLaserComponent()
 {
 	InitializeComponentFromData();

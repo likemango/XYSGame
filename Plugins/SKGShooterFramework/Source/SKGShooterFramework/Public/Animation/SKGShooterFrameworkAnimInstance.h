@@ -184,6 +184,7 @@ protected:
 	float DeadzonePitch {0.0f};
 
 	void HandleDeadzone(float DeltaSeconds);
+	void InterpDeadzoneBackToCenter(float DeltaSeconds);
 #pragma endregion Deadzone
 	
 #pragma region OffhandIK

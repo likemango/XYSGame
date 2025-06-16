@@ -17,45 +17,11 @@ class SKGSTOCK_API USKGStockComponent : public UActorComponent
 public:
 	// Sets default values for this component's properties
 	USKGStockComponent();
-
-protected:
-	// If true the stock can be folded/collapsed (think an underfolding AK or MCX)
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = CanBeFolded, Category = "SKGStock|Initialize")
-	bool bCanBeFolded {false};
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = CanBeFolded, Category = "SKGStock|Initialize")
-	bool bCanBeAffectedByOffset {true};
-	// The length of pull when the stock is unfolded/open
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetUnfoldedLengthOfPull, Category = "SKGStock|Initialize")
-	float UnfoldedLengthOfPull {0.0f};
-	// The length of pull when the stock is folded/collapsed
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetFoldedLengthOfPull, Category = "SKGStock|Initialize", meta = (EditCondition = "bCanBeFolded"))
-	float FoldedLengthOfPull {0.0f};
-	// Useful if your NetUpdateFrequency is set super low
-	UPROPERTY(EditDefaultsOnly, Category = "SKGStock|Initialize")
-	bool bAutoCallForceNetUpdate {true};
-
-	UPROPERTY(ReplicatedUsing = OnRep_IsFolded)
-	bool bIsFolded {false};
-	UFUNCTION()
-	void OnRep_IsFolded() const;
-
-	UPROPERTY(ReplicatedUsing = OnRep_IsFolded)
-	float LengthOfPull {0.0f};
-	UFUNCTION()
-	void OnRep_LengthOfPull() const;
-
-	float Offset {0.0f};
-	
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGStockComponent* GetStockComponent(const AActor* Actor);
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	FORCEINLINE void TryForceNetUpdate() const;
 
-	void SetLengthOfPull();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetFoldedState(bool bFold);
-	
-public:
 	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
 	/**
 	 * This is to be called server side and useful alongside an attachment system.
@@ -85,4 +51,39 @@ public:
 	FOnFolded OnFolded;
 	UPROPERTY(BlueprintAssignable, Category = "SKGStock|Events")
 	FOnLengthOfPullChanged OnLengthOfPullChanged;
+	
+protected:
+	// If true the stock can be folded/collapsed (think an underfolding AK or MCX)
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = CanBeFolded, Category = "SKGStock|Initialize")
+	bool bCanBeFolded {false};
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = CanBeFolded, Category = "SKGStock|Initialize")
+	bool bCanBeAffectedByOffset {true};
+	// The length of pull when the stock is unfolded/open
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetUnfoldedLengthOfPull, Category = "SKGStock|Initialize")
+	float UnfoldedLengthOfPull {0.0f};
+	// The length of pull when the stock is folded/collapsed
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetFoldedLengthOfPull, Category = "SKGStock|Initialize", meta = (EditCondition = "bCanBeFolded"))
+	float FoldedLengthOfPull {0.0f};
+	// Useful if your NetUpdateFrequency is set super low
+	UPROPERTY(EditDefaultsOnly, Category = "SKGStock|Initialize")
+	bool bAutoCallForceNetUpdate {true};
+
+	UPROPERTY(ReplicatedUsing = OnRep_IsFolded)
+	bool bIsFolded {false};
+	UFUNCTION()
+	void OnRep_IsFolded() const;
+
+	UPROPERTY(ReplicatedUsing = OnRep_IsFolded)
+	float LengthOfPull {0.0f};
+	UFUNCTION()
+	void OnRep_LengthOfPull() const;
+
+	float Offset {0.0f};
+	
+	FORCEINLINE void TryForceNetUpdate() const;
+
+	void SetLengthOfPull();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetFoldedState(bool bFold);
 };

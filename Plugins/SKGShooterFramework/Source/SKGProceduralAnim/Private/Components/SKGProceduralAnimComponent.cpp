@@ -29,6 +29,11 @@ USKGProceduralAnimComponent::USKGProceduralAnimComponent()
 	SetIsReplicatedByDefault(true);
 }
 
+USKGProceduralAnimComponent* USKGProceduralAnimComponent::GetProceduralAnimComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGProceduralAnimComponent>() : nullptr;
+}
+
 void USKGProceduralAnimComponent::InitializeProceduralAnimComponent()
 {
 	InitializeComponentFromData();
@@ -148,6 +153,15 @@ void USKGProceduralAnimComponent::GetLifetimeReplicatedProps(TArray<FLifetimePro
 	Params.bIsPushBased = true;
 
 	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, AimSocketIndex, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, AimingSettingsDataAsset, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, ProceduralOffsetsDataAsset, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, CycleAimingPointSettingsDataAsset, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, MovementSwaySettingsDataAsset, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, MovementLagSettingsDataAsset, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, RotationLagSettingsDataAsset, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, DeadzoneSettingsDataAsset, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, RecoilSettingsDataAsset, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGProceduralAnimComponent, PoseSettingsDataAssets, Params);
 }
 
 void USKGProceduralAnimComponent::SetupComponents()

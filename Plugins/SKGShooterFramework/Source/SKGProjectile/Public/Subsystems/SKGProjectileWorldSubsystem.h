@@ -86,19 +86,6 @@ public:
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(USKGProjectileWorldSubsystem, STATGROUP_Tickables); }
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	UPROPERTY()
-	TObjectPtr<UWorld> World;
-	UPROPERTY()
-	TArray<TObjectPtr<UWindDirectionalSourceComponent>> WindSources;
-	
-	// MAKE INLINE ON STACK LATER
-	TArray<FSKGProjectileData, TInlineAllocator<40>> Projectiles;
-	void PerformProjectileStep(FSKGProjectileData& Projectile, const FVector& Wind);
-	FVector GetWindSourceVelocity(const FSKGProjectileData& Projectile);
-	void RemoveProjectile(const int32 Index);
-
-public:
 	UFUNCTION(BlueprintCallable, Category = "SKGShooterWorldSubsystem|Projectile")
 	void SetWindSources(TArray<AWindDirectionalSource*> WindDirectionalSources);
 	// VisualComponentOverride will replace the ParticleData
@@ -119,4 +106,16 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "SKGShooterWorldSubsystem|Projectile")
 	bool GetProjectileByID(const int32 ID, FSKGProjectileData& ProjectileData) const;
+
+private:
+	UPROPERTY()
+	TObjectPtr<UWorld> World;
+	UPROPERTY()
+	TArray<TObjectPtr<UWindDirectionalSourceComponent>> WindSources;
+	
+	// MAKE INLINE ON STACK LATER
+	TArray<FSKGProjectileData, TInlineAllocator<40>> Projectiles;
+	void PerformProjectileStep(FSKGProjectileData& Projectile, const FVector& Wind);
+	FVector GetWindSourceVelocity(const FSKGProjectileData& Projectile);
+	void RemoveProjectile(const int32 Index);
 };

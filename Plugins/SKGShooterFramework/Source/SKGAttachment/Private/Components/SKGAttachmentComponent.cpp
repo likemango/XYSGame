@@ -27,6 +27,29 @@ USKGAttachmentComponent::USKGAttachmentComponent()
 	
 }
 
+#if WITH_EDITOR
+void USKGAttachmentComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (OffsetSettings.OffsetSnapDistance > 0.0f)
+	{
+		if (OffsetSettings.MinimumOffsetAllowed != 0.0f)
+		{
+			OffsetSettings.MinimumOffsetAllowed = FMath::RoundToInt(OffsetSettings.MinimumOffsetAllowed / OffsetSettings.OffsetSnapDistance) * OffsetSettings.OffsetSnapDistance;
+		}
+		if (OffsetSettings.MaximumOffsetAllowed != 0.0f)
+		{
+			OffsetSettings.MaximumOffsetAllowed = FMath::RoundToInt(OffsetSettings.MaximumOffsetAllowed / OffsetSettings.OffsetSnapDistance) * OffsetSettings.OffsetSnapDistance;
+		}
+		if (OffsetSettings.DefaultAttachmentOffset != 0.0f)
+		{
+			OffsetSettings.DefaultAttachmentOffset = FMath::Clamp(FMath::RoundToInt(OffsetSettings.DefaultAttachmentOffset / OffsetSettings.OffsetSnapDistance) * OffsetSettings.OffsetSnapDistance, OffsetSettings.MinimumOffsetAllowed, OffsetSettings.MaximumOffsetAllowed);
+		}
+	}
+}
+#endif
+
 void USKGAttachmentComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -70,29 +93,6 @@ void USKGAttachmentComponent::InitializeComponent()
 	Super::InitializeComponent();
 	SetupCompatibilityCache();
 }
-
-#if WITH_EDITOR
-void USKGAttachmentComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	if (OffsetSettings.OffsetSnapDistance > 0.0f)
-	{
-		if (OffsetSettings.MinimumOffsetAllowed != 0.0f)
-		{
-			OffsetSettings.MinimumOffsetAllowed = FMath::RoundToInt(OffsetSettings.MinimumOffsetAllowed / OffsetSettings.OffsetSnapDistance) * OffsetSettings.OffsetSnapDistance;
-		}
-		if (OffsetSettings.MaximumOffsetAllowed != 0.0f)
-		{
-			OffsetSettings.MaximumOffsetAllowed = FMath::RoundToInt(OffsetSettings.MaximumOffsetAllowed / OffsetSettings.OffsetSnapDistance) * OffsetSettings.OffsetSnapDistance;
-		}
-		if (OffsetSettings.DefaultAttachmentOffset != 0.0f)
-		{
-			OffsetSettings.DefaultAttachmentOffset = FMath::Clamp(FMath::RoundToInt(OffsetSettings.DefaultAttachmentOffset / OffsetSettings.OffsetSnapDistance) * OffsetSettings.OffsetSnapDistance, OffsetSettings.MinimumOffsetAllowed, OffsetSettings.MaximumOffsetAllowed);
-		}
-	}
-}
-#endif
 
 void USKGAttachmentComponent::SetupComponents()
 {
@@ -148,13 +148,23 @@ void USKGAttachmentComponent::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	Params.bIsPushBased = true;
 
 	DOREPLIFETIME_WITH_PARAMS_FAST(USKGAttachmentComponent, Attachment, Params);
-	DOREPLIFETIME_WITH_PARAMS_FAST(USKGAttachmentComponent, AttachmentOffset, Params);
 	DOREPLIFETIME_WITH_PARAMS_FAST(USKGAttachmentComponent, AttachToMesh, Params);
-	
 	DOREPLIFETIME_WITH_PARAMS_FAST(USKGAttachmentComponent, AttachToSocket, Params);
 	DOREPLIFETIME_WITH_PARAMS_FAST(USKGAttachmentComponent, ComponentName, Params);
 	DOREPLIFETIME_WITH_PARAMS_FAST(USKGAttachmentComponent, bUseLegacyAttachmentSystem, Params);
 	DOREPLIFETIME_WITH_PARAMS_FAST(USKGAttachmentComponent, SlotTag, Params);
+
+	FDoRepLifetimeParams ParamsCustom;
+	ParamsCustom.bIsPushBased = true;
+	ParamsCustom.Condition = COND_Custom;
+	
+	DOREPLIFETIME_WITH_PARAMS_FAST(USKGAttachmentComponent, AttachmentOffset, ParamsCustom);
+}
+
+void USKGAttachmentComponent::PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker)
+{
+	Super::PreReplication(ChangedPropertyTracker);
+	DOREPLIFETIME_ACTIVE_OVERRIDE(USKGAttachmentComponent, AttachmentOffset, OffsetSettings.bUseOffsetSystem);
 }
 
 void USKGAttachmentComponent::TryForceNetUpdate() const
@@ -552,7 +562,7 @@ bool USKGAttachmentComponent::IsAttachmentClassCompatible(const UClass* Attachme
 	}
 
 	// If not using legacy system, check with slot system
-	return IsAttachmentCompatibleWithSlotSystem(Cast<AActor>(AttachmentClass) != nullptr ? AttachmentClass : NewObject<UObject>(this, AttachmentClass));
+	return IsAttachmentCompatibleWithSlotSystem(Cast<UDataAsset>(AttachmentClass) != nullptr ? AttachmentClass : NewObject<UObject>(this, AttachmentClass));
 }
 
 bool USKGAttachmentComponent::IsAttachmentCompatible(const UObject* Object)
@@ -799,7 +809,7 @@ void USKGAttachmentComponent::OnRep_AttachmentOffset()
 
 void USKGAttachmentComponent::SetRelativeAttachmentOffset(AActor* AttachmentToSet)
 {
-	if (AttachmentToSet)
+	if (OffsetSettings.bUseOffsetSystem && AttachmentToSet)
 	{
 		FVector RelativeOffset = FVector(0.0f, AttachmentOffset, 0.0f);
 		switch (OffsetSettings.OffsetAxis)

@@ -64,56 +64,13 @@ class SKGMUZZLE_API USKGMuzzleComponent : public UActorComponent, public IGamepl
 public:
 	// Sets default values for this component's properties
 	USKGMuzzleComponent();
-	void InitializeMuzzleComponent();
-	
-	// if true, the component will auto initialize itself upon creation
-	UPROPERTY(EditDefaultsOnly, Category = "SKGMuzzle|Initialize")
-	bool bAutoInitialize {true};
-	// if true, this assumes you will set the MuzzleMeshComponentName in code before initialization
-	UPROPERTY(EditDefaultsOnly, Category = "SKGMuzzle|Initialize")
-	bool bOverrideComponentNames {false};
-	UPROPERTY(EditDefaultsOnly, Category = "SKGMuzzle|Initialize")
-	TObjectPtr<USKGPDAMuzzleInitialize> InitializationSettingsDataAsset;
-	UPROPERTY(EditDefaultsOnly, Category = "SKGMuzzle|Settings")
-	TObjectPtr<USKGPDAMuzzleSettings> MuzzleSettingsDataAsset;
-	
-	// The name of the mesh to be used for the muzzle (to gather the muzzle transform from)
-	FName MuzzleMeshComponentName {"StaticMesh"};
-	// The name of the socket on the MuzzleMeshComponentName mesh to be used to gather the muzzle transform from
-	FName MuzzleSocketName {"S_Muzzle"};
-
-protected:
-	/**
-	 * The tag for the muzzle. Firearms with barrels = MuzzleComponentType.Barrel, Barrels = MuzzleComponentType.Barrel, Muzzle Devices
-	 * like muzzle brakes = MuzzleComponentType.MuzzleDevice, Suppressors ontop of muzzle devices = MuzzleComponentType.Suppressor
-	 */
-	FGameplayTag MuzzleTag {SKGGAMEPLAYTAGS::MuzzleComponentBarrel};
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGMuzzle|Settings|Initialize")
-	FGameplayTagContainer GameplayTags;
-	// If true, the temperature system will be used (temperature accumulates with each shot and slowly cools)
-	bool bUseMuzzleTemperatureSystem {false};
-	// The max temperature the muzzle can get
-	float MaxMuzzleTemperatureFahrenheit {1200.0f};
-	// The normalize rate (used in the normalize calculation) to get a normalized temperature between 0 and 1 (changes scaling)
-	float MuzzleTemperatureNormalizeRate {600.0f};
-	// The amount the muzzle temperature increases per shot
-	float IncreaseMuzzleTemperatureAmountFahrenheit {10.0f};
-	// The amount the muzzle temperature decreases per tick
-	float DecreaseMuzzleTemperatureAmountPerTick {20.0f};
-
-	float CurrentMuzzleTemperature {0.0f};
-	bool bRegisteredToSubsystem {false};
-	
-	UPROPERTY()
-	TObjectPtr<UMeshComponent> MuzzleMesh;
-	
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGMuzzleComponent* GetMuzzleComponent(const AActor* Actor);
 	virtual void BeginPlay() override;
 	virtual void InitializeComponent() override;
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
-	void SetupComponents();
-	void CoolMuzzle(float DeltaTime);
-	
-public:
+	void InitializeMuzzleComponent();
+
 	void InitializeComponentFromData();
 	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
 	// Should only be used when manually setting the value for construction
@@ -163,4 +120,48 @@ public:
 	// This fires client side whenever the muzzle is completely cooled.
 	UPROPERTY(BlueprintAssignable, Category = "SKGMuzzle|Events")
 	FOnMuzzleCooled OnMuzzleCooled;
+	
+	// if true, the component will auto initialize itself upon creation
+	UPROPERTY(EditDefaultsOnly, Category = "SKGMuzzle|Initialize")
+	bool bAutoInitialize {true};
+	// if true, this assumes you will set the MuzzleMeshComponentName in code before initialization
+	UPROPERTY(EditDefaultsOnly, Category = "SKGMuzzle|Initialize")
+	bool bOverrideComponentNames {false};
+	UPROPERTY(EditDefaultsOnly, Category = "SKGMuzzle|Initialize")
+	TObjectPtr<USKGPDAMuzzleInitialize> InitializationSettingsDataAsset;
+	UPROPERTY(EditDefaultsOnly, Category = "SKGMuzzle|Settings")
+	TObjectPtr<USKGPDAMuzzleSettings> MuzzleSettingsDataAsset;
+	
+	// The name of the mesh to be used for the muzzle (to gather the muzzle transform from)
+	FName MuzzleMeshComponentName {"StaticMesh"};
+	// The name of the socket on the MuzzleMeshComponentName mesh to be used to gather the muzzle transform from
+	FName MuzzleSocketName {"S_Muzzle"};
+
+protected:
+	/**
+	 * The tag for the muzzle. Firearms with barrels = MuzzleComponentType.Barrel, Barrels = MuzzleComponentType.Barrel, Muzzle Devices
+	 * like muzzle brakes = MuzzleComponentType.MuzzleDevice, Suppressors ontop of muzzle devices = MuzzleComponentType.Suppressor
+	 */
+	FGameplayTag MuzzleTag {SKGGAMEPLAYTAGS::MuzzleComponentBarrel};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGMuzzle|Settings|Initialize")
+	FGameplayTagContainer GameplayTags;
+	// If true, the temperature system will be used (temperature accumulates with each shot and slowly cools)
+	bool bUseMuzzleTemperatureSystem {false};
+	// The max temperature the muzzle can get
+	float MaxMuzzleTemperatureFahrenheit {1200.0f};
+	// The normalize rate (used in the normalize calculation) to get a normalized temperature between 0 and 1 (changes scaling)
+	float MuzzleTemperatureNormalizeRate {600.0f};
+	// The amount the muzzle temperature increases per shot
+	float IncreaseMuzzleTemperatureAmountFahrenheit {10.0f};
+	// The amount the muzzle temperature decreases per tick
+	float DecreaseMuzzleTemperatureAmountPerTick {20.0f};
+
+	float CurrentMuzzleTemperature {0.0f};
+	bool bRegisteredToSubsystem {false};
+	
+	UPROPERTY()
+	TObjectPtr<UMeshComponent> MuzzleMesh;
+	
+	void SetupComponents();
+	void CoolMuzzle(float DeltaTime);
 };

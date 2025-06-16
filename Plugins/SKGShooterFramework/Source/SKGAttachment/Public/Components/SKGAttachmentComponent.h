@@ -20,6 +20,9 @@ USTRUCT(BlueprintType)
 struct FSKGAttachmentOffsetSettings
 {
 	GENERATED_BODY()
+	// If false, you cannot move attachments using this system (assumes feature is not needed or using your own)
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment")
+	bool bUseOffsetSystem {true};
 	// If false, FinalizeAttachmentOffset will need to be called in order to replicate from the client
 	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment")
 	bool bReplicateOffsetEachChange {false};
@@ -71,123 +74,16 @@ class SKGATTACHMENT_API USKGAttachmentComponent : public UActorComponent, public
 public:
 	// Sets default values for this component's properties
 	USKGAttachmentComponent();
-
-	// The name of the mesh for the spawned attachment to attach to
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Initialize")
-	FName AttachToMeshName {"StaticMesh"};
-	// The name of the socket on the AttachToMeshName mesh for the spawned attachment to attach to
-	UPROPERTY(EditDefaultsOnly, Replicated, BlueprintGetter = GetAttachToSocket, Category = "SKGAttachment|Initialize")
-	FName AttachToSocket {NAME_None};
-	// This is a general variable, useful for customization UI
-	UPROPERTY(EditDefaultsOnly, Replicated, BlueprintGetter = GetComponentName, Category = "SKGAttachment|Initialize")
-	FName ComponentName {NAME_None};
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetComponentImage, Category = "SKGAttachment|Initialize")
-	TObjectPtr<UTexture2D> ComponentImage;
-	// Useful if your NetUpdateFrequency is set super low
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Initialize")
-	bool bAutoCallForceNetUpdate {false};
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGAttachment|Initialize")
-	FGameplayTagContainer GameplayTags;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetIsRequiredToFunction, Category = "SKGAttachment|Attachment")
-	bool bIsRequiredToFunction {false};
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment")
-	bool bAutoSetLeaderPoseComponent {false};
-	/**
-	 *The name of the mesh of the child attachment to be attached, such as a "BackpackMesh" on a character, BackpackMesh would be the name
-	 * and attach to the character mesh
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment", meta = (EditCondition = "bAutoSetLeaderPoseComponent"))
-	FName LeaderPoseAttachmentMeshName {"SkeletalMesh"};
-	// If true, a random attachment from CompatibleAttachments will be used for the default attachment
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment")
-	bool bRandomDefaultAttachment {false};
-	// If set, the class here will be spawned upon construction of this component and spawned
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetDefaultAttachment, Category = "SKGAttachment|Attachment", meta = (EditCondition = "!bRandomDefaultAttachment"))
-	TSoftClassPtr<AActor> DefaultAttachment;
-
-	UPROPERTY(EditDefaultsOnly, Replicated, Category = "SKGAttachment|Attachment|Compatibility")
-	bool bUseLegacyAttachmentSystem {true};
-	// If empty, any attachment can be spawned and attached. If set, only attachments listed here can be attached
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment|Compatibility|Legacy", meta = (EditCondition = "bUseLegacyAttachmentSystem"))
-	TArray<TObjectPtr<USKGPDAAttachmentCompatibility>> CompatibleAttachments;
-	// If this SlotTag is empty, it is assumed you are intending to use the SlotCompatbilityOverride
-	UPROPERTY(EditDefaultsOnly, Replicated, Category = "SKGAttachment|Attachment|Compatibility|GameplayTag", meta = (EditCondition = "!bUseLegacyAttachmentSystem"))
-	FGameplayTag SlotTag;
-	UPROPERTY(EditDefaultsOnly, Replicated, Category = "SKGAttachment|Attachment|Compatibility|GameplayTag", meta = (EditCondition = "!bUseLegacyAttachmentSystem"))
-	FSKGAttachmentSlotCompatbility SlotCompatbilityOverride;
-	
-	// If true, clients can remove, destroy, and add attachments as long as they are the owner of the parent of this component
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment|Settings")
-	bool bAllowClientSideModification {true};
-	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetOffsetSettings, Category = "SKGAttachment|Attachment|Settings")
-	FSKGAttachmentOffsetSettings OffsetSettings;
-	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment|Settings")
-	FSKGAttachmentAttachRules AttachmentRules;
-
-protected:
-	UPROPERTY(Replicated, BlueprintReadOnly, Setter, Getter, Category = "SKGAttachment|Attachment")
-	TObjectPtr<UMeshComponent> AttachToMesh;
-
-	UPROPERTY(ReplicatedUsing = OnRep_Attachment, BlueprintGetter = GetAttachment, Category = "SKGAttachment|Attachment")
-	TObjectPtr<AActor> Attachment;
-	UFUNCTION()
-	void OnRep_Attachment(AActor* OldAttachment);
-
-	UPROPERTY(ReplicatedUsing = OnRep_AttachmentOffset, BlueprintGetter = GetAttachmentOffset, Category = "SKGAttachment|Attachment")
-	float AttachmentOffset {0.0f};
-	UFUNCTION()
-	void OnRep_AttachmentOffset();
-	float OldAttachmentOffset {0.0f};
-	
-	UPROPERTY()
-	TObjectPtr<USKGAttachmentManagerComponent> CachedAttachmentManager;
-	TArray<FSKGDAAttachment> CachedCompatibleAttachments; // This should never change so lets cache it
-
-	UPROPERTY()
-	TObjectPtr<AActor> PreviewAttachment;
-	
-	void SetupComponents();
-	void SetupCompatibilityCache();
-	USKGAttachmentManagerComponent* FindAttachmentManager() const;
-	
-	virtual void BeginPlay() override;
-	virtual void InitializeComponent() override;
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
+	virtual void BeginPlay() override;
+	virtual void InitializeComponent() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
-	FORCEINLINE void TryForceNetUpdate() const;
-	FORCEINLINE FVector GetAttachmentDirectionVector() const;
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_TrySetupAttachment(UClass* AttachmentClass);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_TrySetupAttachmentWithData(UClass* AttachmentClass, UDataAsset* DataAsset);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_TrySetupExistingAttachment(AActor* AttachmentToSetup, const bool bAttach);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_RemoveAttachment();
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_DestroyAttachment();
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_SetAttachmentOffset(const float Offset);
-
-	bool IsAttachmentCompatibleWithSlotSystem(const UObject* Object) const;
-	
-	USKGAttachmentManagerComponent* GetAttachmentManager();
-	void RegisterComponentWithManager(USKGAttachmentComponent* Component);
-	void UnregisterComponentWithManager(USKGAttachmentComponent* Component);
-	void RegisterAttachmentWithManager(AActor* AttachmentToRegister);
-	void UnregisterAttachmentWithManager(AActor* AttachmentToUnregister);
-	void SetupAttachment(AActor* AttachmentToSetup, const bool bAttach = true);
-	void AttachAttachment(AActor* AttachmentToSetup) const;
-	void SetupAttachmentWithLeaderPoseComponent(AActor* AttachmentToSetup) const;
-	virtual void SetRelativeAttachmentOffset(AActor* AttachmentToSet);
-
-public:
 	FORCEINLINE bool HasAuthority() const { return GetOwnerRole() == ROLE_Authority; }
 	// Should only be used when manually setting the value for construction
 	void SetAttachToMeshName(const FName& Name) { AttachToMeshName = Name; }
@@ -317,4 +213,111 @@ public:
 	FOnPreviewAttachmentAdded OnPreviewAttachmentAdded;
 	UPROPERTY(BlueprintAssignable, Category = "SKGAttachment|Events")
 	FOnPreviewAttachmentRemoved OnPreviewAttachmentRemoved;
+
+	// The name of the mesh for the spawned attachment to attach to
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Initialize")
+	FName AttachToMeshName {"StaticMesh"};
+	// The name of the socket on the AttachToMeshName mesh for the spawned attachment to attach to
+	UPROPERTY(EditDefaultsOnly, Replicated, BlueprintGetter = GetAttachToSocket, Category = "SKGAttachment|Initialize")
+	FName AttachToSocket {NAME_None};
+	// This is a general variable, useful for customization UI
+	UPROPERTY(EditDefaultsOnly, Replicated, BlueprintGetter = GetComponentName, Category = "SKGAttachment|Initialize")
+	FName ComponentName {NAME_None};
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetComponentImage, Category = "SKGAttachment|Initialize")
+	TObjectPtr<UTexture2D> ComponentImage;
+	// Useful if your NetUpdateFrequency is set super low
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Initialize")
+	bool bAutoCallForceNetUpdate {false};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGAttachment|Initialize")
+	FGameplayTagContainer GameplayTags;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetIsRequiredToFunction, Category = "SKGAttachment|Attachment")
+	bool bIsRequiredToFunction {false};
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment")
+	bool bAutoSetLeaderPoseComponent {false};
+	/**
+	 *The name of the mesh of the child attachment to be attached, such as a "BackpackMesh" on a character, BackpackMesh would be the name
+	 * and attach to the character mesh
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment", meta = (EditCondition = "bAutoSetLeaderPoseComponent"))
+	FName LeaderPoseAttachmentMeshName {"SkeletalMesh"};
+	// If true, a random attachment from CompatibleAttachments will be used for the default attachment
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment")
+	bool bRandomDefaultAttachment {false};
+	// If set, the class here will be spawned upon construction of this component and spawned
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetDefaultAttachment, Category = "SKGAttachment|Attachment", meta = (EditCondition = "!bRandomDefaultAttachment"))
+	TSoftClassPtr<AActor> DefaultAttachment;
+
+	UPROPERTY(EditDefaultsOnly, Replicated, Category = "SKGAttachment|Attachment|Compatibility")
+	bool bUseLegacyAttachmentSystem {true};
+	// If empty, any attachment can be spawned and attached. If set, only attachments listed here can be attached
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment|Compatibility|Legacy", meta = (EditCondition = "bUseLegacyAttachmentSystem"))
+	TArray<TObjectPtr<USKGPDAAttachmentCompatibility>> CompatibleAttachments;
+	// If this SlotTag is empty, it is assumed you are intending to use the SlotCompatbilityOverride
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "SKGAttachment|Attachment|Compatibility|GameplayTag", meta = (EditCondition = "!bUseLegacyAttachmentSystem"))
+	FGameplayTag SlotTag;
+	UPROPERTY(EditDefaultsOnly, Replicated, Category = "SKGAttachment|Attachment|Compatibility|GameplayTag", meta = (EditCondition = "!bUseLegacyAttachmentSystem"))
+	FSKGAttachmentSlotCompatbility SlotCompatbilityOverride;
+	
+	// If true, clients can remove, destroy, and add attachments as long as they are the owner of the parent of this component
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment|Settings")
+	bool bAllowClientSideModification {true};
+	UPROPERTY(EditDefaultsOnly, BlueprintGetter = GetOffsetSettings, Category = "SKGAttachment|Attachment|Settings")
+	FSKGAttachmentOffsetSettings OffsetSettings;
+	UPROPERTY(EditDefaultsOnly, Category = "SKGAttachment|Attachment|Settings")
+	FSKGAttachmentAttachRules AttachmentRules;
+
+protected:
+	UPROPERTY(Replicated, BlueprintReadOnly, Setter, Getter, Category = "SKGAttachment|Attachment")
+	TObjectPtr<UMeshComponent> AttachToMesh;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Attachment, BlueprintGetter = GetAttachment, Category = "SKGAttachment|Attachment")
+	TObjectPtr<AActor> Attachment;
+	UFUNCTION()
+	void OnRep_Attachment(AActor* OldAttachment);
+
+	UPROPERTY(ReplicatedUsing = OnRep_AttachmentOffset, BlueprintGetter = GetAttachmentOffset, Category = "SKGAttachment|Attachment")
+	float AttachmentOffset {0.0f};
+	UFUNCTION()
+	void OnRep_AttachmentOffset();
+	float OldAttachmentOffset {0.0f};
+	
+	UPROPERTY()
+	TObjectPtr<USKGAttachmentManagerComponent> CachedAttachmentManager;
+	TArray<FSKGDAAttachment> CachedCompatibleAttachments; // This should never change so lets cache it
+
+	UPROPERTY()
+	TObjectPtr<AActor> PreviewAttachment;
+	
+	void SetupComponents();
+	void SetupCompatibilityCache();
+	USKGAttachmentManagerComponent* FindAttachmentManager() const;
+	
+	FORCEINLINE void TryForceNetUpdate() const;
+	FORCEINLINE FVector GetAttachmentDirectionVector() const;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_TrySetupAttachment(UClass* AttachmentClass);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_TrySetupAttachmentWithData(UClass* AttachmentClass, UDataAsset* DataAsset);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_TrySetupExistingAttachment(AActor* AttachmentToSetup, const bool bAttach);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_RemoveAttachment();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_DestroyAttachment();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetAttachmentOffset(const float Offset);
+
+	bool IsAttachmentCompatibleWithSlotSystem(const UObject* Object) const;
+	
+	USKGAttachmentManagerComponent* GetAttachmentManager();
+	void RegisterComponentWithManager(USKGAttachmentComponent* Component);
+	void UnregisterComponentWithManager(USKGAttachmentComponent* Component);
+	void RegisterAttachmentWithManager(AActor* AttachmentToRegister);
+	void UnregisterAttachmentWithManager(AActor* AttachmentToUnregister);
+	void SetupAttachment(AActor* AttachmentToSetup, const bool bAttach = true);
+	void AttachAttachment(AActor* AttachmentToSetup) const;
+	void SetupAttachmentWithLeaderPoseComponent(AActor* AttachmentToSetup) const;
+	virtual void SetRelativeAttachmentOffset(AActor* AttachmentToSet);
 };

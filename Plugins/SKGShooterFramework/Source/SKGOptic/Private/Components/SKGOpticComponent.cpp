@@ -15,8 +15,12 @@ USKGOpticComponent::USKGOpticComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
-	bWantsInitializeComponent = true;
 	SetIsReplicatedByDefault(false);
+}
+
+USKGOpticComponent* USKGOpticComponent::GetOpticComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGOpticComponent>() : nullptr;
 }
 
 void USKGOpticComponent::BeginPlay()
@@ -27,12 +31,6 @@ void USKGOpticComponent::BeginPlay()
 	{
 		InitializeOpticComponent();
 	}
-}
-
-void USKGOpticComponent::InitializeComponent()
-{
-	Super::InitializeComponent();
-	
 }
 
 void USKGOpticComponent::InitializeOpticComponent()
@@ -46,6 +44,8 @@ void USKGOpticComponent::InitializeOpticComponent()
 	OpticZeroSettings.Initialize();
 	SetStartingZero();
 	UpdateOpticMaterialInstance();
+	
+	StopSceneCapture();
 }
 
 void USKGOpticComponent::TryForceNetUpdate() const

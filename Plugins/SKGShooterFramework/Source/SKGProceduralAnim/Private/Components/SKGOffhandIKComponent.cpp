@@ -21,6 +21,11 @@ USKGOffhandIKComponent::USKGOffhandIKComponent()
 	bWantsInitializeComponent = true;
 }
 
+USKGOffhandIKComponent* USKGOffhandIKComponent::GetOffhandIKComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGOffhandIKComponent>() : nullptr;
+}
+
 void USKGOffhandIKComponent::InitializeOffhandIKComponent()
 {
 	InitializeComponentFromData();
@@ -107,7 +112,14 @@ void USKGOffhandIKComponent::UpdateOffhandIK(UPrimitiveComponent* ComponentRelat
 {
 	if (OffhandIKMesh)
 	{
-		OffhandIKOffset = UKismetMathLibrary::MakeRelativeTransform(GetOffhandIKWorldTransform(bLeftHand), ComponentRelativeTo->GetComponentTransform());
+		if (ComponentRelativeTo)
+		{
+			OffhandIKOffset = UKismetMathLibrary::MakeRelativeTransform(GetOffhandIKWorldTransform(bLeftHand), ComponentRelativeTo->GetComponentTransform());
+		}
+		else
+		{
+			UpdateOffhandIK(OffhandIKMesh, true);
+		}
 	}
 	OffhandIKPose = bLeftHand ? LeftHandIKPose : RightHandIKPose;
 }

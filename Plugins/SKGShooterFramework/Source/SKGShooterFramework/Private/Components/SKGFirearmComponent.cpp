@@ -11,7 +11,6 @@
 #include "Components/SKGOpticComponent.h"
 #include "Components/SKGFirearmAttachmentStatComponent.h"
 #include "Components/SKGStockComponent.h"
-#include "Statics/SKGShooterFrameworkHelpers.h"
 #include "Subsystems/SKGProjectileWorldSubsystem.h"
 
 #include "GameFramework/Actor.h"
@@ -30,6 +29,32 @@ USKGFirearmComponent::USKGFirearmComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 	SetIsReplicatedByDefault(true);
+}
+
+USKGFirearmComponent* USKGFirearmComponent::GetFirearmComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGFirearmComponent>() : nullptr;
+}
+
+USKGFirearmComponent* USKGFirearmComponent::GetParentFirearmComponent(const AActor* Actor)
+{
+	if (Actor)
+	{
+		for (const AActor* ParentActor = Actor->GetOwner(); ParentActor; ParentActor = ParentActor->GetOwner())
+		{
+			if (USKGFirearmComponent* FirearmComponent = GetFirearmComponent(ParentActor))
+			{
+				return FirearmComponent;
+			}
+		}
+	}
+	return nullptr;
+}
+
+AActor* USKGFirearmComponent::GetParentWithFirearmComponent(const AActor* Actor)
+{
+	const USKGFirearmComponent* ParentFirearmComponent = GetParentFirearmComponent(Actor);
+	return ParentFirearmComponent ? ParentFirearmComponent->GetOwner() : nullptr;
 }
 
 void USKGFirearmComponent::InitializeFirearmComponent()
@@ -63,17 +88,31 @@ void USKGFirearmComponent::BeginPlay()
 }
 
 void USKGFirearmComponent::SetInitialProceduralData()
-{
+{	
 	if (FirearmProceduralAnimComponent)
 	{
+		// This is to recache procedural settings whenever the procedural anim component receives an update/change
+		FirearmProceduralAnimComponent->OnProceduralDataAssetsChanged.AddUniqueDynamic(this, &USKGFirearmComponent::SetInitialProceduralData);
 		ProceduralAnimData.BasePoseOffset = FirearmProceduralAnimComponent->GetBasePoseOffset();
 		ProceduralAnimData.ThirdPersonAimingOffset = FirearmProceduralAnimComponent->GetThirdPersonAimingOffset(true);
 		ProceduralAnimData.CycleAimingPointSettings = FirearmProceduralAnimComponent->GetCycleAimingPointSettings();
 		ProceduralAnimData.MovementSwaySettings = FirearmProceduralAnimComponent->GetMovementSwaySettings();
 		ProceduralAnimData.MovementLagSettings = FirearmProceduralAnimComponent->GetMovementLagSettings();
-		ProceduralAnimData.RotationLagSettings = FirearmProceduralAnimComponent->GetRotationSettings();
+		ProceduralAnimData.RotationLagSettings = FirearmProceduralAnimComponent->GetRotationLagSettings();
 		ProceduralAnimData.DeadzoneSettings = FirearmProceduralAnimComponent->GetDeadzoneSettings();
 		ProceduralAnimData.RecoilSettings = FirearmProceduralAnimComponent->GetRecoilSettings();
+
+		FSKGProceduralStats ProceduralStats;
+		ProceduralStats.AimInterpolationRate = FirearmProceduralAnimComponent->GetProceduralAimingSettings().DefaultAimingSpeed;
+		ProceduralStats.CycleAimingPointSpringInterpSettings = FirearmProceduralAnimComponent->GetCycleAimingPointSettings().SpringInterpSettings;
+		ProceduralStats.MovementLagSpringInterpSettings = FirearmProceduralAnimComponent->GetMovementLagSettings().SpringInterpSettings;
+		ProceduralStats.MovementLagInterpSetting = FirearmProceduralAnimComponent->GetMovementLagSettings().InterpSpeed;
+		ProceduralStats.RotationLagSpringInterpSettings = FirearmProceduralAnimComponent->GetRotationLagSettings().SpringInterpSettings;
+		ProceduralStats.RotationLagInterpSettings = FirearmProceduralAnimComponent->GetRotationLagSettings().InterpSettings;
+		ProceduralStats.ControlRotationRecoilMultipliers = FVector::OneVector;
+		ProceduralStats.RecoilLocationMultipliers = FVector::OneVector;
+		ProceduralStats.RecoilRotationMultipliers = FVector::OneVector;
+		ProceduralAnimData.ProceduralStats = ProceduralStats;
 	}
 
 	ProceduralAnimData.FirearmCollisionSettings.bUseFirearmCollision = FirearmCollisionSettings.bUseFirearmCollision;
@@ -136,8 +175,7 @@ void USKGFirearmComponent::SetupComponents()
 				{
 					FoundAttachmentManager->OnAttachmentComponentAttachmentAdded.AddDynamic(this, &USKGFirearmComponent::OnAttachmentAdded);
 					FoundAttachmentManager->OnAttachmentComponentAttachmentRemoved.AddDynamic(this, &USKGFirearmComponent::OnAttachmentRemoved);
-					TArray<FSKGAttachmentComponentItem> FoundAttachmentComponents = FoundAttachmentManager->GetAttachmentComponents();
-					for (const FSKGAttachmentComponentItem& AttachmentComponentItem : FoundAttachmentComponents)
+					for (const FSKGAttachmentComponentItem& AttachmentComponentItem : FoundAttachmentManager->GetAttachmentComponents())
 					{
 						OnAttachmentAdded(AttachmentComponentItem.AttachmentComponent->GetAttachment());
 					}
@@ -224,7 +262,7 @@ bool USKGFirearmComponent::SetOpticComponent()
 	bool bChanged = false;
 	if (CurrentProceduralAnimComponent)
 	{
-		USKGOpticComponent* NewOpticComponent = USKGShooterFrameworkHelpers::GetOpticComponent(CurrentProceduralAnimComponent->GetOwner());
+		USKGOpticComponent* NewOpticComponent = USKGOpticComponent::GetOpticComponent(CurrentProceduralAnimComponent->GetOwner());
 		if (NewOpticComponent != CurrentOpticComponent)
 		{
 			CurrentOpticComponent = NewOpticComponent;
@@ -253,15 +291,13 @@ void USKGFirearmComponent::CalculateProceduralValues_Implementation()
 		ProceduralStats.CycleAimingPointSpringInterpSettings = FirearmProceduralAnimComponent->GetCycleAimingPointSettings().SpringInterpSettings;
 		ProceduralStats.MovementLagSpringInterpSettings = FirearmProceduralAnimComponent->GetMovementLagSettings().SpringInterpSettings;
 		ProceduralStats.MovementLagInterpSetting = FirearmProceduralAnimComponent->GetMovementLagSettings().InterpSpeed;
-		ProceduralStats.RotationLagSpringInterpSettings = FirearmProceduralAnimComponent->GetRotationSettings().SpringInterpSettings;
-		ProceduralStats.RotationLagInterpSettings = FirearmProceduralAnimComponent->GetRotationSettings().InterpSettings;
-		
+		ProceduralStats.RotationLagSpringInterpSettings = FirearmProceduralAnimComponent->GetRotationLagSettings().SpringInterpSettings;
+		ProceduralStats.RotationLagInterpSettings = FirearmProceduralAnimComponent->GetRotationLagSettings().InterpSettings;
 		ProceduralStats.ControlRotationRecoilMultipliers = FVector::OneVector;
 		ProceduralStats.RecoilLocationMultipliers = FVector::OneVector;
 		ProceduralStats.RecoilRotationMultipliers = FVector::OneVector;
-		
-		ProceduralAnimData.ProceduralStats = ProceduralStats;
 
+		SetProceduralStats(ProceduralStats);
 		CalculateProceduralStats.Broadcast(ProceduralAnimData.ProceduralStats);
 	}
 }
@@ -615,7 +651,7 @@ TArray<USKGOpticComponent*> USKGFirearmComponent::GetMagnifiers()
 	TArray<USKGOpticComponent*> Magnifiers;
 	for (const USKGProceduralAnimComponent* ProceduralAnimComponent : ProceduralAnimComponents)
 	{
-		USKGOpticComponent* OpticComponent = ProceduralAnimComponent ? USKGShooterFrameworkHelpers::GetOpticComponent(ProceduralAnimComponent->GetOwner()) : nullptr;
+		USKGOpticComponent* OpticComponent = ProceduralAnimComponent ? USKGOpticComponent::GetOpticComponent(ProceduralAnimComponent->GetOwner()) : nullptr;
 		if (OpticComponent && OpticComponent->IsMagnifier())
 		{
 			Magnifiers.Add(OpticComponent);
@@ -635,7 +671,7 @@ FGameplayTag USKGFirearmComponent::GetProceduralGameplayTag() const
 
 FSKGProceduralAnimInstanceData& USKGFirearmComponent::GetProceduralData(bool bIsAiming, bool bOffhandIKIsLeftHand)
 {
-	SCOPE_CYCLE_COUNTER(STAT_SKGGetProceduralData);
+	SCOPED_NAMED_EVENT(USKGFirearmComponentGetProceduralData, FColor::Blue);
 	if (bIsInitialized)
 	{
 		if (bIsAiming)
@@ -749,7 +785,7 @@ void USKGFirearmComponent::ZeroOpticsForZeroAtLocation(const FVector& Location)
 		{
 			if (ProceduralAnimComponent)
 			{
-				if (USKGOpticComponent* OpticComponent = USKGShooterFrameworkHelpers::GetOpticComponent(ProceduralAnimComponent->GetOwner()))
+				if (USKGOpticComponent* OpticComponent = USKGOpticComponent::GetOpticComponent(ProceduralAnimComponent->GetOwner()))
 				{
 					FRotator LookAtRotation;
 					if (ProjectileWorldSubsystem->GetProjectileZeroAtLocation(LookAtRotation, Location, MuzzleTransform, ProceduralAnimComponent->GetAimWorldTransform()))

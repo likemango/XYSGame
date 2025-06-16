@@ -47,6 +47,11 @@ USKGOpticSceneCaptureComponent::USKGOpticSceneCaptureComponent()
 	PostProcessSettings.MotionBlurTargetFPS = 0.0f;
 }
 
+USKGOpticSceneCaptureComponent* USKGOpticSceneCaptureComponent::GetOpticSceneCaptureComponent(const AActor* Actor)
+{
+	return Actor ? Actor->FindComponentByClass<USKGOpticSceneCaptureComponent>() : nullptr;
+}
+
 void USKGOpticSceneCaptureComponent::BeginPlay()
 {
 	Super::BeginPlay();

@@ -51,10 +51,13 @@ void ASKGLightLaser::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (HasAuthority() && !bIsInitialized && DAConstruction)
+	if (!bIsInitialized && DAConstruction)
 	{
-		MARK_PROPERTY_DIRTY_FROM_NAME(ASKGLightLaser, DAConstruction, this);
 		OnRep_DAConstruction();
+	}
+
+	if (HasAuthority())
+	{
 		USKGShooterFrameworkActorConstructionHelpers::ConstructAttachment(DAConstruction->AttachmentData, MeshComponent);
 	}
 }

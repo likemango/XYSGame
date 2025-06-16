@@ -2,7 +2,6 @@
 
 #include "Animation/SKGShooterFrameworkAnimInstance.h"
 #include "Components/SKGShooterPawnComponent.h"
-#include "Statics/SKGShooterFrameworkHelpers.h"
 
 #include "KismetTraceUtils.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -31,7 +30,7 @@ void USKGShooterFrameworkAnimInstance::NativeBeginPlay()
 
 void USKGShooterFrameworkAnimInstance::SetupShooterPawnComponent()
 {
-	ShooterPawnComponent = USKGShooterFrameworkHelpers::GetShooterPawnComponent(GetOwningActor());
+	ShooterPawnComponent = USKGShooterPawnComponent::GetShooterPawnComponent(GetOwningActor());
 	if (ensureAlwaysMsgf(ShooterPawnComponent, TEXT("IF YOU SEE THIS MESSAGE, ENSURE YOU HAVE THE SHOOTER PAWN COMPONENT ON THE ACTOR YOU ARE USING THIS ANIM INSTANCE ON")))
 	{
 		ShooterPawnComponent->OnHeldActorSet.AddUniqueDynamic(this, &USKGShooterFrameworkAnimInstance::OnHeldActorSet);
@@ -48,6 +47,7 @@ void USKGShooterFrameworkAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 	SCOPE_CYCLE_COUNTER(STAT_SKGNativeUpdate);
+	SCOPED_NAMED_EVENT(SKGNativeUpdateAnimation, FColor::Blue);
 	
 	if (!ShooterPawnComponent)
 	{
@@ -88,7 +88,10 @@ void USKGShooterFrameworkAnimInstance::SetupMandatoryData()
 void USKGShooterFrameworkAnimInstance::SetupInitialData()
 {
 	SCOPE_CYCLE_COUNTER(STAT_SKGSetupInitialData);
-		
+	if (bIsLocallyControlled && ShooterPawnComponent->NeedsToContinuallyUpdateCameraOffset())
+	{
+		ShooterPawnComponent->SetCameraOffset();
+	}
 	SetCameraOffset(ShooterPawnComponent->GetCameraOffset());
 	OffhandIKLocation = ProceduralAnimData.OffhandIKOffset.GetTranslation();
 	OffhandIKRotation = ProceduralAnimData.OffhandIKOffset.Rotator();
@@ -314,6 +317,7 @@ void USKGShooterFrameworkAnimInstance::NativeThreadSafeUpdateAnimation(float Del
 {
 	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);
 	SCOPE_CYCLE_COUNTER(STAT_SKGNativeThreadSafeUpdate);
+	SCOPED_NAMED_EVENT(SKGNativeThreadSafeUpdateAnimation, FColor::Blue);
 
 	HandleProceduralSpine(DeltaSeconds);
 
@@ -338,6 +342,10 @@ void USKGShooterFrameworkAnimInstance::NativeThreadSafeUpdateAnimation(float Del
 			{
 				// Mouse input only handled locally, no need to waste resources running logic on other machines
 				HandleDeadzone(DeltaSeconds);
+				if (ProceduralAnimData.DeadzoneSettings.bAlwaysInterpolateBackToCenter)
+				{
+					InterpDeadzoneBackToCenter(DeltaSeconds);
+				}
 			}
 		}
 		
@@ -651,12 +659,30 @@ void USKGShooterFrameworkAnimInstance::HandleDeadzone(float DeltaSeconds)
 	DeadzoneHandRotation = UKismetMathLibrary::RInterpTo(DeadzoneHandRotation, TargetRotation, DeltaSeconds, TargetInterpSpeed);
 }
 
+void USKGShooterFrameworkAnimInstance::InterpDeadzoneBackToCenter(float DeltaSeconds)
+{
+	DeadzoneHandRotation = UKismetMathLibrary::RInterpTo(DeadzoneHandRotation, FRotator::ZeroRotator, DeltaSeconds, ProceduralAnimData.DeadzoneSettings.InterpolateBackToCenterSpeed);
+	DeadzoneYaw = FMath::FInterpTo(DeadzoneYaw, 0.0f, DeltaSeconds, ProceduralAnimData.DeadzoneSettings.InterpolateBackToCenterSpeed);
+	DeadzonePitch = FMath::FInterpTo(DeadzonePitch, 0.0f, DeltaSeconds, ProceduralAnimData.DeadzoneSettings.InterpolateBackToCenterSpeed);
+}
+
 void USKGShooterFrameworkAnimInstance::InterpRecoilToNone(float DeltaSeconds)
 {
 	RecoilLocation = FMath::VInterpTo(RecoilLocation, FVector::ZeroVector, DeltaSeconds, ProceduralAnimData.RecoilSettings.LocationInterpToNoneSpeed);
 	RecoilRotation = FMath::RInterpTo(RecoilRotation, FRotator::ZeroRotator, DeltaSeconds, ProceduralAnimData.RecoilSettings.RotationInterpToNoneSpeed);
-
-	if (RecoilLocation.Equals(FVector::ZeroVector) && RecoilRotation.Equals(FRotator::ZeroRotator))
+	float ControllerRoll = 0.0f;
+	if (bIsLocallyControlled)
+	{
+		float CurrentControllerRoll = 0.0f;
+		if (APawn* Pawn = TryGetPawnOwner())
+		{
+			CurrentControllerRoll = Pawn->GetControlRotation().Roll;
+		}
+		ControllerRoll = FMath::FInterpTo(CurrentControllerRoll, 0.0f, DeltaSeconds, ProceduralAnimData.RecoilSettings.RotationInterpToNoneSpeed);
+		ControlRotationRecoilTarget.Z = ControllerRoll;
+	}
+	
+	if (RecoilLocation.Equals(FVector::ZeroVector) && RecoilRotation.Equals(FRotator::ZeroRotator) && ControllerRoll == 0.0f)
 	{
 		bPerformingRecoil = false;
 	}
@@ -679,7 +705,12 @@ void USKGShooterFrameworkAnimInstance::HandleRecoil(float DeltaSeconds)
 				ControlRotationRecoilTargetRot = FRotator(ControlRotationRecoilTarget.X, ControlRotationRecoilTarget.Y, ControlRotationRecoilTarget.Z) * Delta;
 				AccumulatedControlRotationRecoil += ControlRotationRecoilTargetRot;
 				Pawn->AddControllerPitchInput(ControlRotationRecoilTargetRot.Pitch);
-				Pawn->AddControllerYawInput((ControlRotationRecoilTargetRot.Yaw));
+				Pawn->AddControllerYawInput(ControlRotationRecoilTargetRot.Yaw);
+				if (AController* PawnController = Pawn->GetController())
+				{
+					const FRotator CurrentControllerRotation = PawnController->GetControlRotation();
+					PawnController->SetControlRotation(FRotator(CurrentControllerRotation.Pitch, CurrentControllerRotation.Yaw, ControlRotationRecoilTargetRot.Roll));
+				}
 			}
 		}
 		

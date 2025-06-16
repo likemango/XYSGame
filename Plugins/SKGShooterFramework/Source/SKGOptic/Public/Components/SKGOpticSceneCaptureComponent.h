@@ -71,29 +71,12 @@ class SKGOPTIC_API USKGOpticSceneCaptureComponent : public USceneCaptureComponen
 public:
 	// Sets default values for this component's properties
 	USKGOpticSceneCaptureComponent();
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGOpticSceneCaptureComponent|Initialize")
-	FGameplayTagContainer GameplayTags;
-	UPROPERTY(EditDefaultsOnly, Category = "SKGOpticSceneCaptureComponent|Settings")
-	FSKGOpticSceneCaptureComponentSettings OpticSceneCaptureComponentSettings;
-
-protected:
-	FSKGOpticSceneCaptureComponentMagnificationSettings MagnificationSettings;
-	FSKGOpticReticle CurrentReticleMaterial;
-	FRotator DefaultRelativeRotation;
-	float CurrentMagnification {1.0f};
-	bool bShouldCapture {false};
-	bool bInterpolateMagnification {false};
-	float SmoothZoomTargetMagnification {1.0f};
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGOpticSceneCaptureComponent* GetOpticSceneCaptureComponent(const AActor* Actor);
 	
 	virtual void BeginPlay() override;
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = GameplayTags; }
-	void SetupSceneCaptureComponent();
 
-	// Returns true if Magnification equals target (used for smooth zoom, returns true otherwise)
-	bool SetNewMagnification(const float Magnification);
-
-public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void SetupReticleMaterial(FSKGOpticReticle& ReticleMaterial);
@@ -122,4 +105,23 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "SKGOptic|SceneCapture|Zero")
 	void ApplyLookAtRotationZero(FRotator LookAtRotation);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SKGOpticSceneCaptureComponent|Initialize")
+	FGameplayTagContainer GameplayTags;
+	UPROPERTY(EditDefaultsOnly, Category = "SKGOpticSceneCaptureComponent|Settings")
+	FSKGOpticSceneCaptureComponentSettings OpticSceneCaptureComponentSettings;
+
+protected:
+	FSKGOpticSceneCaptureComponentMagnificationSettings MagnificationSettings;
+	FSKGOpticReticle CurrentReticleMaterial;
+	FRotator DefaultRelativeRotation;
+	float CurrentMagnification {1.0f};
+	bool bShouldCapture {false};
+	bool bInterpolateMagnification {false};
+	float SmoothZoomTargetMagnification {1.0f};
+	
+	void SetupSceneCaptureComponent();
+
+	// Returns true if Magnification equals target (used for smooth zoom, returns true otherwise)
+	bool SetNewMagnification(const float Magnification);
 };

@@ -22,7 +22,8 @@ class SKGRANGEFINDER_API USKGRangeFinderComponent : public UActorComponent, publ
 public:
 	// Sets default values for this component's properties
 	USKGRangeFinderComponent();
-	
+	UFUNCTION(BlueprintPure, Category = "SKGShooterFrameworkStatics|Getters")
+	static USKGRangeFinderComponent* GetRangeFinderComponent(const AActor* Actor);
 	// The mesh used for the range finder
 	UPROPERTY(EditDefaultsOnly, Category = "SKGRangeFinder|Initialize")
 	FName RangeFinderMeshName {"StaticMesh"};

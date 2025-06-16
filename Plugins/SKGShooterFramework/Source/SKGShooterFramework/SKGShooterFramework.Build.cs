@@ -16,6 +16,7 @@ public class SKGShooterFramework : ModuleRules
 			{
 				"Core",
 				"GameplayTags",
+				"GameplayCameras",
 				"DeveloperSettings",
 				"SKGShooterFrameworkCore",
 				"SKGAttachment",

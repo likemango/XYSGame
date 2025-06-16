@@ -41,14 +41,18 @@ ASKGFirearm::ASKGFirearm()
 	ProceduralAnimComponent->bAutoInitialize = false;
 	ProceduralAnimComponent->bOverrideComponentNames = true;
 	ProceduralAnimComponent->ProceduralMeshName = FirearmMeshComponent->GetFName();
+
+	MuzzleComponent = CreateDefaultSubobject<USKGMuzzleComponent>(TEXT("MuzzleComponent"));
+	MuzzleComponent->bAutoInitialize = false;
+	MuzzleComponent->bOverrideComponentNames = true;
+	MuzzleComponent->MuzzleMeshComponentName = FirearmMeshComponent->GetFName();
 }
 
 void ASKGFirearm::BeginPlay()
 {
 	Super::BeginPlay();
-	if (HasAuthority() && !bIsInitialized && DAConstruction)
+	if (!bIsInitialized && DAConstruction)
 	{
-		MARK_PROPERTY_DIRTY_FROM_NAME(ASKGFirearm, DAConstruction, this);
 		OnRep_DAConstruction();
 	}
 }
@@ -97,6 +101,7 @@ void ASKGFirearm::OnRep_DAConstruction()
 		ProceduralAnimComponent->InitializationSettingsDataAsset = DAConstruction->ProceduralAnimInitializeSettings;
 		ProceduralAnimComponent->AimingSettingsDataAsset = DAConstruction->AimingSettings;
 		ProceduralAnimComponent->ProceduralOffsetsDataAsset = DAConstruction->ProceduralOffsetsSettings;
+		ProceduralAnimComponent->CycleAimingPointSettingsDataAsset = DAConstruction->CycleAimingPointSettings;
 		ProceduralAnimComponent->MovementSwaySettingsDataAsset = DAConstruction->MovementSwaySettings;
 		ProceduralAnimComponent->MovementLagSettingsDataAsset = DAConstruction->MovementLagSettings;
 		ProceduralAnimComponent->RotationLagSettingsDataAsset = DAConstruction->RotationLagSettings;
@@ -106,15 +111,9 @@ void ASKGFirearm::OnRep_DAConstruction()
 
 		FirearmComponent->FirearmCollisionSettingsDataAsset = DAConstruction->FirearmCollisionSettings;
 
-		if (DAConstruction->bHasMuzzle)
+		if (!DAConstruction->bHasMuzzle)
 		{
-			MuzzleComponent = NewObject<USKGMuzzleComponent>(this);
-			MuzzleComponent->bAutoInitialize = false;
-			MuzzleComponent->bOverrideComponentNames = true;
-			MuzzleComponent->MuzzleMeshComponentName = FirearmMeshComponent->GetFName();
-			MuzzleComponent->InitializationSettingsDataAsset = DAConstruction->MuzzleInitializeSettings;
-			MuzzleComponent->MuzzleSettingsDataAsset = DAConstruction->MuzzleSettings;
-			MuzzleComponent->RegisterComponent();
+			MuzzleComponent->DestroyComponent();
 		}
 		if (DAConstruction->bHasOffhandIKComponent)
 		{

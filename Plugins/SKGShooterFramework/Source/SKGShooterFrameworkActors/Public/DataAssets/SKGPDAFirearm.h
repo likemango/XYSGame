@@ -8,6 +8,7 @@
 #include "SKGPDAFirearm.generated.h"
 
 class USKGPDAProceduralOffsets;
+class USKGPDACycleAimingPointSettings;
 class USKGPDAProceduralAnimInitialize;
 class USKGPDAOffhandIKInitialize;
 class USKGPDAOffhandIKSettings;
@@ -42,6 +43,8 @@ public:
 	TObjectPtr<USKGPDAProceduralAnimInitialize> ProceduralAnimInitializeSettings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Settings|Procedural")
 	TObjectPtr<USKGPDAAimingSettings> AimingSettings;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Settings|Procedural")
+	TObjectPtr<USKGPDACycleAimingPointSettings> CycleAimingPointSettings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Settings|Procedural")
 	TObjectPtr<USKGPDAProceduralOffsets> ProceduralOffsetsSettings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Settings|Procedural")
