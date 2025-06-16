@@ -23,7 +23,8 @@ public class XYSGame : ModuleRules
 			"PhysicsCore", 
 			"ModularGameplay",
 			"SlateCore",
-			"Niagara"
+			"Niagara", 
+			"MotionCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

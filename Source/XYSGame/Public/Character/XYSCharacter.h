@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
+#include "MotionCore/Character/MotionCharacter.h"
 #include "XYSCharacter.generated.h"
 
 class UXYSHeroComponent;
@@ -17,7 +18,7 @@ class UXYSCameraComponent;
 class UCameraComponent;
 class UXYSCharacterMovementComponent;
 
-USTRUCT(BlueprintType)
+/*USTRUCT(BlueprintType)
 struct FCharacterGroundInfo
 {
 	GENERATED_BODY()
@@ -35,7 +36,7 @@ struct FCharacterGroundInfo
 
 	UPROPERTY(BlueprintReadOnly)
 	float GroundDistance;	
-};
+};*/
 
 /*
 *   The base character pawn class used by this project.
