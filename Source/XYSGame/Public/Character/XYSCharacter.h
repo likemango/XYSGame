@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
-#include "MotionCore/Character/MotionCharacter.h"
 #include "XYSCharacter.generated.h"
 
 class UXYSHeroComponent;
@@ -18,7 +17,7 @@ class UXYSCameraComponent;
 class UCameraComponent;
 class UXYSCharacterMovementComponent;
 
-/*USTRUCT(BlueprintType)
+USTRUCT(BlueprintType)
 struct FCharacterGroundInfo
 {
 	GENERATED_BODY()
@@ -36,7 +35,7 @@ struct FCharacterGroundInfo
 
 	UPROPERTY(BlueprintReadOnly)
 	float GroundDistance;	
-};*/
+};
 
 /*
 *   The base character pawn class used by this project.
@@ -89,8 +88,8 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYSComponents")
 	TObjectPtr<UXYSCharacterMovementComponent> XYSMovementComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYSComponents")
-	TObjectPtr<UXYSCameraComponent> XYSCameraComponent;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYSComponents")
+	// TObjectPtr<UXYSCameraComponent> XYSCameraComponent;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "XYSComponents")
 	FName CameraAttachSocket = FName(TEXT("S_Camera"));

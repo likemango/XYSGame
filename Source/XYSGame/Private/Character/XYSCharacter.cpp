@@ -43,9 +43,9 @@ AXYSCharacter::AXYSCharacter(const FObjectInitializer& ObjectInitializer)
 	HeroComponent = CreateDefaultSubobject<UXYSHeroComponent>(TEXT("HeroComponent"));
 	
 	bUseControllerRotationYaw = true;
-	XYSCameraComponent = CreateDefaultSubobject<UXYSCameraComponent>(TEXT("XYSCameraComponent"));
-	XYSCameraComponent->SetupAttachment(GetMesh(), CameraAttachSocket);
-	XYSCameraComponent->bUsePawnControlRotation = true;
+	// XYSCameraComponent = CreateDefaultSubobject<UXYSCameraComponent>(TEXT("XYSCameraComponent"));
+	// XYSCameraComponent->SetupAttachment(GetMesh(), CameraAttachSocket);
+	// XYSCameraComponent->bUsePawnControlRotation = true;
 }
 
 void AXYSCharacter::BeginPlay()
