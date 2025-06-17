@@ -6,6 +6,7 @@
 #include "CommonTabListWidgetBase.h"
 #include "FrontendCommonTabListWidget.generated.h"
 
+class UFrontendCommonButtonBase;
 /**
  * 
  */
@@ -17,5 +18,17 @@ class FRONTENDUI_API UFrontendCommonTabListWidget : public UCommonTabListWidgetB
 protected:
 	virtual void NativeOnInitialized() override;
 
+#if WITH_EDITOR
+	virtual void ValidateCompiledDefaults(class IWidgetCompilerLog& CompileLog) const override;
+#endif
+	
+private:
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FrontendTabListSettings", meta=(AllowPrivateAccess="true", ClampMin="1", ClampMax="10"))
+	int32 TabCount;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FrontendTabListSettings", meta=(AllowPrivateAccess="true"))
+	TSubclassOf<UFrontendCommonButtonBase> TabButtonEntryWidgetClass;
+#endif
 	
 };
+
