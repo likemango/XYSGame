@@ -15,6 +15,9 @@ class FRONTENDUI_API UFrontendCommonTabListWidget : public UCommonTabListWidgetB
 {
 	GENERATED_BODY()
 
+public:
+	void RequestRegisterTab(const FName& InTabID, const FText& InTabDisplayName);
+	
 protected:
 	virtual void NativeOnInitialized() override;
 
