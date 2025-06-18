@@ -6,6 +6,7 @@
 #include "Widgets/Widget_ActivatableBase.h"
 #include "Widget_OptionScreen.generated.h"
 
+class UFrontendCommonListView;
 class UFrontendCommonTabListWidget;
 class UOptionsDataRegistry;
 /**
@@ -27,7 +28,9 @@ protected:
 
 	/* Bound Widget */
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UFrontendCommonTabListWidget> TabListWidget_OptionTabs;
+	TObjectPtr<UFrontendCommonTabListWidget> TabListWidget_OptionsTabs;
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UFrontendCommonListView> CommonListView_OptionsList;
 	/* Bound Widget */
 	
 	void HandleResetAction();

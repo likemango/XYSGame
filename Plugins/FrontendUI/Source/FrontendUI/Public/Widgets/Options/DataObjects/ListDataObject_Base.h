@@ -13,13 +13,13 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class FRONTENDUI_API UListDataObject_Base : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	LIST_DATA_ACCESSOR(FName, DataID);
+	LIST_DATA_ACCESSOR(FName,DataID);
 	LIST_DATA_ACCESSOR(FText,DataDisplayName)
 	LIST_DATA_ACCESSOR(FText,DescriptionRichText)
 	LIST_DATA_ACCESSOR(FText,DisabledRichText)

@@ -42,7 +42,8 @@ public class FrontendUI : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"CommonInput"
+				"CommonInput",
+				"InputCore",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

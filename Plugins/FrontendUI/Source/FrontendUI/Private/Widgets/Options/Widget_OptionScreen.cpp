@@ -5,6 +5,7 @@
 
 #include "DebugHelper.h"
 #include "Input/CommonUIInputTypes.h"
+#include "Widgets/Components/FrontendCommonListView.h"
 #include "Widgets/Options/FrontendCommonTabListWidget.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
 #include "Widgets/Options/DataObjects/OptionsDataRegistry.h"
@@ -21,7 +22,7 @@ void UWidget_OptionScreen::NativeOnInitialized()
 	FBindUIActionArgs BindBackActionArgs(BackDataTableRowHandle, FSimpleDelegate::CreateUObject(this, &ThisClass::HandleBackAction));
 	BackActionBindHandle = RegisterUIActionBinding(BindBackActionArgs);
 
-	TabListWidget_OptionTabs->OnTabSelected.AddDynamic(this, &ThisClass::OnTabButtonSelectedCallback);
+	TabListWidget_OptionsTabs->OnTabSelected.AddDynamic(this, &ThisClass::OnTabButtonSelectedCallback);
 }
 
 void UWidget_OptionScreen::HandleResetAction()
@@ -44,10 +45,10 @@ void UWidget_OptionScreen::NativeOnActivated()
 			continue;
 		
 		const FName TabID = TabCollection->GetDataID();
-		if (TabListWidget_OptionTabs->GetTabButtonBaseByID(TabID))
+		if (TabListWidget_OptionsTabs->GetTabButtonBaseByID(TabID))
 			continue;
 
-		TabListWidget_OptionTabs->RequestRegisterTab(TabID, TabCollection->GetDataDisplayName());
+		TabListWidget_OptionsTabs->RequestRegisterTab(TabID, TabCollection->GetDataDisplayName());
 	}
 }
 
@@ -64,6 +65,14 @@ UOptionsDataRegistry* UWidget_OptionScreen::GetOrCreateOptionsDataRegistry()
 
 void UWidget_OptionScreen::OnTabButtonSelectedCallback(FName TabId)
 {
-	UCommonButtonBase* SelectedButton = TabListWidget_OptionTabs->GetTabButtonBaseByID(TabId);
-	DebugHelper::Print(TEXT("Button Selected: ") + TabId.ToString());
+	TArray<UListDataObject_Base*> FoundListSourceItems = GetOrCreateOptionsDataRegistry()->GetListSourceItemsBySelectedTabID(TabId);
+
+	CommonListView_OptionsList->SetListItems(FoundListSourceItems);
+	CommonListView_OptionsList->RequestRefresh();
+
+	if (CommonListView_OptionsList->GetNumItems() != 0)
+	{
+		CommonListView_OptionsList->NavigateToIndex(0);
+		CommonListView_OptionsList->SetSelectedIndex(0);
+	}
 }
