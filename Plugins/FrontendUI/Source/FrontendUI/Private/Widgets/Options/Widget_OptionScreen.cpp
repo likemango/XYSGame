@@ -20,6 +20,8 @@ void UWidget_OptionScreen::NativeOnInitialized()
 
 	FBindUIActionArgs BindBackActionArgs(BackDataTableRowHandle, FSimpleDelegate::CreateUObject(this, &ThisClass::HandleBackAction));
 	BackActionBindHandle = RegisterUIActionBinding(BindBackActionArgs);
+
+	TabListWidget_OptionTabs->OnTabSelected.AddDynamic(this, &ThisClass::OnTabButtonSelectedCallback);
 }
 
 void UWidget_OptionScreen::HandleResetAction()
@@ -58,4 +60,10 @@ UOptionsDataRegistry* UWidget_OptionScreen::GetOrCreateOptionsDataRegistry()
 	}
 	checkf(CreatedOptionDataRegistry,TEXT("Data registry for options screen is not valid"));
 	return CreatedOptionDataRegistry;
+}
+
+void UWidget_OptionScreen::OnTabButtonSelectedCallback(FName TabId)
+{
+	UCommonButtonBase* SelectedButton = TabListWidget_OptionTabs->GetTabButtonBaseByID(TabId);
+	DebugHelper::Print(TEXT("Button Selected: ") + TabId.ToString());
 }

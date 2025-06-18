@@ -34,6 +34,9 @@ protected:
 	void HandleBackAction();
 
 	UOptionsDataRegistry* GetOrCreateOptionsDataRegistry();
+
+	UFUNCTION()
+	void OnTabButtonSelectedCallback(FName TabId);
 	
 private:
 	FUIActionBindingHandle ResetActionBindHandle;
