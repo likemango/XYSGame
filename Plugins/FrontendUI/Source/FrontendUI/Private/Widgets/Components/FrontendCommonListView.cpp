@@ -14,9 +14,13 @@ UUserWidget& UFrontendCommonListView::OnGenerateEntryWidgetInternal(UObject* Ite
 	{
 		return Super::OnGenerateEntryWidgetInternal(Item, DesiredEntryClass, OwnerTable);
 	}
-	TSubclassOf<UWidget_ListEntry_Base> FoundWidgetClass = DataListMapping->FindEntryWidgetClassByDataObject(CastChecked<UListDataObject_Base>(Item));
-	
-	return GenerateTypedEntry<UWidget_ListEntry_Base>(FoundWidgetClass, OwnerTable);
+
+	if (TSubclassOf<UWidget_ListEntry_Base> FoundWidgetClass = DataListMapping->FindEntryWidgetClassByDataObject(CastChecked<UListDataObject_Base>(Item)))
+	{
+		return GenerateTypedEntry<UWidget_ListEntry_Base>(FoundWidgetClass, OwnerTable);
+	}
+
+	return Super::OnGenerateEntryWidgetInternal(Item, DesiredEntryClass, OwnerTable);
 }
 
 #if WITH_EDITOR
