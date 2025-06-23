@@ -7,6 +7,7 @@
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "Character/XYSCharacterMovementComponent.h"
 #include "Camera/XYSCameraComponent.h"
+#include "Character/XYSHealthComponent.h"
 #include "Character/XYSHeroComponent.h"
 #include "Character/XYSPawnExtensionComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -30,22 +31,35 @@ AXYSCharacter::AXYSCharacter(const FObjectInitializer& ObjectInitializer)
 	XYSMoveComp->BrakingDecelerationWalking = 1400.0f;
 	XYSMoveComp->bUseControllerDesiredRotation = false;
 	XYSMoveComp->bOrientRotationToMovement = false;
-	// XYSMoveComp->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
 	XYSMoveComp->bAllowPhysicsRotationDuringAnimRootMotion = false;
 	XYSMoveComp->GetNavAgentPropertiesRef().bCanCrouch = true;
 	XYSMoveComp->bCanWalkOffLedgesWhenCrouching = true;
-	// XYSMoveComp->SetCrouchedHalfHeight(65.0f);
+	XYSMoveComp->SetCrouchedHalfHeight(65.0f);
 
+	FPUpperMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPUpper"));
+	FPUpperMesh->SetupAttachment(GetRootComponent());
+	FPUpperMesh->bOnlyOwnerSee = true;
+	XYSCameraComponent = CreateDefaultSubobject<UXYSCameraComponent>(TEXT("XYSCamera"));
+	XYSCameraComponent->SetupAttachment(FPUpperMesh, CameraAttachSocket);
+	XYSCameraComponent->bUsePawnControlRotation = true;
+
+	FPLowerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPLower"));
+	FPLowerMesh->SetupAttachment(GetMesh());
+	FPLowerMesh->bOnlyOwnerSee = true;
+
+	GetMesh()->bOwnerNoSee = true;
+	
 	PawnExtComponent = CreateDefaultSubobject<UXYSPawnExtensionComponent>(TEXT("PawnExtComponent"));
-	// PawnExtComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
-	// PawnExtComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
+	PawnExtComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
+	PawnExtComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
 
 	HeroComponent = CreateDefaultSubobject<UXYSHeroComponent>(TEXT("HeroComponent"));
+	HealthComponent = CreateDefaultSubobject<UXYSHealthComponent>(TEXT("HealthComponent"));
+	HealthComponent->OnDeathStarted.AddDynamic(this, &ThisClass::OnDeathStarted);
+	HealthComponent->OnDeathFinished.AddDynamic(this, &ThisClass::OnDeathFinished);
 	
 	bUseControllerRotationYaw = true;
-	// XYSCameraComponent = CreateDefaultSubobject<UXYSCameraComponent>(TEXT("XYSCameraComponent"));
-	// XYSCameraComponent->SetupAttachment(GetMesh(), CameraAttachSocket);
-	// XYSCameraComponent->bUsePawnControlRotation = true;
+	
 }
 
 void AXYSCharacter::BeginPlay()
@@ -127,34 +141,6 @@ void AXYSCharacter::Input_Look(const FInputActionValue& InputActionValue)
 	}
 }
 
-// void AXYSCharacter::Input_Crouch(const FInputActionValue& InputActionValue)
-// {
-// 	if (!Controller || !XYSMovementComponent) return;
-//
-// 	if (XYSMovementComponent->bWantsToCrouch || bIsCrouched)
-// 	{
-// 		UnCrouch();
-// 	}
-// 	else if (XYSMovementComponent->IsMovingOnGround())
-// 	{
-// 		Crouch();
-// 	}
-// }
-
-// void AXYSCharacter::Input_Jump(const FInputActionValue& InputActionValue)
-// {
-// 	if (!Controller) return;
-//
-// 	if (XYSMovementComponent->bWantsToCrouch || bIsCrouched)
-// 	{
-// 		UnCrouch();
-// 	}
-// 	else if (CanJump())
-// 	{
-// 		Jump();
-// 	}
-// }
-
 void AXYSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -231,4 +217,71 @@ void AXYSCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	PawnExtComponent->HandlePlayerStateReplicated();
+}
+
+void AXYSCharacter::OnAbilitySystemInitialized()
+{
+	UXYSAbilitySystemComponent* XYSASC = GetXYSAbilitySystemComponent();
+	check(XYSASC);
+
+	HealthComponent->InitializeWithAbilitySystem(XYSASC);
+}
+
+void AXYSCharacter::OnAbilitySystemUninitialized()
+{
+	HealthComponent->UninitializeFromAbilitySystem();
+}
+
+void AXYSCharacter::OnDeathStarted(AActor* OwningActor)
+{
+	DisableMovementAndCollision();
+}
+
+void AXYSCharacter::OnDeathFinished(AActor* OwningActor)
+{
+	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::DestroyDueToDeath);
+}
+
+void AXYSCharacter::DisableMovementAndCollision()
+{
+	if (GetController())
+	{
+		GetController()->SetIgnoreMoveInput(true);
+	}
+
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	check(CapsuleComp);
+	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+
+	UXYSCharacterMovementComponent* XYSMoveComp = CastChecked<UXYSCharacterMovementComponent>(GetCharacterMovement());
+	XYSMoveComp->StopMovementImmediately();
+	XYSMoveComp->DisableMovement();
+}
+
+void AXYSCharacter::DestroyDueToDeath()
+{
+	K2_OnDeathFinished();
+
+	UninitAndDestroy();
+}
+
+void AXYSCharacter::UninitAndDestroy()
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		DetachFromControllerPendingDestroy();
+		SetLifeSpan(0.1f);
+	}
+
+	// Uninitialize the ASC if we're still the avatar actor (otherwise another pawn already did it when they became the avatar actor)
+	if (UXYSAbilitySystemComponent* XYSASC = GetXYSAbilitySystemComponent())
+	{
+		if (XYSASC->GetAvatarActor() == this)
+		{
+			PawnExtComponent->UninitializeAbilitySystem();
+		}
+	}
+
+	SetActorHiddenInGame(true);
 }

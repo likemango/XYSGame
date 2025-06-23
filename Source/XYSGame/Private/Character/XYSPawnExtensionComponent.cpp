@@ -129,6 +129,11 @@ void UXYSPawnExtensionComponent::HandleChangeInitState(UGameFrameworkComponentMa
 	{
 		// This is currently all handled by other components listening to this state change
 	}
+	if (DesiredState == XYSGameplayTags::InitState_GameplayReady)
+	{
+		UE_LOG(LogXYSAbilitySystem, Warning, TEXT("Extension is under InitState_GameplayReady"))
+		OnPawnExtensionReady.Broadcast();
+	}
 }
 
 void UXYSPawnExtensionComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)

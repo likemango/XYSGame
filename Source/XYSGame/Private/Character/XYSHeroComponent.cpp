@@ -175,6 +175,7 @@ void UXYSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Ma
 			// 初始化ASC, InitAbilityActorInfo
 			PawnExtensionComponent->InitializeAbilitySystem(XYSPS->GetXYSAbilitySystemComponent(), XYSPS);
 			PawnData = PawnExtensionComponent->GetPawnData<UXYSPawnData>();
+			UE_LOG(LogXYSAbilitySystem, Warning, TEXT("XYS AbilitySystem is initialized!!!"))
 		}
 		
 		// 为pawn绑定相机模式变化的委托，方便后续更改相机模式

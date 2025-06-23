@@ -3,10 +3,28 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "XYSEquipmentDefinition.h"
 #include "UObject/Object.h"
 #include "XYSEquipmentInstance.generated.h"
 
+struct FXYSAttachData;
 struct FXYSEquipmentActorToSpawn;
+
+USTRUCT()
+struct FXYSSpawnedActorAttachData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TObjectPtr<AActor> SpawnedActor{};
+
+	UPROPERTY()
+	FXYSAttachData FPAttachData{};
+
+	UPROPERTY()
+	FXYSAttachData TPAttachData{};
+};
+
 /**
  *
  * A piece of equipment spawned and applied to a pawn
@@ -35,13 +53,16 @@ public:
 	APawn* GetTypedPawn(TSubclassOf<APawn> PawnType) const;
 
 	UFUNCTION(BlueprintPure, Category=Equipment)
-	TArray<AActor*> GetSpawnedActors() const { return SpawnedActors; }
+	TArray<AActor*> GetSpawnedActors() const;
 
 	virtual void SpawnEquipmentActors(const TArray<FXYSEquipmentActorToSpawn>& ActorsToSpawn);
 	virtual void DestroyEquipmentActors();
 
 	virtual void OnEquipped();
 	virtual void OnUnequipped();
+
+	// UFUNCTION(Client, Reliable)
+	// void ClientAttachActorToMesh(AActor* ActorToAttach, const FXYSAttachData& AttachData);
 
 protected:
 #if UE_WITH_IRIS
@@ -58,11 +79,13 @@ protected:
 private:
 	UFUNCTION()
 	void OnRep_Instigator();
+	UFUNCTION()
+	void OnRep_SpawnedActorsAttachData();
 
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Instigator)
 	TObjectPtr<UObject> Instigator;
 
-	UPROPERTY(Replicated)
-	TArray<TObjectPtr<AActor>> SpawnedActors;
+	UPROPERTY(ReplicatedUsing=OnRep_SpawnedActorsAttachData)
+	TArray<FXYSSpawnedActorAttachData> SpawnedActorsAttachData;
 };

@@ -10,6 +10,18 @@ class UXYSAbilitySet;
 class UXYSEquipmentInstance;
 
 USTRUCT()
+struct FXYSAttachData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	FName AttachSocket{};
+
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	FTransform RelativeTransform{};
+};
+
+USTRUCT()
 struct FXYSEquipmentActorToSpawn
 {
 	GENERATED_BODY()
@@ -19,12 +31,12 @@ struct FXYSEquipmentActorToSpawn
 
 	UPROPERTY(EditAnywhere, Category=Equipment)
 	TSubclassOf<AActor> ActorToSpawn;
+	
+	UPROPERTY(EditAnywhere, Category=Equipment)
+	FXYSAttachData FPAttachData{};
 
 	UPROPERTY(EditAnywhere, Category=Equipment)
-	FName AttachSocket;
-
-	UPROPERTY(EditAnywhere, Category=Equipment)
-	FTransform AttachTransform;
+	FXYSAttachData TPAttachData{};
 };
 
 /**

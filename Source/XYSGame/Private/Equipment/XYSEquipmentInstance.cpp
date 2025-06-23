@@ -12,6 +12,8 @@
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #endif // UE_WITH_IRIS
 
+#include "Character/XYSCharacter.h"
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(XYSEquipmentInstance)
 
 class FLifetimeProperty;
@@ -40,7 +42,7 @@ void UXYSEquipmentInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ThisClass, Instigator);
-	DOREPLIFETIME(ThisClass, SpawnedActors);
+	DOREPLIFETIME(ThisClass, SpawnedActorsAttachData);
 }
 
 #if UE_WITH_IRIS
@@ -71,37 +73,50 @@ APawn* UXYSEquipmentInstance::GetTypedPawn(TSubclassOf<APawn> PawnType) const
 	return Result;
 }
 
+TArray<AActor*> UXYSEquipmentInstance::GetSpawnedActors() const
+{
+	TArray<AActor*> Result;
+
+	for (const FXYSSpawnedActorAttachData& SpawnedActorAttachData : SpawnedActorsAttachData)
+	{
+		if (SpawnedActorAttachData.SpawnedActor)
+		{
+			Result.Add(SpawnedActorAttachData.SpawnedActor);
+		}
+	}
+	return Result;
+}
+
 void UXYSEquipmentInstance::SpawnEquipmentActors(const TArray<FXYSEquipmentActorToSpawn>& ActorsToSpawn)
 {
 	if (APawn* OwningPawn = GetPawn())
 	{
-		USceneComponent* AttachTarget = OwningPawn->GetRootComponent();
-		if (ACharacter* Char = Cast<ACharacter>(OwningPawn))
-		{
-			AttachTarget = Char->GetMesh();
-		}
-
 		for (const FXYSEquipmentActorToSpawn& SpawnInfo : ActorsToSpawn)
 		{
 			AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(SpawnInfo.ActorToSpawn, FTransform::Identity, OwningPawn);
 			NewActor->FinishSpawning(FTransform::Identity, /*bIsDefaultTransform=*/ true);
-			NewActor->SetActorRelativeTransform(SpawnInfo.AttachTransform);
-			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform, SpawnInfo.AttachSocket);
 
-			SpawnedActors.Add(NewActor);
+			FXYSSpawnedActorAttachData SpawnedActorToAttach;
+			SpawnedActorToAttach.SpawnedActor = NewActor;
+			SpawnedActorToAttach.FPAttachData = SpawnInfo.FPAttachData;
+			SpawnedActorToAttach.TPAttachData = SpawnInfo.TPAttachData;
+			
+			SpawnedActorsAttachData.Add(SpawnedActorToAttach);
+			OnRep_SpawnedActorsAttachData();
 		}
 	}
 }
 
 void UXYSEquipmentInstance::DestroyEquipmentActors()
 {
-	for (AActor* Actor : SpawnedActors)
+	for (AActor* Actor : GetSpawnedActors())
 	{
 		if (Actor)
 		{
 			Actor->Destroy();
 		}
 	}
+	SpawnedActorsAttachData.Reset();
 }
 
 void UXYSEquipmentInstance::OnEquipped()
@@ -114,7 +129,45 @@ void UXYSEquipmentInstance::OnUnequipped()
 	K2_OnUnequipped();
 }
 
+// void UXYSEquipmentInstance::ClientAttachActorToMesh_Implementation(AActor* ActorToAttach, const FXYSAttachData& AttachData)
+// {
+// 	if (APawn* OwningPawn = GetPawn())
+// 	{
+// 		if (AXYSCharacter* Char = Cast<AXYSCharacter>(OwningPawn))
+// 		{
+// 			USceneComponent* AttachTargetFP = Char->GetFPUpperMesh();
+// 			ActorToAttach->SetActorRelativeTransform(AttachData.FPRelativeAttachTransform);
+// 			ActorToAttach->AttachToComponent(AttachTargetFP, FAttachmentTransformRules(AttachData.FPAttachmentRule, false), AttachData.FPAttachSocket);
+// 		}
+// 	}
+// }
+
 void UXYSEquipmentInstance::OnRep_Instigator()
 {
+}
+
+void UXYSEquipmentInstance::OnRep_SpawnedActorsAttachData()
+{
+	if (AXYSCharacter* Character = Cast<AXYSCharacter>(GetTypedPawn(AXYSCharacter::StaticClass())))
+	{
+		for (const FXYSSpawnedActorAttachData& SpawnedActorAttachData : SpawnedActorsAttachData)
+		{
+			if (!SpawnedActorAttachData.SpawnedActor)
+				continue;
+			
+			if (Character->IsLocallyControlled())
+			{
+				USceneComponent* AttachTargetFP = Character->GetFPUpperMesh();
+				SpawnedActorAttachData.SpawnedActor->SetActorRelativeTransform(SpawnedActorAttachData.FPAttachData.RelativeTransform);
+				SpawnedActorAttachData.SpawnedActor->AttachToComponent(AttachTargetFP, FAttachmentTransformRules::KeepRelativeTransform, SpawnedActorAttachData.FPAttachData.AttachSocket);
+			}
+			else
+			{
+				USceneComponent* AttachTargetTP = Character->GetTPMesh();
+				SpawnedActorAttachData.SpawnedActor->SetActorRelativeTransform(SpawnedActorAttachData.TPAttachData.RelativeTransform);
+				SpawnedActorAttachData.SpawnedActor->AttachToComponent(AttachTargetTP, FAttachmentTransformRules::KeepRelativeTransform, SpawnedActorAttachData.TPAttachData.AttachSocket);
+			}
+		}
+	}
 }
 

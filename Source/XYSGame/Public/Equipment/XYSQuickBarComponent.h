@@ -49,8 +49,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	UXYSInventoryItemInstance* RemoveItemFromSlot(int32 SlotIndex);
 
-	virtual void BeginPlay() override;
-
 private:
 	void UnequipItemInSlot();
 	void EquipItemInSlot();
@@ -58,8 +56,8 @@ private:
 	UXYSEquipmentComponent* FindEquipmentManager() const;
 
 protected:
-	UPROPERTY()
-	int32 NumSlots = 3;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 NumSlots = 4;
 
 	UFUNCTION()
 	void OnRep_Slots() const;

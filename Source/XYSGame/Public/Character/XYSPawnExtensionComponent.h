@@ -8,6 +8,8 @@
 #include "Character/XYSPawnData.h"
 #include "XYSPawnExtensionComponent.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnPawnExtensionReadyDelegate);
+
 class UXYSAbilitySystemComponent;
 /**
  * Component that adds functionality to all Pawn classes so it can be used for characters/vehicles/etc.
@@ -70,6 +72,8 @@ public:
 
 	/** Register with the OnAbilitySystemUninitialized delegate fired when our pawn is removed as the ability system's avatar actor */
 	void OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate Delegate);
+
+	FOnPawnExtensionReadyDelegate OnPawnExtensionReady;
 
 protected:
 	virtual void OnRegister() override;

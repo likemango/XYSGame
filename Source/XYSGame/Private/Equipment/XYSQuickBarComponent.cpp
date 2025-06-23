@@ -19,6 +19,11 @@ UXYSQuickBarComponent::UXYSQuickBarComponent(const FObjectInitializer& ObjectIni
 	: Super(ObjectInitializer)
 {
 	SetIsReplicatedByDefault(true);
+
+	if (Slots.Num() < NumSlots)
+	{
+		Slots.AddDefaulted(NumSlots - Slots.Num());
+	}
 }
 
 void UXYSQuickBarComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
@@ -27,16 +32,6 @@ void UXYSQuickBarComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty
 
 	DOREPLIFETIME(ThisClass, Slots);
 	DOREPLIFETIME(ThisClass, ActiveSlotIndex);
-}
-
-void UXYSQuickBarComponent::BeginPlay()
-{
-	if (Slots.Num() < NumSlots)
-	{
-		Slots.AddDefaulted(NumSlots - Slots.Num());
-	}
-
-	Super::BeginPlay();
 }
 
 void UXYSQuickBarComponent::CycleActiveSlotForward()
