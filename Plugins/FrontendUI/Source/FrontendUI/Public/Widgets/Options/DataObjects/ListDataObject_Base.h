@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FrontendTypes.h"
 #include "UObject/Object.h"
 #include "ListDataObject_Base.generated.h"
 
@@ -19,6 +20,9 @@ class FRONTENDUI_API UListDataObject_Base : public UObject
 	GENERATED_BODY()
 
 public:
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnListDataModifiedDelegate,UListDataObject_Base*,EOptionsListDataModifyReason)
+	FOnListDataModifiedDelegate OnListDataModified;
+	
 	LIST_DATA_ACCESSOR(FName,DataID);
 	LIST_DATA_ACCESSOR(FText,DataDisplayName)
 	LIST_DATA_ACCESSOR(FText,DescriptionRichText)
@@ -31,7 +35,8 @@ public:
 	//Empty in the base class. Child class ListDataObject_Collection should override it. The function should return all the child data a tab hasAdd commentMore actions
 	virtual TArray<UListDataObject_Base*> GetAllChildListData() const { return TArray<UListDataObject_Base*>();}
 	virtual bool HasAnyChildListData() const { return false;}
-
+	virtual void NotifyListDataModified(UListDataObject_Base* ModifiedData,EOptionsListDataModifyReason ModifyReason = EOptionsListDataModifyReason::DirectlyModified);
+	
 protected:
 	//Empty in base class. The child classes should override it to handle the initialization needed accrodingly
 	virtual void OnDataObjectInitialized();

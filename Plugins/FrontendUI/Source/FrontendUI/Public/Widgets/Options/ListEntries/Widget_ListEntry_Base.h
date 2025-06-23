@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
+#include "FrontendTypes.h"
 #include "Blueprint/IUserObjectListEntry.h"
 #include "Widget_ListEntry_Base.generated.h"
 
@@ -24,7 +25,8 @@ protected:
 
 	// The child class should override this function to handle the initialization, supper should be called
 	virtual void OnOwningListDataObjectSet(UListDataObject_Base* InOwningDataObject);
-
+	//The child class should override this function to update the UI values after the data object has been modified. Super call is not neededAdd commentMore actions
+	virtual void OnOwningListDataObjectModified(UListDataObject_Base* OwningModifiedData, EOptionsListDataModifyReason ModifyReason);
 private:
 	//***** Bound Widgets ***** //Add commentMore actions
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional,AllowPrivateAccess = "true"))
