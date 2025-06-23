@@ -10,6 +10,7 @@
 #include "Widgets/Options/FrontendCommonTabListWidget.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
 #include "Widgets/Options/DataObjects/OptionsDataRegistry.h"
+#include "Widgets/Options/ListEntries/Widget_ListEntry_Base.h"
 
 void UWidget_OptionScreen::NativeOnInitialized()
 {
@@ -23,7 +24,9 @@ void UWidget_OptionScreen::NativeOnInitialized()
 	FBindUIActionArgs BindBackActionArgs(BackDataTableRowHandle, FSimpleDelegate::CreateUObject(this, &ThisClass::HandleBackAction));
 	BackActionBindHandle = RegisterUIActionBinding(BindBackActionArgs);
 
-	TabListWidget_OptionsTabs->OnTabSelected.AddDynamic(this, &ThisClass::OnTabButtonSelectedCallback);
+	TabListWidget_OptionsTabs->OnTabSelected.AddDynamic(this, &ThisClass::OnTabButtonSelected);
+	CommonListView_OptionsList->OnItemIsHoveredChanged().AddUObject(this,&ThisClass::OnListViewItemHovered);
+	CommonListView_OptionsList->OnItemSelectionChanged().AddUObject(this,&ThisClass::OnListViewItemSelected);
 }
 
 void UWidget_OptionScreen::HandleResetAction()
@@ -71,7 +74,7 @@ UOptionsDataRegistry* UWidget_OptionScreen::GetOrCreateOptionsDataRegistry()
 	return CreatedOptionDataRegistry;
 }
 
-void UWidget_OptionScreen::OnTabButtonSelectedCallback(FName TabId)
+void UWidget_OptionScreen::OnTabButtonSelected(FName TabId)
 {
 	TArray<UListDataObject_Base*> FoundListSourceItems = GetOrCreateOptionsDataRegistry()->GetListSourceItemsBySelectedTabID(TabId);
 
@@ -83,4 +86,17 @@ void UWidget_OptionScreen::OnTabButtonSelectedCallback(FName TabId)
 		CommonListView_OptionsList->NavigateToIndex(0);
 		CommonListView_OptionsList->SetSelectedIndex(0);
 	}
+}
+
+void UWidget_OptionScreen::OnListViewItemHovered(UObject* InHoveredItem, bool bWasHovered)
+{
+	UWidget_ListEntry_Base* HoveredEntryWidget = CommonListView_OptionsList->GetEntryWidgetFromItem<UWidget_ListEntry_Base>(InHoveredItem);
+
+	check(HoveredEntryWidget);
+
+	HoveredEntryWidget->NativeOnListEntryWidgetHovered(bWasHovered);
+}
+
+void UWidget_OptionScreen::OnListViewItemSelected(UObject* InSelectedItem)
+{
 }

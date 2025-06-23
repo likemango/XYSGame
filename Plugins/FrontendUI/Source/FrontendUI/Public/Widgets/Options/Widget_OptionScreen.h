@@ -40,7 +40,10 @@ protected:
 	UOptionsDataRegistry* GetOrCreateOptionsDataRegistry();
 
 	UFUNCTION()
-	void OnTabButtonSelectedCallback(FName TabId);
+	void OnTabButtonSelected(FName TabId);
+
+	void OnListViewItemHovered(UObject* InHoveredItem,bool bWasHovered);
+	void OnListViewItemSelected(UObject* InSelectedItem);
 	
 private:
 	FUIActionBindingHandle ResetActionBindHandle;
