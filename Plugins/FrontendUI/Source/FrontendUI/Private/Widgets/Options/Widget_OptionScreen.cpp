@@ -8,6 +8,7 @@
 #include "Input/CommonUIInputTypes.h"
 #include "Widgets/Components/FrontendCommonListView.h"
 #include "Widgets/Options/FrontendCommonTabListWidget.h"
+#include "Widgets/Options/Widget_OptionDetailsView.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
 #include "Widgets/Options/DataObjects/OptionsDataRegistry.h"
 #include "Widgets/Options/ListEntries/Widget_ListEntry_Base.h"
@@ -76,6 +77,8 @@ UOptionsDataRegistry* UWidget_OptionScreen::GetOrCreateOptionsDataRegistry()
 
 void UWidget_OptionScreen::OnTabButtonSelected(FName TabId)
 {
+	DetailsView_ListEntryInfo->ClearDetailsViewInfo();
+	
 	TArray<UListDataObject_Base*> FoundListSourceItems = GetOrCreateOptionsDataRegistry()->GetListSourceItemsBySelectedTabID(TabId);
 
 	CommonListView_OptionsList->SetListItems(FoundListSourceItems);
@@ -95,8 +98,29 @@ void UWidget_OptionScreen::OnListViewItemHovered(UObject* InHoveredItem, bool bW
 	check(HoveredEntryWidget);
 
 	HoveredEntryWidget->NativeOnListEntryWidgetHovered(bWasHovered);
+
+	if (bWasHovered)
+	{
+		DetailsView_ListEntryInfo->UpdateDetailsViewInfo(CastChecked<UListDataObject_Base>(InHoveredItem),TryGetEntryWidgetClassName(InHoveredItem));
+	}
+	else
+	{
+		if (UListDataObject_Base* SelectedItem = CommonListView_OptionsList->GetSelectedItem<UListDataObject_Base>())
+		{
+			DetailsView_ListEntryInfo->UpdateDetailsViewInfo(SelectedItem,TryGetEntryWidgetClassName(SelectedItem));
+		}
+	}
 }
 
 void UWidget_OptionScreen::OnListViewItemSelected(UObject* InSelectedItem)
 {
+}
+
+FString UWidget_OptionScreen::TryGetEntryWidgetClassName(UObject* InOwningListItem) const
+{
+	if (UUserWidget* FoundEntryWidget = CommonListView_OptionsList->GetEntryWidgetFromItem(InOwningListItem))
+	{
+		return FoundEntryWidget->GetClass()->GetName();
+	}
+	return TEXT("Entry Widget Not Valid");
 }

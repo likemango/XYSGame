@@ -6,6 +6,7 @@
 #include "Widgets/Widget_ActivatableBase.h"
 #include "Widget_OptionScreen.generated.h"
 
+class UWidget_OptionDetailsView;
 class UFrontendCommonListView;
 class UFrontendCommonTabListWidget;
 class UOptionsDataRegistry;
@@ -32,6 +33,8 @@ protected:
 	TObjectPtr<UFrontendCommonTabListWidget> TabListWidget_OptionsTabs;
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UFrontendCommonListView> CommonListView_OptionsList;
+	UPROPERTY(meta = (BindWidget))
+	UWidget_OptionDetailsView* DetailsView_ListEntryInfo;
 	/* Bound Widget */
 	
 	void HandleResetAction();
@@ -44,7 +47,8 @@ protected:
 
 	void OnListViewItemHovered(UObject* InHoveredItem,bool bWasHovered);
 	void OnListViewItemSelected(UObject* InSelectedItem);
-	
+
+	FString TryGetEntryWidgetClassName(UObject* InOwningListItem) const;
 private:
 	FUIActionBindingHandle ResetActionBindHandle;
 	FUIActionBindingHandle BackActionBindHandle;
