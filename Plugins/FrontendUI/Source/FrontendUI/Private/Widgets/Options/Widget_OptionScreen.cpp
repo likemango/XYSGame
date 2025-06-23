@@ -4,6 +4,7 @@
 #include "Widgets/Options/Widget_OptionScreen.h"
 
 #include "DebugHelper.h"
+#include "FrontendSettings/FrontendGameUserSettings.h"
 #include "Input/CommonUIInputTypes.h"
 #include "Widgets/Components/FrontendCommonListView.h"
 #include "Widgets/Options/FrontendCommonTabListWidget.h"
@@ -50,6 +51,13 @@ void UWidget_OptionScreen::NativeOnActivated()
 
 		TabListWidget_OptionsTabs->RequestRegisterTab(TabID, TabCollection->GetDataDisplayName());
 	}
+}
+
+void UWidget_OptionScreen::NativeOnDeactivated()
+{
+	Super::NativeOnDeactivated();
+	
+	UFrontendGameUserSettings::Get()->ApplySettings(true);
 }
 
 UOptionsDataRegistry* UWidget_OptionScreen::GetOrCreateOptionsDataRegistry()

@@ -24,6 +24,7 @@ protected:
 
 	//~Activatable Widget
 	virtual void NativeOnActivated() override;
+	virtual void NativeOnDeactivated() override; 
 	//
 
 	/* Bound Widget */
