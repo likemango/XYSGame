@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FrontendTypes.h"
 #include "Widgets/Widget_ActivatableBase.h"
 #include "Widget_OptionScreen.generated.h"
 
+class UListDataObject_Base;
 class UWidget_OptionDetailsView;
 class UFrontendCommonListView;
 class UFrontendCommonTabListWidget;
@@ -37,8 +39,8 @@ protected:
 	UWidget_OptionDetailsView* DetailsView_ListEntryInfo;
 	/* Bound Widget */
 	
-	void HandleResetAction();
-	void HandleBackAction();
+	void OnResetBoundActionTriggered();
+	void OnBackBoundActionTriggered();
 
 	UOptionsDataRegistry* GetOrCreateOptionsDataRegistry();
 
@@ -49,9 +51,12 @@ protected:
 	void OnListViewItemSelected(UObject* InSelectedItem);
 
 	FString TryGetEntryWidgetClassName(UObject* InOwningListItem) const;
+
+	void OnListViewListDataModified(UListDataObject_Base* ModifiedData, EOptionsListDataModifyReason ModifyReason);
+	
 private:
-	FUIActionBindingHandle ResetActionBindHandle;
-	FUIActionBindingHandle BackActionBindHandle;
+	FUIActionBindingHandle ResetActionHandle;
+	FUIActionBindingHandle BackActionHandle;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Properties", meta = (RowType = "/Script/CommonUI.CommonInputActionDataBase"))
 	FDataTableRowHandle ResetDataTableRowHandle;
@@ -62,4 +67,7 @@ private:
 	//Handle the creation of data in the options screen. Direct access to this variable is forbidden
 	UPROPERTY(Transient)
 	TObjectPtr<UOptionsDataRegistry> CreatedOptionDataRegistry;
+	
+	UPROPERTY(Transient)
+	TArray<UListDataObject_Base*> ResettableDataArray;
 };

@@ -6,6 +6,8 @@
 #include "DebugHelper.h"
 #include "FrontendSettings/FrontendGameUserSettings.h"
 #include "Input/CommonUIInputTypes.h"
+#include "Subsystem/FrontendUISubsystem.h"
+#include "Widgets/Components/FrontendCommonButtonBase.h"
 #include "Widgets/Components/FrontendCommonListView.h"
 #include "Widgets/Options/FrontendCommonTabListWidget.h"
 #include "Widgets/Options/Widget_OptionDetailsView.h"
@@ -19,23 +21,36 @@ void UWidget_OptionScreen::NativeOnInitialized()
 
 	check(!ResetDataTableRowHandle.IsNull() && !BackDataTableRowHandle.IsNull())
 
-	FBindUIActionArgs BindResetActionArgs(ResetDataTableRowHandle, FSimpleDelegate::CreateUObject(this, &ThisClass::HandleResetAction));
-	ResetActionBindHandle = RegisterUIActionBinding(BindResetActionArgs);
+	FBindUIActionArgs BindResetActionArgs(ResetDataTableRowHandle, FSimpleDelegate::CreateUObject(this, &ThisClass::OnResetBoundActionTriggered));
+	ResetActionHandle = RegisterUIActionBinding(BindResetActionArgs);
 
-	FBindUIActionArgs BindBackActionArgs(BackDataTableRowHandle, FSimpleDelegate::CreateUObject(this, &ThisClass::HandleBackAction));
-	BackActionBindHandle = RegisterUIActionBinding(BindBackActionArgs);
+	FBindUIActionArgs BindBackActionArgs(BackDataTableRowHandle, FSimpleDelegate::CreateUObject(this, &ThisClass::OnBackBoundActionTriggered));
+	BackActionHandle = RegisterUIActionBinding(BindBackActionArgs);
 
 	TabListWidget_OptionsTabs->OnTabSelected.AddDynamic(this, &ThisClass::OnTabButtonSelected);
 	CommonListView_OptionsList->OnItemIsHoveredChanged().AddUObject(this,&ThisClass::OnListViewItemHovered);
 	CommonListView_OptionsList->OnItemSelectionChanged().AddUObject(this,&ThisClass::OnListViewItemSelected);
 }
 
-void UWidget_OptionScreen::HandleResetAction()
+void UWidget_OptionScreen::OnResetBoundActionTriggered()
 {
-	DebugHelper::Print(TEXT("Widget_OptionScreen::HandleResetAction"));
+	if (ResettableDataArray.IsEmpty()) return;
+
+	UCommonButtonBase* SelectedTabButton = TabListWidget_OptionsTabs->GetTabButtonBaseByID(TabListWidget_OptionsTabs->GetActiveTab());
+	const FString SelectedTabButtonName = CastChecked<UFrontendCommonButtonBase>(SelectedTabButton)->GetButtonDisplayText().ToString();
+
+	UFrontendUISubsystem::Get(this)->PushConfirmScreenToModalStackAsync(
+		EConfirmScreenType::YesNo,
+		FText::FromString(TEXT("Reset")),
+		FText::FromString(TEXT("Are you sure you want to reset all the settings under the ") + SelectedTabButtonName + TEXT(" tab?")),
+		[](EConfirmScreenButtonType ClickedButtonType)
+		{
+			
+		}
+	);
 }
 
-void UWidget_OptionScreen::HandleBackAction()
+void UWidget_OptionScreen::OnBackBoundActionTriggered()
 {
 	DeactivateWidget();
 }
@@ -89,6 +104,38 @@ void UWidget_OptionScreen::OnTabButtonSelected(FName TabId)
 		CommonListView_OptionsList->NavigateToIndex(0);
 		CommonListView_OptionsList->SetSelectedIndex(0);
 	}
+
+	ResettableDataArray.Empty();
+
+	for (UListDataObject_Base* FoundListSourceItem : FoundListSourceItems)
+	{
+		if (!FoundListSourceItem)
+		{
+			continue;
+		}
+
+		if (!FoundListSourceItem->OnListDataModified.IsBoundToObject(this))
+		{
+			FoundListSourceItem->OnListDataModified.AddUObject(this,&ThisClass::OnListViewListDataModified);
+		}
+
+		if (FoundListSourceItem->CanResetBackToDefaultValue())
+		{
+			ResettableDataArray.AddUnique(FoundListSourceItem);
+		}
+	}
+
+	if (ResettableDataArray.IsEmpty())
+	{
+		RemoveActionBinding(ResetActionHandle);
+	}
+	else
+	{
+		if (!GetActionBindings().Contains(ResetActionHandle))
+		{
+			AddActionBinding(ResetActionHandle);
+		}
+	}
 }
 
 void UWidget_OptionScreen::OnListViewItemHovered(UObject* InHoveredItem, bool bWasHovered)
@@ -123,4 +170,29 @@ FString UWidget_OptionScreen::TryGetEntryWidgetClassName(UObject* InOwningListIt
 		return FoundEntryWidget->GetClass()->GetName();
 	}
 	return TEXT("Entry Widget Not Valid");
+}
+
+void UWidget_OptionScreen::OnListViewListDataModified(UListDataObject_Base* ModifiedData, EOptionsListDataModifyReason ModifyReason)
+{
+	if (!ModifiedData) return;
+
+	if (ModifiedData->CanResetBackToDefaultValue())
+	{
+		ResettableDataArray.AddUnique(ModifiedData);
+		if (!GetActionBindings().Contains(ResetActionHandle))
+		{
+			AddActionBinding(ResetActionHandle);
+		}
+	}
+	else
+	{
+		if (ResettableDataArray.Contains(ModifiedData))
+		{
+			ResettableDataArray.Remove(ModifiedData);
+		}
+	}
+	if (ResettableDataArray.IsEmpty())
+	{
+		RemoveActionBinding(ResetActionHandle);
+	}
 }
