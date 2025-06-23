@@ -3,6 +3,8 @@
 
 #include "Widgets/Options/DataObjects/ListDataObject_String.h"
 
+#include "Widgets/Options/OptionsDataInteractionHelper.h"
+
 void UListDataObject_String::AddDynamicOption(const FString& InStringValue, const FText& InDisplayText)
 {
 	AvailableOptionsStringArray.Add(InStringValue);
@@ -32,7 +34,11 @@ void UListDataObject_String::AdvanceToNextOption()
 
 	TrySetDisplayTextFromStringValue(CurrentStringValue);
 
-	NotifyListDataModified(this);
+	if (DataDynamicSetter)
+	{
+		DataDynamicSetter->SetValueFromString(CurrentStringValue);
+		NotifyListDataModified(this);
+	}
 }
 
 void UListDataObject_String::BackToPreviousOption()
@@ -58,7 +64,12 @@ void UListDataObject_String::BackToPreviousOption()
 
 	TrySetDisplayTextFromStringValue(CurrentStringValue);
 
-	NotifyListDataModified(this);
+	if (DataDynamicSetter)
+	{
+		DataDynamicSetter->SetValueFromString(CurrentStringValue);
+
+		NotifyListDataModified(this);
+	}
 }
 
 void UListDataObject_String::OnDataObjectInitialized()
