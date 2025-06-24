@@ -28,7 +28,7 @@ ASKGFirearm::ASKGFirearm()
 
 	FirearmMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirearmMeshComponent"));
 	FirearmMeshComponent->ComponentTags.Add(MeshComponentTagName);
-	RootComponent = FirearmMeshComponent;
+	FirearmMeshComponent->SetupAttachment(GetRootComponent());
 
 	AttachmentManagerComponent = CreateDefaultSubobject<USKGAttachmentManagerComponent>(TEXT("AttachmentManagerComponent"));
 

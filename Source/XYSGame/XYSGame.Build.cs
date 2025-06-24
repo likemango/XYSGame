@@ -30,7 +30,11 @@ public class XYSGame : ModuleRules
 		{
 			"GameplayMessageRuntime",
 			"IrisCore", 
-			"AIModule"
+			"AIModule",
+			"SKGShooterFramework",
+			"SKGProceduralAnim",
+			"SKGShooterFrameworkActors"
+			
 		});
 
 		// Uncomment if you are using Slate UI
