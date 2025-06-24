@@ -9,14 +9,15 @@
 #include "Character/XYSCharacterMovementComponent.h"
 #include "Character/XYSHeroComponent.h"
 
-UXYSGameplayAbility::UXYSGameplayAbility(const FObjectInitializer& ObjectInitializer)
+UXYSGameplayAbility::UXYSGameplayAbility(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
-	
+
 	ActivationPolicy = EXYSAbilityActivationPolicy::OnInputTriggered;
+	ActivationGroup = EXYSAbilityActivationGroup::Independent;
 }
 
 void UXYSGameplayAbility::OnPawnAvatarSet()

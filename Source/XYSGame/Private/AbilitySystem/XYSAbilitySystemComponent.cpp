@@ -12,6 +12,17 @@
 #include "System/XYSAssetManager.h"
 #include "System/XYSGameData.h"
 
+UXYSAbilitySystemComponent::UXYSAbilitySystemComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	InputPressedSpecHandles.Reset();
+	InputReleasedSpecHandles.Reset();
+	InputHeldSpecHandles.Reset();
+	InputStartActivationRecords.Reset();
+
+	FMemory::Memmove(ActivationGroupCounts, 0, sizeof(ActivationGroupCounts));
+}
+
 void UXYSAbilitySystemComponent::SetTagRelationshipMapping(UXYSAbilityTagRelationshipMapping* NewMapping)
 {
 	TagRelationshipMapping = NewMapping;

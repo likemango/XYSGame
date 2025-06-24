@@ -18,6 +18,7 @@ class XYSGAME_API UXYSAbilitySystemComponent : public UAbilitySystemComponent
 	GENERATED_BODY()
 
 public:
+	UXYSAbilitySystemComponent(const FObjectInitializer& ObjectInitializer);
 
 	/** Sets the current tag relationship mapping, if null it will clear it out */
 	void SetTagRelationshipMapping(UXYSAbilityTagRelationshipMapping* NewMapping);

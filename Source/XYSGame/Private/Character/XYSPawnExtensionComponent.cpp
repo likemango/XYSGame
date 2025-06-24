@@ -131,8 +131,6 @@ void UXYSPawnExtensionComponent::HandleChangeInitState(UGameFrameworkComponentMa
 	}
 	if (DesiredState == XYSGameplayTags::InitState_GameplayReady)
 	{
-		UE_LOG(LogXYSAbilitySystem, Warning, TEXT("Extension is under InitState_GameplayReady"))
-		OnPawnExtensionReady.Broadcast();
 	}
 }
 

@@ -10,11 +10,9 @@
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "Camera/XYSCameraComponent.h"
 #include "Character/XYSCharacter.h"
-#include "Character/XYSCharacterMovementComponent.h"
 #include "Character/XYSPawnExtensionComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Controller/XYSPlayerController.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Input/XYSInputComponent.h"
 #include "Misc/UObjectToken.h"
 #include "Player/XYSPlayerState.h"
@@ -175,7 +173,6 @@ void UXYSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Ma
 			// 初始化ASC, InitAbilityActorInfo
 			PawnExtensionComponent->InitializeAbilitySystem(XYSPS->GetXYSAbilitySystemComponent(), XYSPS);
 			PawnData = PawnExtensionComponent->GetPawnData<UXYSPawnData>();
-			UE_LOG(LogXYSAbilitySystem, Warning, TEXT("XYS AbilitySystem is initialized!!!"))
 		}
 		
 		// 为pawn绑定相机模式变化的委托，方便后续更改相机模式

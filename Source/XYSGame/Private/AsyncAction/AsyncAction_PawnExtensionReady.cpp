@@ -29,30 +29,17 @@ void UAsyncAction_PawnExtensionReady::Activate()
 {
 	if (CachedPawn.IsValid() && CachedPawn.Get()->HasAuthority())
 	{
-		OnPawnExtensionReady_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnCachedPawnExtensionReady));
+		UXYSPawnExtensionComponent* PawnExtensionComponent = UXYSPawnExtensionComponent::FindPawnExtensionComponent(CachedPawn.Get());
+		check(PawnExtensionComponent);
+
+		PawnExtensionComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnCachedPawnExtensionReady));
 	}
 }
 
 void UAsyncAction_PawnExtensionReady::OnCachedPawnExtensionReady() const
 {
-	UE_LOG(LogXYSAbilitySystem, Warning, TEXT("UAsyncAction_PawnExtensionReady called!!!"))
-	
-	// UXYSAbilitySystemComponent* AbilitySystemComponent = Cast<UXYSAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedPawn.Get()));
-	// check(AbilitySystemComponent);
+	UXYSAbilitySystemComponent* AbilitySystemComponent = Cast<UXYSAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedPawn.Get()));
+	check(AbilitySystemComponent);
 	OnPawnExtensionReady.Broadcast();
 }
 
-void UAsyncAction_PawnExtensionReady::OnPawnExtensionReady_RegisterAndCall(FSimpleMulticastDelegate::FDelegate Delegate) const
-{
-	if (UXYSPawnExtensionComponent* PawnExtensionComponent = UXYSPawnExtensionComponent::FindPawnExtensionComponent(CachedPawn.Get()))
-	{
-		if (!PawnExtensionComponent->OnPawnExtensionReady.IsBoundToObject(Delegate.GetUObject()))
-		{
-			PawnExtensionComponent->OnPawnExtensionReady.Add(Delegate);
-		}
-		if (PawnExtensionComponent->GetInitState() == XYSGameplayTags::InitState_GameplayReady)
-		{
-			Delegate.Execute();
-		}
-	}
-}

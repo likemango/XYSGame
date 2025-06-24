@@ -29,8 +29,6 @@ public:
 	void OnCachedPawnExtensionReady() const;
 	
 private:
-	void OnPawnExtensionReady_RegisterAndCall(FSimpleMulticastDelegate::FDelegate Delegate) const;
-
 	UPROPERTY()
 	TWeakObjectPtr<APawn> CachedPawn;
 };
