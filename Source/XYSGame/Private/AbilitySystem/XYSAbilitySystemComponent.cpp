@@ -20,7 +20,7 @@ UXYSAbilitySystemComponent::UXYSAbilitySystemComponent(const FObjectInitializer&
 	InputHeldSpecHandles.Reset();
 	InputStartActivationRecords.Reset();
 
-	FMemory::Memmove(ActivationGroupCounts, 0, sizeof(ActivationGroupCounts));
+	FMemory::Memset(ActivationGroupCounts, 0, sizeof(ActivationGroupCounts));
 }
 
 void UXYSAbilitySystemComponent::SetTagRelationshipMapping(UXYSAbilityTagRelationshipMapping* NewMapping)

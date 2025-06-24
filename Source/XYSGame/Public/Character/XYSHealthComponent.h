@@ -10,7 +10,7 @@
 class UXYSHealthComponent;
 
 class UXYSAbilitySystemComponent;
-class UXYSHealthAttributeSet;
+class UXYSHealthSet;
 class UObject;
 struct FFrame;
 struct FGameplayEffectSpec;
@@ -121,7 +121,7 @@ protected:
 
 	// Health set used by this component.
 	UPROPERTY()
-	TObjectPtr<const UXYSHealthAttributeSet> HealthSet;
+	TObjectPtr<const UXYSHealthSet> HealthSet;
 
 	// Replicated state used to handle dying.
 	UPROPERTY(ReplicatedUsing = OnRep_DeathState)

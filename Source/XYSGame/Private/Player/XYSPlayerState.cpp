@@ -6,6 +6,8 @@
 #include "XYSLogChannels.h"
 #include "AbilitySystem/XYSAbilitySet.h"
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
+#include "AbilitySystem/Attributes/XYSCombatSet.h"
+#include "AbilitySystem/Attributes/XYSHealthSet.h"
 #include "Character/XYSPawnData.h"
 #include "GameModes/XYSGameMode.h"
 #include "Net/UnrealNetwork.h"
@@ -17,7 +19,9 @@ AXYSPlayerState::AXYSPlayerState(const FObjectInitializer& ObjectInitializer)
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	AttributeSet = CreateDefaultSubobject<UAttributeSet>("AttributeSet");
+	// These attribute sets will be detected by AbilitySystemComponent::InitializeComponent. Keeping a reference so that the sets don't get garbage collected before that.
+	HealthSet = CreateDefaultSubobject<UXYSHealthSet>("HealthSet");
+	CombatSet = CreateDefaultSubobject<UXYSCombatSet>("CombatSet");
 
 	SetNetUpdateFrequency(100);
 }
@@ -36,12 +40,6 @@ UAbilitySystemComponent* AXYSPlayerState::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }
-
-UAttributeSet* AXYSPlayerState::GetAttributeSet() const
-{
-	return AttributeSet;
-}
-
 
 void AXYSPlayerState::PostInitializeComponents()
 {

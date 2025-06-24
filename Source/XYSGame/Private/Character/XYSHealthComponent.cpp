@@ -9,7 +9,7 @@
 #include "XYSGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
-#include "AbilitySystem/Attributes/XYSHealthAttributeSet.h"
+#include "AbilitySystem/Attributes/XYSHealthSet.h"
 #include "Message/XYSVerbMessage.h"
 #include "Message/XYSVerbMessageHelper.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
@@ -63,7 +63,7 @@ void UXYSHealthComponent::InitializeWithAbilitySystem(UXYSAbilitySystemComponent
 		return;
 	}
 
-	HealthSet = AbilitySystemComponent->GetSet<UXYSHealthAttributeSet>();
+	HealthSet = AbilitySystemComponent->GetSet<UXYSHealthSet>();
 	if (!HealthSet)
 	{
 		UE_LOG(LogXYSGame, Error, TEXT("XYSHealthComponent: Cannot initialize health component for owner [%s] with NULL health set on the ability system."), *GetNameSafe(Owner));
@@ -76,7 +76,7 @@ void UXYSHealthComponent::InitializeWithAbilitySystem(UXYSAbilitySystemComponent
 	HealthSet->OnOutOfHealth.AddUObject(this, &ThisClass::HandleOutOfHealth);
 
 	// TEMP: Reset attributes to default values.  Eventually this will be driven by a spread sheet.
-	AbilitySystemComponent->SetNumericAttributeBase(UXYSHealthAttributeSet::GetHealthAttribute(), HealthSet->GetMaxHealth());
+	AbilitySystemComponent->SetNumericAttributeBase(UXYSHealthSet::GetHealthAttribute(), HealthSet->GetMaxHealth());
 
 	ClearGameplayTags();
 

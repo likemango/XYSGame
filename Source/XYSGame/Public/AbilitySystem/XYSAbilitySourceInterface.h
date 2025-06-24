@@ -21,6 +21,7 @@ class XYSGAME_API IXYSAbilitySourceInterface
 {
 	GENERATED_BODY()
 
+public:
 	/**
 		 * Compute the multiplier for effect falloff with distance
 		 * 

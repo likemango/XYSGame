@@ -29,7 +29,6 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UFUNCTION(BlueprintCallable, Category = "GAS|PlayerState")
 	UXYSAbilitySystemComponent* GetXYSAbilitySystemComponent() const { return AbilitySystemComponent;}
-	UAttributeSet* GetAttributeSet() const;
 
 	void SetPawnData(const UXYSPawnData* InPawnData);
 
@@ -38,7 +37,9 @@ protected:
 	TObjectPtr<UXYSAbilitySystemComponent> AbilitySystemComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="GAS|PlayerState")
-	TObjectPtr<UAttributeSet> AttributeSet;
+	TObjectPtr<const class UXYSHealthSet> HealthSet;
+	UPROPERTY()
+	TObjectPtr<const class UXYSCombatSet> CombatSet;
 
 	UPROPERTY(ReplicatedUsing = OnRep_PawnData)
 	TObjectPtr<const UXYSPawnData> PawnData;
