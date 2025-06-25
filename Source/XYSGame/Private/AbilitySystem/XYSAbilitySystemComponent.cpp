@@ -200,25 +200,15 @@ void UXYSAbilitySystemComponent::OnAbilitySystemTagChanged(const FGameplayTag In
 {
 	if (InTag.MatchesTagExact(XYSGameplayTags::CharacterState_Movement_Crouching))
 	{
-		if (TagCount > 0)
+		ensureAlwaysMsgf(TagCount <= 1, TEXT("Tag: CharacterState_Movement_Crouching tag is more then one!"));
+		if (TagCount == 1 || TagCount == 0)
 		{
 			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Player is enter crouching"));
 			if (AXYSCharacter* XYSCharacter = Cast<AXYSCharacter>(GetAvatarActor()))
 			{
 				if (XYSCharacter->IsLocallyControlled())
 				{
-					XYSCharacter->UpperBodyEnterCrouchImplement();
-				}
-			}
-		}
-		else
-		{
-			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Player is leaving crouching"));
-			if (AXYSCharacter* XYSCharacter = Cast<AXYSCharacter>(GetAvatarActor()))
-			{
-				if (XYSCharacter->IsLocallyControlled())
-				{
-					XYSCharacter->UpperBodyLeaveCrouchImplement();
+					XYSCharacter->StartFPMeshCrouchStateChange();
 				}
 			}
 		}

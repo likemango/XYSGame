@@ -53,15 +53,13 @@ public:
 	AXYSCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "XYS|Character")
 	UXYSAbilitySystemComponent* GetXYSAbilitySystemComponent() const;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "XYS|Character")
-	void UpperBodyEnterCrouchImplement();
-	UFUNCTION(BlueprintImplementableEvent, Category = "XYS|Character")
-	void UpperBodyLeaveCrouchImplement();
+	
+	void StartFPMeshCrouchStateChange();
 	
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
@@ -112,6 +110,15 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetFPUpperMesh() const { return FPUpperMesh;}
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "XYS|Character")
 	FORCEINLINE USkeletalMeshComponent* GetTPMesh() const { return GetMesh();}
+
+private:
+	float DuringCrouchStateChange = 0;
+	UPROPERTY(EditDefaultsOnly, Category = "XYS|Character")
+	float CrouchStateChangeTimeSetting = 1.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "XYS|Character")
+	float CrouchStateChangeInterpSpeed = 15.f;
+	
+	void UpdateFPMeshWhenCrouching(float DeltaTime);
 	
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYS|Character", meta=(AllowPrivateAccess="true"))

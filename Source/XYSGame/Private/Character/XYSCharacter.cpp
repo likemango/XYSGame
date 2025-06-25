@@ -11,14 +11,15 @@
 #include "Character/XYSHeroComponent.h"
 #include "Character/XYSPawnExtensionComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 AXYSCharacter::AXYSCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UXYSCharacterMovementComponent>(CharacterMovementComponentName))
 {
 	// Avoid ticking characters if possible.
-	PrimaryActorTick.bCanEverTick = false;
-	PrimaryActorTick.bStartWithTickEnabled = false;
+	// PrimaryActorTick.bCanEverTick = false;
+	// PrimaryActorTick.bStartWithTickEnabled = false;
 
 	SetNetCullDistanceSquared(900000000.0f);
 
@@ -67,8 +68,16 @@ void AXYSCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->LinkAnimClassLayers(DefaultAnimLinkedLayerForAllSkeletalMeshes);
+}
 
-	
+void AXYSCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (DuringCrouchStateChange > 0)
+	{
+		UpdateFPMeshWhenCrouching(DeltaTime);
+	}
 }
 
 UXYSAbilitySystemComponent* AXYSCharacter::GetXYSAbilitySystemComponent() const
@@ -84,6 +93,11 @@ UAbilitySystemComponent* AXYSCharacter::GetAbilitySystemComponent() const
 	}
 
 	return PawnExtComponent->GetXYSAbilitySystemComponent();
+}
+
+void AXYSCharacter::StartFPMeshCrouchStateChange()
+{
+	DuringCrouchStateChange = CrouchStateChangeTimeSetting;
 }
 
 void AXYSCharacter::Input_Move(const FInputActionValue& InputActionValue)
@@ -286,4 +300,19 @@ void AXYSCharacter::UninitAndDestroy()
 	}
 
 	SetActorHiddenInGame(true);
+}
+
+void AXYSCharacter::UpdateFPMeshWhenCrouching(float DeltaTime)
+{
+	DuringCrouchStateChange -= DeltaTime;
+
+	const FVector FPMeshLocation = FPUpperMesh->GetComponentLocation();
+	const FVector FPMeshCameraLocation = FPUpperMesh->GetSocketLocation(CameraAttachSocket);
+	const FVector DistFPCameraToMesh = FPMeshLocation - FPMeshCameraLocation;
+
+	const FVector TPMeshCameraLocation = GetMesh()->GetSocketLocation(CameraAttachSocket);
+	const FVector InterpVector = FMath::VInterpTo(FPMeshCameraLocation, TPMeshCameraLocation, DeltaTime, CrouchStateChangeInterpSpeed);
+	const FVector TargetFPMeshLocation = DistFPCameraToMesh + InterpVector;
+
+	FPUpperMesh->SetWorldLocation(TargetFPMeshLocation);
 }
