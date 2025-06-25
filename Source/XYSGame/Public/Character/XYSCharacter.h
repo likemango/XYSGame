@@ -57,6 +57,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "XYS|Character")
 	UXYSAbilitySystemComponent* GetXYSAbilitySystemComponent() const;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	// UFUNCTION(BlueprintImplementableEvent, Category = "XYS|Character")
+	// void UpperBodyEnterCrouchImplement();
+	// UFUNCTION(BlueprintImplementableEvent, Category = "XYS|Character")
+	// void UpperBodyLeaveCrouchImplement();
 	
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);

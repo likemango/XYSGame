@@ -37,7 +37,7 @@ AXYSCharacter::AXYSCharacter(const FObjectInitializer& ObjectInitializer)
 	XYSMoveComp->SetCrouchedHalfHeight(65.0f);
 
 	FPUpperMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPUpper"));
-	FPUpperMesh->SetupAttachment(GetRootComponent());
+	FPUpperMesh->SetupAttachment(GetMesh());
 	FPUpperMesh->bOnlyOwnerSee = true;
 	XYSCameraComponent = CreateDefaultSubobject<UXYSCameraComponent>(TEXT("XYSCamera"));
 	XYSCameraComponent->SetupAttachment(FPUpperMesh, CameraAttachSocket);
@@ -67,6 +67,8 @@ void AXYSCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->LinkAnimClassLayers(DefaultAnimLinkedLayerForAllSkeletalMeshes);
+
+	
 }
 
 UXYSAbilitySystemComponent* AXYSCharacter::GetXYSAbilitySystemComponent() const

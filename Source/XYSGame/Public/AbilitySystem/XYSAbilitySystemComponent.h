@@ -28,10 +28,14 @@ public:
 	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
 	void ClearAbilityInput();
 
+	// do something when tag changed.
+	void RegisterGameplayTagChangedEvent();
+	void OnAbilitySystemTagChanged(const FGameplayTag InTag, int32 TagCount) const;
+
 	// Uses a gameplay effect to add the specified dynamic granted tag.
 	UFUNCTION(BlueprintCallable, Category="XYSAbilitySystem")
 	FActiveGameplayEffectHandle AddDynamicTagGameplayEffect(UPARAM(meta=(Categories="CharacterState.Movement")) FGameplayTag Tag);
-
+	
 	//~Begin AbilitySystemComponent
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
 	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;

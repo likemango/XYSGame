@@ -9,6 +9,7 @@
 #include "AbilitySystem/XYSGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/XYSGameplayAbility.h"
 #include "Animation/XYSAnimInstance.h"
+#include "Character/XYSCharacter.h"
 #include "System/XYSAssetManager.h"
 #include "System/XYSGameData.h"
 
@@ -188,6 +189,41 @@ void UXYSAbilitySystemComponent::ClearAbilityInput()
 	InputPressedSpecHandles.Reset();
 	InputReleasedSpecHandles.Reset();
 	InputHeldSpecHandles.Reset();
+}
+
+void UXYSAbilitySystemComponent::RegisterGameplayTagChangedEvent()
+{
+	RegisterGenericGameplayTagEvent().AddUObject(this, &UXYSAbilitySystemComponent::OnAbilitySystemTagChanged);
+}
+
+void UXYSAbilitySystemComponent::OnAbilitySystemTagChanged(const FGameplayTag InTag, int32 TagCount) const
+{
+	if (InTag.MatchesTagExact(XYSGameplayTags::CharacterState_Movement_Crouching))
+	{
+		if (TagCount > 0)
+		{
+			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Player is enter crouching"));
+			if (AXYSCharacter* XYSCharacter = Cast<AXYSCharacter>(GetAvatarActor()))
+			{
+				if (XYSCharacter->IsLocallyControlled())
+				{
+					XYSCharacter->UpperBodyEnterCrouchImplement();
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogAbilitySystemComponent, Warning, TEXT("Player is leaving crouching"));
+			if (AXYSCharacter* XYSCharacter = Cast<AXYSCharacter>(GetAvatarActor()))
+			{
+				if (XYSCharacter->IsLocallyControlled())
+				{
+					XYSCharacter->UpperBodyLeaveCrouchImplement();
+				}
+			}
+		}
+	}
+	
 }
 
 FActiveGameplayEffectHandle UXYSAbilitySystemComponent::AddDynamicTagGameplayEffect(UPARAM(Categories=("CharacterState.Movement")) FGameplayTag Tag)
