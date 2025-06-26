@@ -3,7 +3,9 @@
 
 #include "Widgets/Options/DataObjects/OptionsDataRegistry.h"
 
+#include "FrontendGameplayTags.h"
 #include "FrontendSettings/FrontendGameUserSettings.h"
+#include "FunctionLibrary/FrontendBlueprintFunctionLibrary.h"
 #include "Widgets/Options/OptionsDataInteractionHelper.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
 #include "Widgets/Options/DataObjects/ListDataObject_String.h"
@@ -52,7 +54,9 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 	{
 		UListDataObject_String* TestItem = NewObject<UListDataObject_String>();
 		TestItem->SetDataID(FName(TEXT("TestItem")));
-		TestItem->SetDataDisplayName(FText::FromString(TEXT("Test Item")));
+		TestItem->SetDataDisplayName(FText::FromString(TEXT("Test Image Item")));
+		TestItem->SetSoftDescriptionImage(UFrontendBlueprintFunctionLibrary::GetOptionsSoftImageByTag(FrontendGameplayTags::Frontend_Image_TestImage));
+		TestItem->SetDescriptionRichText(FText::FromString(TEXT("The image to display can be specified in the project settings. It can be anything the developer assigned in there")));
 
 		GameplayTabCollection->AddChildListData(TestItem);
 	}
