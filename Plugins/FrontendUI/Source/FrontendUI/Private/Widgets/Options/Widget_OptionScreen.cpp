@@ -9,7 +9,7 @@
 #include "Subsystem/FrontendUISubsystem.h"
 #include "Widgets/Components/FrontendCommonButtonBase.h"
 #include "Widgets/Components/FrontendCommonListView.h"
-#include "Widgets/Options/FrontendCommonTabListWidget.h"
+#include "Widgets/Components/FrontendCommonTabListWidget.h"
 #include "Widgets/Options/Widget_OptionDetailsView.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
 #include "Widgets/Options/DataObjects/OptionsDataRegistry.h"
@@ -43,9 +43,43 @@ void UWidget_OptionScreen::OnResetBoundActionTriggered()
 		EConfirmScreenType::YesNo,
 		FText::FromString(TEXT("Reset")),
 		FText::FromString(TEXT("Are you sure you want to reset all the settings under the ") + SelectedTabButtonName + TEXT(" tab?")),
-		[](EConfirmScreenButtonType ClickedButtonType)
+		[this](EConfirmScreenButtonType ClickedButtonType)
 		{
-			
+			if (ClickedButtonType != EConfirmScreenButtonType::Confirmed)
+				return;
+			if (ClickedButtonType != EConfirmScreenButtonType::Confirmed)
+			{
+				return;
+			}
+
+			bIsResettingData = true;
+			bool bHasDataFailedToReset = false;
+
+			for (UListDataObject_Base* DataToReset : ResettableDataArray)
+			{
+				if (!DataToReset)
+				{
+					continue;
+				}
+
+				if (DataToReset->TryResetBackToDefaultValue())
+				{
+					DebugHelper::Print(DataToReset->GetDataDisplayName().ToString() + TEXT(" was reset"));
+				}
+				else
+				{
+					bHasDataFailedToReset = true;
+					DebugHelper::Print(DataToReset->GetDataDisplayName().ToString() + TEXT(" failed to reset"));
+				}
+			}
+
+			if (!bHasDataFailedToReset)
+			{
+				ResettableDataArray.Empty();
+				RemoveActionBinding(ResetActionHandle);
+			}
+
+			bIsResettingData = false;
 		}
 	);
 }
@@ -77,6 +111,18 @@ void UWidget_OptionScreen::NativeOnDeactivated()
 	Super::NativeOnDeactivated();
 	
 	UFrontendGameUserSettings::Get()->ApplySettings(true);
+}
+
+UWidget* UWidget_OptionScreen::NativeGetDesiredFocusTarget() const
+{
+	if (UObject* SelectedObject = CommonListView_OptionsList->GetSelectedItem())
+	{
+		if (UUserWidget* SelectedEntryWidget = CommonListView_OptionsList->GetEntryWidgetFromItem(SelectedObject))
+		{
+			return SelectedEntryWidget;
+		}
+	}
+	return Super::NativeGetDesiredFocusTarget();
 }
 
 UOptionsDataRegistry* UWidget_OptionScreen::GetOrCreateOptionsDataRegistry()
@@ -174,7 +220,7 @@ FString UWidget_OptionScreen::TryGetEntryWidgetClassName(UObject* InOwningListIt
 
 void UWidget_OptionScreen::OnListViewListDataModified(UListDataObject_Base* ModifiedData, EOptionsListDataModifyReason ModifyReason)
 {
-	if (!ModifiedData) return;
+	if (!ModifiedData || bIsResettingData) return;
 
 	if (ModifiedData->CanResetBackToDefaultValue())
 	{

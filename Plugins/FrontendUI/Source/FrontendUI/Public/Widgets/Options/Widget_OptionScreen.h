@@ -27,7 +27,8 @@ protected:
 
 	//~Activatable Widget
 	virtual void NativeOnActivated() override;
-	virtual void NativeOnDeactivated() override; 
+	virtual void NativeOnDeactivated() override;
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 	//
 
 	/* Bound Widget */
@@ -70,4 +71,6 @@ private:
 	
 	UPROPERTY(Transient)
 	TArray<UListDataObject_Base*> ResettableDataArray;
+
+	bool bIsResettingData = false;
 };

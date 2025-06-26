@@ -1,7 +1,7 @@
 ﻿// XiaoYao copyright.
 
 
-#include "Widgets/Options/FrontendCommonTabListWidget.h"
+#include "Widgets/Components/FrontendCommonTabListWidget.h"
 
 #include "Editor/WidgetCompilerLog.h"
 #include "Widgets/Components/FrontendCommonButtonBase.h"
