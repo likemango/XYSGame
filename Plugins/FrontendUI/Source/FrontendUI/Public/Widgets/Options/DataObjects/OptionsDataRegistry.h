@@ -29,6 +29,8 @@ private:
 	void InitVideoCollectionTab();
 	void InitControlCollectionTab();
 
+	void FindChildListDataRecursively(const UListDataObject_Base* InParentData, TArray<UListDataObject_Base*>& OutFoundChildListData) const;
+
 	UPROPERTY(Transient)
 	TArray<UListDataObject_Collection*> RegisteredOptionsTabCollections;
 };

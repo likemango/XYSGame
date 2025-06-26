@@ -16,11 +16,6 @@ void UFrontendCommonTabListWidget::RequestRegisterTab(const FName& InTabID, cons
 	}
 }
 
-void UFrontendCommonTabListWidget::NativeOnInitialized()
-{
-	Super::NativeOnInitialized();
-}
-
 #if WITH_EDITOR
 void UFrontendCommonTabListWidget::ValidateCompiledDefaults(class IWidgetCompilerLog& CompileLog) const
 {

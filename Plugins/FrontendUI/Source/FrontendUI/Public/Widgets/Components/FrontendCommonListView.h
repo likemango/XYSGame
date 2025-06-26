@@ -16,8 +16,11 @@ class FRONTENDUI_API UFrontendCommonListView : public UCommonListView
 	GENERATED_BODY()
 
 protected:
+	//~ Begin UCommonListView Interface
 	virtual UUserWidget& OnGenerateEntryWidgetInternal(UObject* Item, TSubclassOf<UUserWidget> DesiredEntryClass, const TSharedRef<STableViewBase>& OwnerTable) override;
-
+	virtual bool OnIsSelectableOrNavigableInternal(UObject* FirstSelectedItem) override;
+	//~ End UCommonListView Interface
+	
 #if WITH_EDITOR
 	virtual void ValidateCompiledDefaults(class IWidgetCompilerLog& CompileLog) const override;
 #endif

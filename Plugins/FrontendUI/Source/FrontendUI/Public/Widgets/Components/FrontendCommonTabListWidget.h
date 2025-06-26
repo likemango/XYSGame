@@ -19,8 +19,6 @@ public:
 	void RequestRegisterTab(const FName& InTabID, const FText& InTabDisplayName);
 	
 protected:
-	virtual void NativeOnInitialized() override;
-
 #if WITH_EDITOR
 	virtual void ValidateCompiledDefaults(class IWidgetCompilerLog& CompileLog) const override;
 #endif
