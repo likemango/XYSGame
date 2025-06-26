@@ -12,7 +12,9 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/XYSGameplayAbilityTargetData_SingleTargetHit.h"
 #include "DrawDebugHelpers.h"
+#include "Components/SKGFirearmComponent.h"
 #include "Physics/XYSCollisionChannel.h"
+#include "Weapon/XYSWeaponActor.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(XYSGameplayAbility_RangedWeapon)
 
@@ -82,6 +84,14 @@ UXYSGameplayAbility_RangedWeapon::UXYSGameplayAbility_RangedWeapon(const FObject
 UXYSRangedWeaponInstance* UXYSGameplayAbility_RangedWeapon::GetWeaponInstance() const
 {
 	return Cast<UXYSRangedWeaponInstance>(GetAssociatedEquipment());
+}
+
+AXYSWeaponActor* UXYSGameplayAbility_RangedWeapon::GetWeaponActor() const
+{
+	ensureAlwaysMsgf(GetWeaponInstance()->GetSpawnedActors().Num() == 1, TEXT("One weapon with more then one actor spawned, next logic only based on index 0"));
+
+	AXYSWeaponActor* WeaponActor = Cast<AXYSWeaponActor>(GetWeaponInstance()->GetSpawnedActors()[0]);
+	return WeaponActor;
 }
 
 bool UXYSGameplayAbility_RangedWeapon::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
@@ -195,6 +205,7 @@ FHitResult UXYSGameplayAbility_RangedWeapon::WeaponTrace(const FVector& StartTra
 
 FVector UXYSGameplayAbility_RangedWeapon::GetWeaponTargetingSourceLocation() const
 {
+	// From Lyra, which is not completed.
 	// Use Pawn's location as a base
 	APawn* const AvatarPawn = Cast<APawn>(GetAvatarActorFromActorInfo());
 	check(AvatarPawn);
@@ -203,8 +214,27 @@ FVector UXYSGameplayAbility_RangedWeapon::GetWeaponTargetingSourceLocation() con
 	const FQuat SourceRot = AvatarPawn->GetActorQuat();
 
 	FVector TargetingSourceLocation = SourceLoc;
+	// @TODO: Add an offset from the weapon instance and adjust based on pawn crouch/aiming/etc...
 
-	//@TODO: Add an offset from the weapon instance and adjust based on pawn crouch/aiming/etc...
+
+	// SKGMuzzle
+	bool bFoundMuzzleLocationFromFirearm = false;
+	if (AXYSWeaponActor* WeaponActor = GetWeaponActor())
+	{
+		if(USKGFirearmComponent* FirearmComponent = USKGFirearmComponent::GetFirearmComponent(WeaponActor))
+		{
+			if (USKGMuzzleComponent* MuzzleComponent = FirearmComponent->GetCurrentMuzzleComponent())
+			{
+				FSKGMuzzleTransform MuzzleProjectileTransform= MuzzleComponent->GetMuzzleProjectileTransform(1.0f);
+				TargetingSourceLocation = MuzzleProjectileTransform.Location;
+				bFoundMuzzleLocationFromFirearm = true;
+			}
+		}
+	}
+	if (!bFoundMuzzleLocationFromFirearm)
+	{
+		UE_LOG(LogXYSAbilitySystem, Warning, TEXT("GetWeaponTargetingSourceLocation() failed to found MuzzleProjectileTransform."))
+	}
 
 	return TargetingSourceLocation;
 }
@@ -231,7 +261,8 @@ FTransform UXYSGameplayAbility_RangedWeapon::GetTargetingTransform(APawn* Source
 	bool bFoundFocus = false;
 
 
-	if ((Controller != nullptr) && ((Source == EXYSAbilityTargetingSource::CameraTowardsFocus) || (Source == EXYSAbilityTargetingSource::PawnTowardsFocus) || (Source == EXYSAbilityTargetingSource::WeaponTowardsFocus)))
+	if ((Controller != nullptr) && ((Source == EXYSAbilityTargetingSource::CameraTowardsFocus) || (Source == EXYSAbilityTargetingSource::PawnTowardsFocus) ||
+		(Source == EXYSAbilityTargetingSource::WeaponTowardsFocus)))
 	{
 		// Get camera position for later
 		bFoundFocus = true;
@@ -364,7 +395,7 @@ void UXYSGameplayAbility_RangedWeapon::PerformLocalTargeting(OUT TArray<FHitResu
 		InputData.bCanPlayBulletFX = (AvatarPawn->GetNetMode() != NM_DedicatedServer);
 
 		//@TODO: Should do more complicated logic here when the player is close to a wall, etc...
-		const FTransform TargetTransform = GetTargetingTransform(AvatarPawn, EXYSAbilityTargetingSource::CameraTowardsFocus);
+		const FTransform TargetTransform = GetTargetingTransform(AvatarPawn, WeaponFireTargetingSource);
 		InputData.AimDir = TargetTransform.GetUnitAxis(EAxis::X);
 		InputData.StartTrace = TargetTransform.GetTranslation();
 

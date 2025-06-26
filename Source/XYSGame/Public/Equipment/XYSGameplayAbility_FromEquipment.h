@@ -6,6 +6,7 @@
 #include "AbilitySystem/Abilities/XYSGameplayAbility.h"
 #include "XYSGameplayAbility_FromEquipment.generated.h"
 
+class AXYSWeaponActor;
 class UXYSInventoryItemInstance;
 class UXYSEquipmentInstance;
 /**

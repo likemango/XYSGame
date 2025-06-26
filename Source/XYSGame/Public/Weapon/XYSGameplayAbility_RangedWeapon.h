@@ -26,15 +26,15 @@ enum class EXYSAbilityTargetingSource : uint8
 	// From the player's camera towards camera focus
 	CameraTowardsFocus,
 	// From the pawn's center, in the pawn's orientation
-	PawnForward,
+	PawnForward UMETA(Hidden),
 	// From the pawn's center, oriented towards camera focus
-	PawnTowardsFocus,
+	PawnTowardsFocus UMETA(Hidden),
 	// From the weapon's muzzle or location, in the pawn's orientation
-	WeaponForward,
+	WeaponForward UMETA(Hidden),
 	// From the weapon's muzzle or location, towards camera focus
-	WeaponTowardsFocus,
+	WeaponTowardsFocus ,
 	// Custom blueprint-specified source location
-	Custom
+	Custom UMETA(Hidden)
 };
 
 
@@ -56,6 +56,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="XYS|Ability")
 	UXYSRangedWeaponInstance* GetWeaponInstance() const;
 
+	UFUNCTION(BlueprintCallable, Category="XYS|Ability")
+	AXYSWeaponActor* GetWeaponActor() const;
+	
 	//~UGameplayAbility interface
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
@@ -63,6 +66,9 @@ public:
 	//~End of UGameplayAbility interface
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="XYS|Ability")
+	EXYSAbilityTargetingSource WeaponFireTargetingSource = EXYSAbilityTargetingSource::CameraTowardsFocus;
+	
 	struct FRangedWeaponFiringInput
 	{
 		// Start of the trace

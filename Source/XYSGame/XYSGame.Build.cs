@@ -34,8 +34,8 @@ public class XYSGame : ModuleRules
 			"AIModule",
 			"SKGShooterFramework",
 			"SKGProceduralAnim",
-			"SKGShooterFrameworkActors"
-			
+			"SKGShooterFrameworkActors",
+			"SKGMuzzle"
 		});
 
 		// Uncomment if you are using Slate UI
