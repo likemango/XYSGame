@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameMode.h"
+#include "ModularGameMode.h"
 #include "XYSGameMode.generated.h"
 
 class UXYSPawnData;
@@ -11,7 +11,7 @@ class UXYSPawnData;
  * 
  */
 UCLASS()
-class XYSGAME_API AXYSGameMode : public AGameMode
+class XYSGAME_API AXYSGameMode : public AModularGameModeBase
 {
 	GENERATED_BODY()
 
