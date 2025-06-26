@@ -1,14 +1,14 @@
 ﻿// XiaoYao copyright.
 
 
-#include "Widgets/Options/ListEntries/Widget_List_String.h"
+#include "Widgets/Options/ListEntries/Widget_ListEntry_String.h"
 
 #include "CommonInputSubsystem.h"
 #include "Widgets/Components/FrontendCommonButtonBase.h"
 #include "Widgets/Components/FrontendCommonRotator.h"
 #include "Widgets/Options/DataObjects/ListDataObject_String.h"
 
-void UWidget_List_String::NativeOnInitialized()
+void UWidget_ListEntry_String::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
@@ -17,7 +17,7 @@ void UWidget_List_String::NativeOnInitialized()
 	CommonRotator_AvailableOptions->OnRotatedEvent.AddUObject(this,&ThisClass::OnRotatorValueChanged);
 }
 
-void UWidget_List_String::OnOwningListDataObjectSet(UListDataObject_Base* InOwningListDataObject)
+void UWidget_ListEntry_String::OnOwningListDataObjectSet(UListDataObject_Base* InOwningListDataObject)
 {
 	Super::OnOwningListDataObjectSet(InOwningListDataObject);
 
@@ -28,7 +28,7 @@ void UWidget_List_String::OnOwningListDataObjectSet(UListDataObject_Base* InOwni
 	CommonRotator_AvailableOptions->OnClicked().AddLambda([this](){SelectThisEntryWidget();});
 }
 
-void UWidget_List_String::OnOwningListDataObjectModified(UListDataObject_Base* OwningModifiedData, EOptionsListDataModifyReason ModifyReason)
+void UWidget_ListEntry_String::OnOwningListDataObjectModified(UListDataObject_Base* OwningModifiedData, EOptionsListDataModifyReason ModifyReason)
 {
 	if (CachedOwningStringDataObject)
 	{
@@ -36,7 +36,7 @@ void UWidget_List_String::OnOwningListDataObjectModified(UListDataObject_Base* O
 	}
 }
 
-void UWidget_List_String::OnPreviousOptionButtonClicked()
+void UWidget_ListEntry_String::OnPreviousOptionButtonClicked()
 {
 	if (CachedOwningStringDataObject)
 	{
@@ -45,7 +45,7 @@ void UWidget_List_String::OnPreviousOptionButtonClicked()
 	SelectThisEntryWidget();
 }
 
-void UWidget_List_String::OnNextOptionButtonClicked()
+void UWidget_ListEntry_String::OnNextOptionButtonClicked()
 {
 	if (CachedOwningStringDataObject)
 	{
@@ -54,7 +54,7 @@ void UWidget_List_String::OnNextOptionButtonClicked()
 	SelectThisEntryWidget();
 }
 
-void UWidget_List_String::OnRotatorValueChanged(int32 Value, bool bUserInitiated)
+void UWidget_ListEntry_String::OnRotatorValueChanged(int32 Value, bool bUserInitiated)
 {
 	if (!CachedOwningStringDataObject)
 	{
