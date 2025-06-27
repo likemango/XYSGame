@@ -10,6 +10,9 @@
 void UWidget_ListEntry_Scalar::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
+
+	AnalogSlider_SettingSlider->OnValueChanged.AddUniqueDynamic(this,&ThisClass::OnSliderValueChanged);
+	AnalogSlider_SettingSlider->OnMouseCaptureBegin.AddUniqueDynamic(this,&ThisClass::OnSliderMouseCaptureBegin);
 }
 
 void UWidget_ListEntry_Scalar::OnOwningListDataObjectSet(UListDataObject_Base* InOwningListDataObject)
@@ -31,5 +34,22 @@ void UWidget_ListEntry_Scalar::OnOwningListDataObjectSet(UListDataObject_Base* I
 
 void UWidget_ListEntry_Scalar::OnOwningListDataObjectModified(UListDataObject_Base* OwningModifiedData, EOptionsListDataModifyReason ModifyReason)
 {
-	Super::OnOwningListDataObjectModified(OwningModifiedData, ModifyReason);
+	if (CachedOwningScalarDataObject)
+	{
+		CommonNumeric_SettingValue->SetCurrentValue(CachedOwningScalarDataObject->GetCurrentValue());
+		AnalogSlider_SettingSlider->SetValue(CachedOwningScalarDataObject->GetCurrentValue());
+	}
+}
+
+void UWidget_ListEntry_Scalar::OnSliderValueChanged(float Value)
+{
+	if (CachedOwningScalarDataObject)
+	{
+		CachedOwningScalarDataObject->SetCurrentValueFromSlider(Value);
+	}
+}
+
+void UWidget_ListEntry_Scalar::OnSliderMouseCaptureBegin()
+{
+	SelectThisEntryWidget();
 }

@@ -34,6 +34,22 @@ float UListDataObject_Scalar::GetCurrentValue() const
 	return 0.0f;
 }
 
+void UListDataObject_Scalar::SetCurrentValueFromSlider(float InNewValue)
+{
+	if (DataDynamicSetter)
+	{	
+		const float ClampedValue = FMath::GetMappedRangeValueClamped(
+			DisplayValueRange,
+			OutputValueRange,
+			InNewValue
+		);
+
+		DataDynamicSetter->SetValueFromString(LexToString(ClampedValue));
+
+		NotifyListDataModified(this);
+	}
+}
+
 float UListDataObject_Scalar::StringToFloat(const FString& InString) const
 {
 	float OutConvertedValue = 0.f;
