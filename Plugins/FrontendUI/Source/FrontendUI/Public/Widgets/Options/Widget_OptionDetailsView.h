@@ -20,7 +20,7 @@ class FRONTENDUI_API UWidget_OptionDetailsView : public UUserWidget
 
 public:
 	void UpdateDetailsViewInfo(UListDataObject_Base* InDataObject,const FString& InEntryWidgetClassName = FString());
-	void ClearDetailsViewInfo();
+	void ClearDetailsViewInfo() const;
 
 protected:
 	//~ Begin UUserWidget Interface

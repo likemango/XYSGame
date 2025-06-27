@@ -186,6 +186,11 @@ void UWidget_OptionScreen::OnTabButtonSelected(FName TabId)
 
 void UWidget_OptionScreen::OnListViewItemHovered(UObject* InHoveredItem, bool bWasHovered)
 {
+	if (!InHoveredItem)
+	{
+		return;
+	}
+
 	UWidget_ListEntry_Base* HoveredEntryWidget = CommonListView_OptionsList->GetEntryWidgetFromItem<UWidget_ListEntry_Base>(InHoveredItem);
 
 	check(HoveredEntryWidget);
@@ -207,6 +212,10 @@ void UWidget_OptionScreen::OnListViewItemHovered(UObject* InHoveredItem, bool bW
 
 void UWidget_OptionScreen::OnListViewItemSelected(UObject* InSelectedItem)
 {
+	if (!InSelectedItem)
+		return;
+
+	DetailsView_ListEntryInfo->UpdateDetailsViewInfo(CastChecked<UListDataObject_Base>(InSelectedItem),TryGetEntryWidgetClassName(InSelectedItem));
 }
 
 FString UWidget_OptionScreen::TryGetEntryWidgetClassName(UObject* InOwningListItem) const

@@ -51,7 +51,7 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 		
 		GameplayTabCollection->AddChildListData(GameDifficulty);
 	}
-	//Test ItemAdd commentMore actions
+	//Test Item
 	{
 		UListDataObject_String* TestItem = NewObject<UListDataObject_String>();
 		TestItem->SetDataID(FName(TEXT("TestItem")));

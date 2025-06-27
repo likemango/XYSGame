@@ -6,12 +6,15 @@
 #include "CommonLazyImage.h"
 #include "CommonRichTextBlock.h"
 #include "CommonTextBlock.h"
+#include "DebugHelper.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Base.h"
 
 void UWidget_OptionDetailsView::UpdateDetailsViewInfo(UListDataObject_Base* InDataObject, const FString& InEntryWidgetClassName)
 {
 	if (!InDataObject) return;
 
+	UE_LOG(LogFrontend, Warning, TEXT("UWidget_OptionDetailsView::UpdateDetailsViewInfo: %s"), *InDataObject->GetDataDisplayName().ToString());
+	
 	CommonTextBlock_Title->SetText(InDataObject->GetDataDisplayName());
 	if (!InDataObject->GetSoftDescriptionImage().IsNull())
 	{
@@ -35,7 +38,7 @@ void UWidget_OptionDetailsView::UpdateDetailsViewInfo(UListDataObject_Base* InDa
 	CommonRichText_DisabledReason->SetText(InDataObject->GetDisabledRichText());
 }
 
-void UWidget_OptionDetailsView::ClearDetailsViewInfo()
+void UWidget_OptionDetailsView::ClearDetailsViewInfo() const
 {
 	CommonTextBlock_Title->SetText(FText::GetEmpty());
 	CommonLazyImage_DescriptionImage->SetVisibility(ESlateVisibility::Collapsed);
