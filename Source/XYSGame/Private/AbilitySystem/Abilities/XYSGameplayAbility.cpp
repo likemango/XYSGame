@@ -35,8 +35,7 @@ void UXYSGameplayAbility::OnPawnAvatarSet()
 	K2_OnPawnAvatarSet();
 }
 
-void UXYSGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilitySpec& Spec) const
+void UXYSGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const
 {
 	// Try to activate if activation policy is on spawn.
 	if (ActorInfo && !Spec.IsActive() && (ActivationPolicy == EXYSAbilityActivationPolicy::OnSpawn))

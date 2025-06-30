@@ -492,8 +492,8 @@ void UXYSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc 
 				ensureMsgf(AbilitySpec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced, TEXT("CancelAbilitiesByFunc: All Abilities should be Instanced (NonInstanced is being deprecated due to usability issues)."));
 		PRAGMA_ENABLE_DEPRECATION_WARNINGS
 			
-				// Cancel all the spawned instances.
-				TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
+		// Cancel all the spawned instances.
+		TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
 		for (UGameplayAbility* AbilityInstance : Instances)
 		{
 			UXYSGameplayAbility* XYSAbilityInstance = CastChecked<UXYSGameplayAbility>(AbilityInstance);

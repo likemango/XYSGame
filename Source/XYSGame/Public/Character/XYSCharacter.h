@@ -109,6 +109,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "XYS|Character")
 	FORCEINLINE USkeletalMeshComponent* GetFPUpperMesh() const { return FPUpperMesh;}
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "XYS|Character")
+	FORCEINLINE USkeletalMeshComponent* GetFPLowerMesh() const { return FPLowerMesh;}
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "XYS|Character")
 	FORCEINLINE USkeletalMeshComponent* GetTPMesh() const { return GetMesh();}
 
 private:
