@@ -20,6 +20,7 @@ public:
 	AXYSPlayerController(const FObjectInitializer& ObjectInitializer);
 	
 	//~APlayerController interface
+	virtual void BeginPlay() override;
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	//~End
 

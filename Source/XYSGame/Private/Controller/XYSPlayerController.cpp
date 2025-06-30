@@ -11,6 +11,13 @@ AXYSPlayerController::AXYSPlayerController(const FObjectInitializer& ObjectIniti
 	
 }
 
+void AXYSPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SetActorHiddenInGame(false);
+}
+
 AXYSPlayerState* AXYSPlayerController::GetXYSPlayerState() const
 {
 	return CastChecked<AXYSPlayerState>(PlayerState, ECastCheckedType::NullAllowed);
