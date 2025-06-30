@@ -5,6 +5,7 @@
 
 #include "GameplayEffectExtension.h"
 #include "XYSGameplayTags.h"
+#include "XYSLogChannels.h"
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "Message/XYSVerbMessage.h"
@@ -163,11 +164,13 @@ void UXYSHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackDa
 	if (GetHealth() != HealthBeforeAttributeChange)
 	{
 		OnHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude, HealthBeforeAttributeChange, GetHealth());
+		UE_LOG(LogXYSAbilitySystem, Warning, TEXT("CurrentHealth= %f"), GetHealth())
 	}
 
 	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
 	{
 		OnOutOfHealth.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude, HealthBeforeAttributeChange, GetHealth());
+		UE_LOG(LogXYSAbilitySystem, Warning, TEXT("OutOfHealth!"))
 	}
 
 	// Check health again in case an event above changed it.

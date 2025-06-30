@@ -42,7 +42,7 @@ struct FXYSNumberPopRequest
 };
 
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(Abstract)
 class XYSGAME_API UXYSNumberPopComponent : public UControllerComponent
 {
 	GENERATED_BODY()
