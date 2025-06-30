@@ -86,14 +86,19 @@ bool UXYSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manag
 	APawn* Pawn = GetPawn<APawn>();
 	if (!CurrentState.IsValid() && DesiredState == XYSGameplayTags::InitState_Spawned)
 	{
-		return Pawn != nullptr;
+		// As long as we have a real pawn, let us transition
+		if (Pawn)
+		{
+			return true;
+		}
 	}
-	if (CurrentState == XYSGameplayTags::InitState_Spawned && DesiredState == XYSGameplayTags::InitState_DataAvailable)
+	else if (CurrentState == XYSGameplayTags::InitState_Spawned && DesiredState == XYSGameplayTags::InitState_DataAvailable)
 	{
 		// The player state is required.
 		if (!GetPlayerState<AXYSPlayerState>())
+		{
 			return false;
-
+		}
 		// If we're authority or autonomous, we need to wait for a controller with registered ownership of the player state.
 		// 如果是server或者本地控制，那么需要controller和playerState都已经注册，并且确定从属关系
 		if (Pawn->GetLocalRole() != ROLE_SimulatedProxy)
@@ -108,44 +113,36 @@ bool UXYSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manag
 			{
 				return false;
 			}
-
-			const bool bIsLocallyControlled = Pawn->IsLocallyControlled();
-			const bool bIsBot = Pawn->IsBotControlled();
-
-			if (bIsLocallyControlled && !bIsBot)
-			{
-				AXYSPlayerController* XYSPC = GetController<AXYSPlayerController>();
-
-				// The input component and local player is required when locally controlled.
-				// 如果是本地控制，那么需要LocalPlayer和InputComponent都已经准备好
-				if (!Pawn->InputComponent || !XYSPC || !XYSPC->GetLocalPlayer())
-				{
-					return false;
-				}
-			}
-			return true;
 		}
-		return false;
+
+		const bool bIsLocallyControlled = Pawn->IsLocallyControlled();
+		const bool bIsBot = Pawn->IsBotControlled();
+
+		if (bIsLocallyControlled && !bIsBot)
+		{
+			AXYSPlayerController* XYSPC = GetController<AXYSPlayerController>();
+
+			// The input component and local player is required when locally controlled.
+			// 如果是本地控制，那么需要LocalPlayer和InputComponent都已经准备好
+			
+			if (!Pawn->InputComponent || !XYSPC || !XYSPC->GetLocalPlayer())
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
-	// 这里要依赖PawnExtension的可能原因：因为“Hero” feature是游戏核心feature，需要依赖其他feature都已经加载完毕才能判定initialized/gameplay，所以这里就依赖主feature的加载
-	if (CurrentState == XYSGameplayTags::InitState_DataAvailable && DesiredState == XYSGameplayTags::InitState_DataInitialized)
+	// HeroComponent要做的事情已经完成，接下来等待PawnExtension的更新通知
+	else if (CurrentState == XYSGameplayTags::InitState_DataAvailable && DesiredState == XYSGameplayTags::InitState_DataInitialized)
 	{
 		// Wait for player state and extension component
 		// 等待PawnExtension已经达到InitState_DataInitialized
 		AXYSPlayerState* XYSPS = GetPlayerState<AXYSPlayerState>();
 
-		if (!XYSPS)
-			return false;
-		if (Manager->HasFeatureReachedInitState(Pawn, UXYSPawnExtensionComponent::NAME_ActorFeatureName, XYSGameplayTags::InitState_DataInitialized))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return XYSPS && Manager->HasFeatureReachedInitState(Pawn, UXYSPawnExtensionComponent::NAME_ActorFeatureName, XYSGameplayTags::InitState_DataInitialized);
 	}
-	if (CurrentState == XYSGameplayTags::InitState_DataInitialized && DesiredState == XYSGameplayTags::InitState_GameplayReady)
+	else if (CurrentState == XYSGameplayTags::InitState_DataInitialized && DesiredState == XYSGameplayTags::InitState_GameplayReady)
 	{
 		return true;
 	}
@@ -165,8 +162,10 @@ void UXYSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Ma
 		APawn* Pawn = GetPawn<APawn>();
 		AXYSPlayerState* XYSPS = GetPlayerState<AXYSPlayerState>();
 		if (!ensure(Pawn && XYSPS))
+		{
 			return;
-
+		}
+		
 		const UXYSPawnData* PawnData = nullptr;
 		if (UXYSPawnExtensionComponent* PawnExtensionComponent = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
 		{

@@ -90,7 +90,7 @@ bool UXYSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManag
 		// As long as we are on a valid pawn, we count as spawned
 		return Pawn != nullptr;
 	}
-	if (CurrentState == XYSGameplayTags::InitState_Spawned && DesiredState == XYSGameplayTags::InitState_DataAvailable)
+	else if (CurrentState == XYSGameplayTags::InitState_Spawned && DesiredState == XYSGameplayTags::InitState_DataAvailable)
 	{
 		if (!PawnData)
 			return false;
@@ -103,9 +103,9 @@ bool UXYSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManag
 		}
 		return true;
 	}
-	if (CurrentState == XYSGameplayTags::InitState_DataAvailable && DesiredState == XYSGameplayTags::InitState_DataInitialized)
+	else if (CurrentState == XYSGameplayTags::InitState_DataAvailable && DesiredState == XYSGameplayTags::InitState_DataInitialized)
 	{
-		if ( Manager->HaveAllFeaturesReachedInitState(Pawn, XYSGameplayTags::InitState_DataAvailable))
+		if (Manager->HaveAllFeaturesReachedInitState(Pawn, XYSGameplayTags::InitState_DataAvailable))
 		{
 			return true;
 		}
@@ -114,7 +114,7 @@ bool UXYSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManag
 			return false;
 		}
 	}
-	if (CurrentState == XYSGameplayTags::InitState_DataInitialized && DesiredState == XYSGameplayTags::InitState_GameplayReady)
+	else if (CurrentState == XYSGameplayTags::InitState_DataInitialized && DesiredState == XYSGameplayTags::InitState_GameplayReady)
 	{
 		// 说明自己和所有组件各自的feature都已经加载完成，允许进入GameplayReady
 		return true;

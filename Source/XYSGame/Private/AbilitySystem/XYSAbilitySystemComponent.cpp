@@ -191,6 +191,82 @@ void UXYSAbilitySystemComponent::ClearAbilityInput()
 	InputHeldSpecHandles.Reset();
 }
 
+bool UXYSAbilitySystemComponent::IsActivationGroupBlocked(EXYSAbilityActivationGroup Group) const
+{
+	bool bBlocked = false;
+
+	switch (Group)
+	{
+	case EXYSAbilityActivationGroup::Independent:
+		// Independent abilities are never blocked.
+		bBlocked = false;
+		break;
+
+	case EXYSAbilityActivationGroup::Exclusive_Replaceable:
+	case EXYSAbilityActivationGroup::Exclusive_Blocking:
+		// Exclusive abilities can activate if nothing is blocking.
+		bBlocked = (ActivationGroupCounts[(uint8)EXYSAbilityActivationGroup::Exclusive_Blocking] > 0);
+		break;
+
+	default:
+		checkf(false, TEXT("IsActivationGroupBlocked: Invalid ActivationGroup [%d]\n"), (uint8)Group);
+		break;
+	}
+
+	return bBlocked;
+}
+
+void UXYSAbilitySystemComponent::AddAbilityToActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility)
+{
+	check(XYSAbility);
+	check(ActivationGroupCounts[(uint8)Group] < INT32_MAX);
+
+	ActivationGroupCounts[(uint8)Group]++;
+
+	const bool bReplicateCancelAbility = false;
+
+	switch (Group)
+	{
+	case EXYSAbilityActivationGroup::Independent:
+		// Independent abilities do not cancel any other abilities.
+		break;
+
+	case EXYSAbilityActivationGroup::Exclusive_Replaceable:
+	case EXYSAbilityActivationGroup::Exclusive_Blocking:
+		CancelActivationGroupAbilities(EXYSAbilityActivationGroup::Exclusive_Replaceable, XYSAbility, bReplicateCancelAbility);
+		break;
+
+	default:
+		checkf(false, TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"), (uint8)Group);
+		break;
+	}
+
+	const int32 ExclusiveCount = ActivationGroupCounts[(uint8)EXYSAbilityActivationGroup::Exclusive_Replaceable] + ActivationGroupCounts[(uint8)EXYSAbilityActivationGroup::Exclusive_Blocking];
+	if (!ensure(ExclusiveCount <= 1))
+	{
+		UE_LOG(LogXYSAbilitySystem, Error, TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
+	}
+}
+
+void UXYSAbilitySystemComponent::RemoveAbilityFromActivationGroup(EXYSAbilityActivationGroup Group,UXYSGameplayAbility* XYSAbility)
+{
+	check(XYSAbility);
+	check(ActivationGroupCounts[(uint8)Group] > 0);
+
+	ActivationGroupCounts[(uint8)Group]--;
+}
+
+void UXYSAbilitySystemComponent::CancelActivationGroupAbilities(EXYSAbilityActivationGroup Group,
+																UXYSGameplayAbility* IgnoreXYSAbility, bool bReplicateCancelAbility)
+{
+	TShouldCancelAbilityFunc ShouldCancelFunc = [this, Group, IgnoreXYSAbility](const UXYSGameplayAbility* XYSAbility, FGameplayAbilitySpecHandle Handle)
+	{
+		return ((XYSAbility->GetActivationGroup() == Group) && (XYSAbility != IgnoreXYSAbility));
+	};
+
+	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
+}
+
 void UXYSAbilitySystemComponent::RegisterGameplayTagChangedEvent()
 {
 	RegisterGenericGameplayTagEvent().AddUObject(this, &UXYSAbilitySystemComponent::OnAbilitySystemTagChanged);
@@ -393,57 +469,6 @@ void UXYSAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
 			XYSAbilityCDO->TryActivateAbilityOnSpawn(AbilityActorInfo.Get(), AbilitySpec);
 		}
 	}
-}
-
-void UXYSAbilitySystemComponent::AddAbilityToActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility)
-{
-	check(XYSAbility);
-	check(ActivationGroupCounts[(uint8)Group] < INT32_MAX);
-
-	ActivationGroupCounts[(uint8)Group]++;
-
-	const bool bReplicateCancelAbility = false;
-
-	switch (Group)
-	{
-	case EXYSAbilityActivationGroup::Independent:
-		// Independent abilities do not cancel any other abilities.
-		break;
-
-	case EXYSAbilityActivationGroup::Exclusive_Replaceable:
-	case EXYSAbilityActivationGroup::Exclusive_Blocking:
-		CancelActivationGroupAbilities(EXYSAbilityActivationGroup::Exclusive_Replaceable, XYSAbility, bReplicateCancelAbility);
-		break;
-
-	default:
-		checkf(false, TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"), (uint8)Group);
-		break;
-	}
-
-	const int32 ExclusiveCount = ActivationGroupCounts[(uint8)EXYSAbilityActivationGroup::Exclusive_Replaceable] + ActivationGroupCounts[(uint8)EXYSAbilityActivationGroup::Exclusive_Blocking];
-	if (!ensure(ExclusiveCount <= 1))
-	{
-		UE_LOG(LogXYSAbilitySystem, Error, TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
-	}
-}
-
-void UXYSAbilitySystemComponent::RemoveAbilityFromActivationGroup(EXYSAbilityActivationGroup Group,UXYSGameplayAbility* XYSAbility)
-{
-	check(XYSAbility);
-	check(ActivationGroupCounts[(uint8)Group] > 0);
-
-	ActivationGroupCounts[(uint8)Group]--;
-}
-
-void UXYSAbilitySystemComponent::CancelActivationGroupAbilities(EXYSAbilityActivationGroup Group,
-                                                                UXYSGameplayAbility* IgnoreXYSAbility, bool bReplicateCancelAbility)
-{
-	TShouldCancelAbilityFunc ShouldCancelFunc = [this, Group, IgnoreXYSAbility](const UXYSGameplayAbility* XYSAbility, FGameplayAbilitySpecHandle Handle)
-	{
-		return ((XYSAbility->GetActivationGroup() == Group) && (XYSAbility != IgnoreXYSAbility));
-	};
-
-	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
 }
 
 void UXYSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility)

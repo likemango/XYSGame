@@ -28,6 +28,11 @@ public:
 	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
 	void ClearAbilityInput();
 
+	bool IsActivationGroupBlocked(EXYSAbilityActivationGroup Group) const;
+	void AddAbilityToActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility);
+	void RemoveAbilityFromActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility);
+	void CancelActivationGroupAbilities(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* IgnoreXYSAbility, bool bReplicateCancelAbility);
+
 	// do something when tag changed.
 	void RegisterGameplayTagChangedEvent();
 	void OnAbilitySystemTagChanged(const FGameplayTag InTag, int32 TagCount) const;
@@ -49,10 +54,6 @@ public:
 
 private:
 	void TryActivateAbilitiesOnSpawn();
-	void AddAbilityToActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility);
-	void RemoveAbilityFromActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility);
-	
-	void CancelActivationGroupAbilities(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* IgnoreXYSAbility, bool bReplicateCancelAbility);
 	typedef TFunctionRef<bool(const UXYSGameplayAbility* XYSAbility, FGameplayAbilitySpecHandle Handle)> TShouldCancelAbilityFunc;
 	void CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility);
 

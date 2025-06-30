@@ -83,6 +83,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	UXYSHeroComponent* GetHeroComponentFromActorInfo() const;
 
+	// Returns true if the requested activation group is a valid transition.
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Lyra|Ability", Meta = (ExpandBoolAsExecs = "ReturnValue"))
+	bool CanChangeActivationGroup(EXYSAbilityActivationGroup NewGroup) const;
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "XYS|Ability", Meta = (ExpandBoolAsExecs = "ReturnValue"))
+	bool ChangeActivationGroup(EXYSAbilityActivationGroup NewGroup);
+
 	void OnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const
 	{
 		NativeOnAbilityFailedToActivate(FailedReason);
