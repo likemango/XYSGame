@@ -147,7 +147,7 @@ void UWidget_OptionScreen::OnTabButtonSelected(FName TabId)
 
 	if (CommonListView_OptionsList->GetNumItems() != 0)
 	{
-		CommonListView_OptionsList->NavigateToIndex(0);
+		// CommonListView_OptionsList->NavigateToIndex(0);
 		CommonListView_OptionsList->SetSelectedIndex(0);
 	}
 

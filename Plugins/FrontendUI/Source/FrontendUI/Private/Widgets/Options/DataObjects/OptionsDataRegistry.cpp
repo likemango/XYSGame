@@ -97,6 +97,17 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 		VolumeCategoryCollection->AddChildListData(OverallVolume);
 	}
 
+	// test image
+	{
+		UListDataObject_String* TestItem = NewObject<UListDataObject_String>();
+		TestItem->SetDataID(FName(TEXT("TestItem")));
+		TestItem->SetDataDisplayName(FText::FromString(TEXT("Test Image Item")));
+		TestItem->SetSoftDescriptionImage(UFrontendBlueprintFunctionLibrary::GetOptionsSoftImageByTag(FrontendGameplayTags::Frontend_Image_TestImage));
+		TestItem->SetDescriptionRichText(FText::FromString(TEXT("The image to display can be specified in the project settings. It can be anything the developer assigned in there")));
+
+		VolumeCategoryCollection->AddChildListData(TestItem);
+	}
+
 	//Music Volume
 	{
 		UListDataObject_Scalar* MusicVolume = NewObject<UListDataObject_Scalar>();
@@ -133,17 +144,6 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 		SoundFXVolume->SetShouldApplySettingsImmediately(true);
 
 		VolumeCategoryCollection->AddChildListData(SoundFXVolume);
-	}
-
-	// test image
-	{
-		UListDataObject_String* TestItem = NewObject<UListDataObject_String>();
-		TestItem->SetDataID(FName(TEXT("TestItem")));
-		TestItem->SetDataDisplayName(FText::FromString(TEXT("Test Image Item")));
-		TestItem->SetSoftDescriptionImage(UFrontendBlueprintFunctionLibrary::GetOptionsSoftImageByTag(FrontendGameplayTags::Frontend_Image_TestImage));
-		TestItem->SetDescriptionRichText(FText::FromString(TEXT("The image to display can be specified in the project settings. It can be anything the developer assigned in there")));
-
-		AudioTabCollection->AddChildListData(TestItem);
 	}
 
 	//Sound Category
