@@ -27,9 +27,33 @@ void UWidget_OptionScreen::NativeOnInitialized()
 	FBindUIActionArgs BindBackActionArgs(BackDataTableRowHandle, FSimpleDelegate::CreateUObject(this, &ThisClass::OnBackBoundActionTriggered));
 	BackActionHandle = RegisterUIActionBinding(BindBackActionArgs);
 
-	TabListWidget_OptionsTabs->OnTabSelected.AddDynamic(this, &ThisClass::OnTabButtonSelected);
+	TabListWidget_OptionsTabs->OnTabSelected.AddUniqueDynamic(this, &ThisClass::OnTabButtonSelected);
 	CommonListView_OptionsList->OnItemIsHoveredChanged().AddUObject(this,&ThisClass::OnListViewItemHovered);
 	CommonListView_OptionsList->OnItemSelectionChanged().AddUObject(this,&ThisClass::OnListViewItemSelected);
+}
+
+void UWidget_OptionScreen::NativeOnActivated()
+{
+	Super::NativeOnActivated();
+
+	for (UListDataObject_Collection* TabCollection : GetOrCreateOptionsDataRegistry()->GetRegisteredOptionsTabCollections())
+	{
+		if (!TabCollection)
+			continue;
+		
+		const FName TabID = TabCollection->GetDataID();
+		if (TabListWidget_OptionsTabs->GetTabButtonBaseByID(TabID))
+			continue;
+
+		TabListWidget_OptionsTabs->RequestRegisterTab(TabID, TabCollection->GetDataDisplayName());
+	}
+}
+
+void UWidget_OptionScreen::NativeOnDeactivated()
+{
+	Super::NativeOnDeactivated();
+	
+	UFrontendGameUserSettings::Get()->ApplySettings(true);
 }
 
 void UWidget_OptionScreen::OnResetBoundActionTriggered()
@@ -87,30 +111,6 @@ void UWidget_OptionScreen::OnResetBoundActionTriggered()
 void UWidget_OptionScreen::OnBackBoundActionTriggered()
 {
 	DeactivateWidget();
-}
-
-void UWidget_OptionScreen::NativeOnActivated()
-{
-	Super::NativeOnActivated();
-
-	for (UListDataObject_Collection* TabCollection : GetOrCreateOptionsDataRegistry()->GetRegisteredOptionsTabCollections())
-	{
-		if (!TabCollection)
-			continue;
-		
-		const FName TabID = TabCollection->GetDataID();
-		if (TabListWidget_OptionsTabs->GetTabButtonBaseByID(TabID))
-			continue;
-
-		TabListWidget_OptionsTabs->RequestRegisterTab(TabID, TabCollection->GetDataDisplayName());
-	}
-}
-
-void UWidget_OptionScreen::NativeOnDeactivated()
-{
-	Super::NativeOnDeactivated();
-	
-	UFrontendGameUserSettings::Get()->ApplySettings(true);
 }
 
 UWidget* UWidget_OptionScreen::NativeGetDesiredFocusTarget() const

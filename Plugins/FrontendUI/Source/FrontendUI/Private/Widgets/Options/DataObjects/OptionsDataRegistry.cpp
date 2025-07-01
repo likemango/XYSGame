@@ -135,6 +135,17 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 		VolumeCategoryCollection->AddChildListData(SoundFXVolume);
 	}
 
+	// test image
+	{
+		UListDataObject_String* TestItem = NewObject<UListDataObject_String>();
+		TestItem->SetDataID(FName(TEXT("TestItem")));
+		TestItem->SetDataDisplayName(FText::FromString(TEXT("Test Image Item")));
+		TestItem->SetSoftDescriptionImage(UFrontendBlueprintFunctionLibrary::GetOptionsSoftImageByTag(FrontendGameplayTags::Frontend_Image_TestImage));
+		TestItem->SetDescriptionRichText(FText::FromString(TEXT("The image to display can be specified in the project settings. It can be anything the developer assigned in there")));
+
+		AudioTabCollection->AddChildListData(TestItem);
+	}
+
 	//Sound Category
 	{
 		UListDataObject_Collection* SoundCategoryCollection = NewObject<UListDataObject_Collection>();
@@ -182,6 +193,25 @@ void UOptionsDataRegistry::InitVideoCollectionTab()
 	UListDataObject_Collection* VideoTabCollection = NewObject<UListDataObject_Collection>();
 	VideoTabCollection->SetDataID(FName("VideoTabCollection"));
 	VideoTabCollection->SetDataDisplayName(FText::FromString(TEXT("Video")));
+
+	//Test Item
+	{
+		UListDataObject_String* TestItem = NewObject<UListDataObject_String>();
+		TestItem->SetDataID(FName(TEXT("TestItem1")));
+		TestItem->SetDataDisplayName(FText::FromString(TEXT("Test text Item")));
+		VideoTabCollection->AddChildListData(TestItem);
+	}
+	
+	//Test Item
+	{
+		UListDataObject_String* TestItem = NewObject<UListDataObject_String>();
+		TestItem->SetDataID(FName(TEXT("TestItem2")));
+		TestItem->SetDataDisplayName(FText::FromString(TEXT("Test Image Item")));
+		TestItem->SetSoftDescriptionImage(UFrontendBlueprintFunctionLibrary::GetOptionsSoftImageByTag(FrontendGameplayTags::Frontend_Image_TestImage));
+		TestItem->SetDescriptionRichText(FText::FromString(TEXT("The image to display can be specified in the project settings. It can be anything the developer assigned in there")));
+
+		VideoTabCollection->AddChildListData(TestItem);
+	}
 
 	RegisteredOptionsTabCollections.Add(VideoTabCollection);
 }
