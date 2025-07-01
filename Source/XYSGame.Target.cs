@@ -11,11 +11,11 @@ public class XYSGameTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_6;
 		ExtraModuleNames.Add("XYSGame");
-		RegisterModulesCreatedByRider();
+		// RegisterModulesCreatedByRider();
 	}
 
-	private void RegisterModulesCreatedByRider()
-	{
-		ExtraModuleNames.AddRange(new string[] { "XYSEditor" });
-	}
+	// private void RegisterModulesCreatedByRider()
+	// {
+	// 	ExtraModuleNames.AddRange(new string[] { "XYSEditor" });
+	// }
 }
