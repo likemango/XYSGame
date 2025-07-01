@@ -70,12 +70,12 @@ float UXYSWeaponInstance::GetTimeSinceLastInteractedWith() const
 	return Result;
 }
 
-TSubclassOf<UAnimInstance> UXYSWeaponInstance::PickBestAnimLayer(bool bEquipped, const FGameplayTagContainer& CosmeticTags) const
-{
-	// const FXYSAnimLayerSelectionSet& SetToQuery = (bEquipped ? EquippedAnimSet : UneuippedAnimSet);
-	// return SetToQuery.SelectBestLayer(CosmeticTags);
-	return EquippedAnimLayer;
-}
+// TSubclassOf<UAnimInstance> UXYSWeaponInstance::PickBestAnimLayer(bool bEquipped, const FGameplayTagContainer& CosmeticTags) const
+// {
+// 	// const FXYSAnimLayerSelectionSet& SetToQuery = (bEquipped ? EquippedAnimSet : UneuippedAnimSet);
+// 	// return SetToQuery.SelectBestLayer(CosmeticTags);
+// 	return FPEquippedAnimLayer;
+// }
 
 const FPlatformUserId UXYSWeaponInstance::GetOwningUserId() const
 {

@@ -32,11 +32,14 @@ public:
 	float GetTimeSinceLastInteractedWith() const;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animation)
-	TSubclassOf<UAnimInstance> EquippedAnimLayer;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animation)
-	TSubclassOf<UAnimInstance> UneuippedAnimLayer;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation|FP")
+	TSubclassOf<UAnimInstance> FPEquippedAnimLayer;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation|FP")
+	TSubclassOf<UAnimInstance> FPUneuippedAnimLayer;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation|TP")
+	TSubclassOf<UAnimInstance> TPEquippedAnimLayer;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Animation|TP")
+	TSubclassOf<UAnimInstance> TPUneuippedAnimLayer;
 
 	/**
 	 * Device properties that should be applied while this weapon is equipped.
@@ -47,8 +50,8 @@ protected:
 	TArray<TObjectPtr<UInputDeviceProperty>> ApplicableDeviceProperties;
 	
 	// Choose the best layer from EquippedAnimSet or UneuippedAnimSet based on the specified gameplay tags
-	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category=Animation)
-	TSubclassOf<UAnimInstance> PickBestAnimLayer(bool bEquipped, const FGameplayTagContainer& CosmeticTags) const;
+	// UFUNCTION(BlueprintCallable, BlueprintPure=false, Category=Animation)
+	// TSubclassOf<UAnimInstance> PickBestAnimLayer(bool bEquipped, const FGameplayTagContainer& CosmeticTags) const;
 
 	/** Returns the owning Pawn's Platform User ID */
 	UFUNCTION(BlueprintCallable)
