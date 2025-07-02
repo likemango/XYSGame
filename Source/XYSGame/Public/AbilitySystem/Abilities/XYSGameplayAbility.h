@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "XYSGameplayAbility.generated.h"
 
+class UXYSAbilityCost;
 class UXYSHeroComponent;
 class UXYSAbilitySystemComponent;
 class AXYSCharacter;
@@ -51,6 +52,46 @@ enum class EXYSAbilityActivationGroup : uint8
 	MAX	UMETA(Hidden)
 };
 
+/** Failure reason that can be used to play an animation montage when a failure occurs */
+USTRUCT(BlueprintType)
+struct FXYSAbilityMontageFailureMessage
+{
+	GENERATED_BODY()
+
+public:
+	// Player controller that failed to activate the ability, if the AbilitySystemComponent was player owned
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<APlayerController> PlayerController = nullptr;
+
+	// Avatar actor that failed to activate the ability
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<AActor> AvatarActor = nullptr;
+
+	// All the reasons why this ability has failed
+	UPROPERTY(BlueprintReadWrite)
+	FGameplayTagContainer FailureTags;
+
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UAnimMontage> FailureMontage = nullptr;
+};
+
+USTRUCT(BlueprintType)
+struct FXYSAbilitySimpleFailureMessage
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<APlayerController> PlayerController = nullptr;
+
+	UPROPERTY(BlueprintReadWrite)
+	FGameplayTagContainer FailureTags;
+
+	UPROPERTY(BlueprintReadWrite)
+	FText UserFacingReason;
+};
+
+
 /**
  * 
  */
@@ -91,7 +132,7 @@ public:
 	UXYSHeroComponent* GetHeroComponentFromActorInfo() const;
 
 	// Returns true if the requested activation group is a valid transition.
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Lyra|Ability", Meta = (ExpandBoolAsExecs = "ReturnValue"))
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "XYS|Ability", Meta = (ExpandBoolAsExecs = "ReturnValue"))
 	bool CanChangeActivationGroup(EXYSAbilityActivationGroup NewGroup) const;
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "XYS|Ability", Meta = (ExpandBoolAsExecs = "ReturnValue"))
@@ -105,13 +146,17 @@ public:
 
 protected:
 	//~UGameplayAbility interface
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+	virtual void SetCanBeCanceled(bool bCanBeCanceled) override;
+	virtual bool CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const;
+	virtual void ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const;
+
 	//~End of UGameplayAbility interface
 
-	
 	// Called when the ability fails to activate(Native)
 	virtual void NativeOnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const;
 	// Called when the ability fails to activate(Blueprint)
@@ -125,4 +170,16 @@ protected:
 	// Defines the relationship between this ability activating and other abilities activating.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Activation")
 	EXYSAbilityActivationGroup ActivationGroup;
+	// Additional costs that must be paid to activate this ability
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = Costs)
+	TArray<TObjectPtr<UXYSAbilityCost>> AdditionalCosts;
+	// Map of failure tags to simple error messages
+	UPROPERTY(EditDefaultsOnly, Category = "Advanced", meta=(ForceInlineRow))
+	TMap<FGameplayTag, FText> FailureTagToUserFacingMessages;
+	// Map of failure tags to anim montages that should be played with them
+	UPROPERTY(EditDefaultsOnly, Category = "Advanced", meta=(ForceInlineRow))
+	TMap<FGameplayTag, TObjectPtr<UAnimMontage>> FailureTagToAnimMontage;
+	// If true, extra information should be logged when this ability is canceled. This is temporary, used for tracking a bug.
+	UPROPERTY(EditDefaultsOnly, Category = "Advanced")
+	bool bLogCancelation;
 };

@@ -32,6 +32,9 @@ public:
 	void AddAbilityToActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility);
 	void RemoveAbilityFromActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility);
 	void CancelActivationGroupAbilities(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* IgnoreXYSAbility, bool bReplicateCancelAbility);
+	
+	/** Gets the ability target data associated with the given ability handle and activation info */
+	void GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
 
 	// do something when tag changed.
 	void RegisterGameplayTagChangedEvent();

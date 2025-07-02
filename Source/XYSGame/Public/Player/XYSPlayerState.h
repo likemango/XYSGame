@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
+#include "System/GameplayTagStack.h"
 #include "XYSPlayerState.generated.h"
 
 class UXYSPawnData;
@@ -32,6 +33,17 @@ public:
 
 	void SetPawnData(const UXYSPawnData* InPawnData);
 
+	// ~PlayerState tags
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Teams)
+	void AddStatTagStack(FGameplayTag Tag, int32 StackCount);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Teams)
+	void RemoveStatTagStack(FGameplayTag Tag, int32 StackCount);
+	UFUNCTION(BlueprintCallable, Category=Teams)
+	int32 GetStatTagStackCount(FGameplayTag Tag) const;
+	UFUNCTION(BlueprintCallable, Category=Teams)
+	bool HasStatTag(FGameplayTag Tag) const;
+	// ~
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="GAS|PlayerState")
 	TObjectPtr<UXYSAbilitySystemComponent> AbilitySystemComponent;
@@ -46,4 +58,8 @@ protected:
 
 	UFUNCTION()
 	void OnRep_PawnData();
+
+private:
+	UPROPERTY(Replicated)
+	FGameplayTagStackContainer StatTags;
 };

@@ -267,6 +267,16 @@ void UXYSAbilitySystemComponent::CancelActivationGroupAbilities(EXYSAbilityActiv
 	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
 }
 
+void UXYSAbilitySystemComponent::GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle,
+	FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
+{
+	TSharedPtr<FAbilityReplicatedDataCache> ReplicatedData = AbilityTargetDataMap.Find(FGameplayAbilitySpecHandleAndPredictionKey(AbilityHandle, ActivationInfo.GetActivationPredictionKey()));
+	if (ReplicatedData.IsValid())
+	{
+		OutTargetDataHandle = ReplicatedData->TargetData;
+	}
+}
+
 void UXYSAbilitySystemComponent::RegisterGameplayTagChangedEvent()
 {
 	RegisterGenericGameplayTagEvent().AddUObject(this, &UXYSAbilitySystemComponent::OnAbilitySystemTagChanged);

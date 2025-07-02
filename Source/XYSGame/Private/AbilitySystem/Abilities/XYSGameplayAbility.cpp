@@ -3,12 +3,17 @@
 
 #include "AbilitySystem/Abilities/XYSGameplayAbility.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemLog.h"
+#include "XYSGameplayTags.h"
+#include "XYSLogChannels.h"
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
+#include "AbilitySystem/Abilities/XYSAbilityCost.h"
 #include "Character/XYSCharacter.h"
 #include "Character/XYSCharacterMovementComponent.h"
 #include "Character/XYSHeroComponent.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 
 #define ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(FunctionName, ReturnValue)																				\
 {																																						\
@@ -19,6 +24,8 @@ return ReturnValue;																																\
 }																																					\
 }
 
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_ABILITY_SIMPLE_FAILURE_MESSAGE);
+
 UXYSGameplayAbility::UXYSGameplayAbility(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
@@ -28,6 +35,8 @@ UXYSGameplayAbility::UXYSGameplayAbility(const FObjectInitializer& ObjectInitial
 
 	ActivationPolicy = EXYSAbilityActivationPolicy::OnInputTriggered;
 	ActivationGroup = EXYSAbilityActivationGroup::Independent;
+
+	bLogCancelation = false;
 }
 
 void UXYSGameplayAbility::OnPawnAvatarSet()
@@ -164,6 +173,34 @@ bool UXYSGameplayAbility::ChangeActivationGroup(EXYSAbilityActivationGroup NewGr
 	return true;
 }
 
+bool UXYSGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
+	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	if (!ActorInfo || !ActorInfo->AbilitySystemComponent.IsValid())
+	{
+		return false;
+	}
+
+	if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
+	{
+		return false;
+	}
+
+	//@TODO Possibly remove after setting up tag relationships
+	UXYSAbilitySystemComponent* XYSASC = CastChecked<UXYSAbilitySystemComponent>(ActorInfo->AbilitySystemComponent.Get());
+	if (XYSASC->IsActivationGroupBlocked(ActivationGroup))
+	{
+		if (OptionalRelevantTags)
+		{
+			OptionalRelevantTags->AddTag(XYSGameplayTags::Ability_ActivateFail_ActivationGroup);
+		}
+		return false;
+	}
+
+	return true;
+}
+
 void UXYSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
@@ -192,8 +229,127 @@ void UXYSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,con
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
+void UXYSGameplayAbility::SetCanBeCanceled(bool bCanBeCanceled)
+{
+	// The ability can not block canceling if it's replaceable.
+	if (!bCanBeCanceled && (ActivationGroup == EXYSAbilityActivationGroup::Exclusive_Replaceable))
+	{
+		UE_LOG(LogXYSAbilitySystem, Error, TEXT("SetCanBeCanceled: Ability [%s] can not block canceling because its activation group is replaceable."), *GetName());
+		return;
+	}
+	
+	Super::SetCanBeCanceled(bCanBeCanceled);
+}
+
+bool UXYSGameplayAbility::CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	FGameplayTagContainer* OptionalRelevantTags) const
+{
+	if (!Super::CheckCost(Handle, ActorInfo, OptionalRelevantTags) || !ActorInfo)
+	{
+		return false;
+	}
+
+	// Verify we can afford any additional costs
+	for (const TObjectPtr<UXYSAbilityCost>& AdditionalCost : AdditionalCosts)
+	{
+		if (AdditionalCost != nullptr)
+		{
+			if (!AdditionalCost->CheckCost(this, Handle, ActorInfo, /*inout*/ OptionalRelevantTags))
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+void UXYSGameplayAbility::ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	Super::ApplyCost(Handle, ActorInfo, ActivationInfo);
+
+	check(ActorInfo);
+
+	// Used to determine if the ability actually hit a target (as some costs are only spent on successful attempts)
+	auto DetermineIfAbilityHitTarget = [&]()
+	{
+		if (ActorInfo->IsNetAuthority())
+		{
+			if (UXYSAbilitySystemComponent* ASC = Cast<UXYSAbilitySystemComponent>(ActorInfo->AbilitySystemComponent.Get()))
+			{
+				FGameplayAbilityTargetDataHandle TargetData;
+				ASC->GetAbilityTargetData(Handle, ActivationInfo, TargetData);
+				for (int32 TargetDataIdx = 0; TargetDataIdx < TargetData.Data.Num(); ++TargetDataIdx)
+				{
+					if (UAbilitySystemBlueprintLibrary::TargetDataHasHitResult(TargetData, TargetDataIdx))
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	};
+
+	// Pay any additional costs
+	bool bAbilityHitTarget = false;
+	bool bHasDeterminedIfAbilityHitTarget = false;
+	for (const TObjectPtr<UXYSAbilityCost>& AdditionalCost : AdditionalCosts)
+	{
+		if (AdditionalCost != nullptr)
+		{
+			if (AdditionalCost->ShouldOnlyApplyCostOnHit())
+			{
+				if (!bHasDeterminedIfAbilityHitTarget)
+				{
+					bAbilityHitTarget = DetermineIfAbilityHitTarget();
+					bHasDeterminedIfAbilityHitTarget = true;
+				}
+
+				if (!bAbilityHitTarget)
+				{
+					continue;
+				}
+			}
+
+			AdditionalCost->ApplyCost(this, Handle, ActorInfo, ActivationInfo);
+		}
+	}
+}
+
 void UXYSGameplayAbility::NativeOnAbilityFailedToActivate(const FGameplayTagContainer& FailedReason) const
 {
-	// todo
+	bool bSimpleFailureFound = false;
+	for (FGameplayTag Reason : FailedReason)
+	{
+		if (!bSimpleFailureFound)
+		{
+			if (const FText* pUserFacingMessage = FailureTagToUserFacingMessages.Find(Reason))
+			{
+				FXYSAbilitySimpleFailureMessage Message;
+				Message.PlayerController = GetActorInfo().PlayerController.Get();
+				Message.FailureTags = FailedReason;
+				Message.UserFacingReason = *pUserFacingMessage;
+
+				UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+				MessageSystem.BroadcastMessage(XYSGameplayTags::TAG_ABILITY_SIMPLE_FAILURE_MESSAGE, Message);
+				bSimpleFailureFound = true;
+			}
+		}
+		
+		if (UAnimMontage* pMontage = FailureTagToAnimMontage.FindRef(Reason))
+		{
+			FXYSAbilityMontageFailureMessage Message;
+			Message.PlayerController = GetActorInfo().PlayerController.Get();
+			Message.AvatarActor = GetActorInfo().AvatarActor.Get();
+			Message.FailureTags = FailedReason;
+			Message.FailureMontage = pMontage;
+
+			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+			MessageSystem.BroadcastMessage(XYSGameplayTags::TAG_ABILITY_PLAY_MONTAGE_FAILURE_MESSAGE, Message);
+		}
+	}
 }
 

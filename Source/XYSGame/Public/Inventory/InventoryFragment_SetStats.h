@@ -17,7 +17,7 @@ class XYSGAME_API UInventoryFragment_SetStats : public UXYSInventoryItemFragment
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	UPROPERTY(EditDefaultsOnly, meta=(ForceInlineRow, DisplayName="Item Stats"), Category=Equipment)
 	TMap<FGameplayTag, int32> InitialItemStats;
 
 public:

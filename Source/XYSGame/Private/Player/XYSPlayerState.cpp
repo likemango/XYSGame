@@ -34,6 +34,8 @@ void AXYSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 	SharedParams.bIsPushBased = true;
 
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, PawnData, SharedParams);
+
+	DOREPLIFETIME(ThisClass, StatTags);	
 }
 
 UAbilitySystemComponent* AXYSPlayerState::GetAbilitySystemComponent() const
@@ -83,6 +85,26 @@ void AXYSPlayerState::SetPawnData(const UXYSPawnData* InPawnData)
 	// UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_LyraAbilityReady);
 
 	ForceNetUpdate();
+}
+
+void AXYSPlayerState::AddStatTagStack(FGameplayTag Tag, int32 StackCount)
+{
+	StatTags.AddStack(Tag, StackCount);
+}
+
+void AXYSPlayerState::RemoveStatTagStack(FGameplayTag Tag, int32 StackCount)
+{
+	StatTags.RemoveStack(Tag, StackCount);
+}
+
+int32 AXYSPlayerState::GetStatTagStackCount(FGameplayTag Tag) const
+{
+	return StatTags.GetStackCount(Tag);
+}
+
+bool AXYSPlayerState::HasStatTag(FGameplayTag Tag) const
+{
+	return StatTags.ContainsTag(Tag);
 }
 
 void AXYSPlayerState::OnRep_PawnData()
