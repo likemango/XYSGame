@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FrontendTypes.h"
+#include "FrontendTypes/FrontendTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "FrontendUISubsystem.generated.h"
 
@@ -32,8 +32,8 @@ class FRONTENDUI_API UFrontendUISubsystem : public UGameInstanceSubsystem
 public:
 	static UFrontendUISubsystem* Get(const UObject* WorldContextObject);
 
-	void PushSoftWidgetClassToStackAsync(const FGameplayTag& InTag, TSoftClassPtr<UWidget_ActivatableBase>& InSoftWidgetClass,
-		TFunction<void(EAsyncPushWidgetState,UWidget_ActivatableBase*)> AsyncPushWidgetCallback) const;
+	void PushSoftWidgetClassToStackAsync(const FGameplayTag& InTag, TSoftClassPtr<UWidget_ActivatableBase> InSoftWidgetClass,
+		TFunction<void(EAsyncPushWidgetState,UWidget_ActivatableBase*)> AsyncPushWidgetCallback);
 
 	void PushConfirmScreenToModalStackAsync(EConfirmScreenType InScreenType, const FText& InScreenTitle, const FText& InScreenMessage,
 		TFunction<void(EConfirmScreenButtonType)> ButtonClickedCallback);

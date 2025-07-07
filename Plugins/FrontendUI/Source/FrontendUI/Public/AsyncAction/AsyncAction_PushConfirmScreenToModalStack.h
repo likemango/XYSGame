@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FrontendTypes.h"
+#include "FrontendTypes/FrontendTypes.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "AsyncAction_PushConfirmScreenToModalStack.generated.h"
 

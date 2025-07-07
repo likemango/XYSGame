@@ -6,7 +6,7 @@
 #include "CommonLazyImage.h"
 #include "CommonRichTextBlock.h"
 #include "CommonTextBlock.h"
-#include "DebugHelper.h"
+#include "Debug.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Base.h"
 
 void UWidget_OptionDetailsView::UpdateDetailsViewInfo(UListDataObject_Base* InDataObject, const FString& InEntryWidgetClassName)
@@ -35,7 +35,7 @@ void UWidget_OptionDetailsView::UpdateDetailsViewInfo(UListDataObject_Base* InDa
 
 	CommonRichText_DynamicDetails->SetText(FText::FromString(DynamicDetails));
 
-	CommonRichText_DisabledReason->SetText(InDataObject->GetDisabledRichText());
+	CommonRichText_DisabledReason->SetText(InDataObject->IsDataCurrentlyEditable()? FText::GetEmpty() : InDataObject->GetDisabledRichText());
 }
 
 void UWidget_OptionDetailsView::ClearDetailsViewInfo() const

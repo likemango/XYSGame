@@ -3,7 +3,7 @@
 
 #include "Widgets/Options/Widget_OptionScreen.h"
 
-#include "DebugHelper.h"
+#include "Debug.h"
 #include "FrontendSettings/FrontendGameUserSettings.h"
 #include "Input/CommonUIInputTypes.h"
 #include "Subsystem/FrontendUISubsystem.h"
@@ -88,12 +88,12 @@ void UWidget_OptionScreen::OnResetBoundActionTriggered()
 
 				if (DataToReset->TryResetBackToDefaultValue())
 				{
-					DebugHelper::Print(DataToReset->GetDataDisplayName().ToString() + TEXT(" was reset"));
+					Debug::Print(DataToReset->GetDataDisplayName().ToString() + TEXT(" was reset"));
 				}
 				else
 				{
 					bHasDataFailedToReset = true;
-					DebugHelper::Print(DataToReset->GetDataDisplayName().ToString() + TEXT(" failed to reset"));
+					Debug::Print(DataToReset->GetDataDisplayName().ToString() + TEXT(" failed to reset"));
 				}
 			}
 
@@ -147,8 +147,8 @@ void UWidget_OptionScreen::OnTabButtonSelected(FName TabId)
 
 	if (CommonListView_OptionsList->GetNumItems() != 0)
 	{
-		// CommonListView_OptionsList->NavigateToIndex(0);
 		CommonListView_OptionsList->SetSelectedIndex(0);
+		CommonListView_OptionsList->NavigateToIndex(0);
 	}
 
 	ResettableDataArray.Empty();

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FrontendTypes.h"
+#include "FrontendTypes/FrontendTypes.h"
 #include "Widget_ActivatableBase.h"
 #include "Widget_ConfirmScreen.generated.h"
 
@@ -36,6 +36,11 @@ public:
 
 	// get call when this widget is constructed before it's pushed to the modal stack
 	void InitConfirmScreen(const FConfirmScreenInfoStruct& ScreenInfo, TFunction<void(EConfirmScreenButtonType)> ClickedButtonCallback);
+
+protected:
+	//~Begin UCommonActivatableWidget interface
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
+	//~End
 	
 private:
 	UPROPERTY(meta = (BindWidget))

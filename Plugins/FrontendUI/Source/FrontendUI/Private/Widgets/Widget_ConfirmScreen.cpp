@@ -4,7 +4,7 @@
 #include "Widgets/Widget_ConfirmScreen.h"
 
 #include "CommonTextBlock.h"
-#include "DebugHelper.h"
+#include "Debug.h"
 #include "ICommonInputModule.h"
 #include "Components/DynamicEntryBox.h"
 #include "Widgets/Components/FrontendCommonButtonBase.h"
@@ -111,10 +111,16 @@ void UWidget_ConfirmScreen::InitConfirmScreen(const FConfirmScreenInfoStruct& Sc
 			DeactivateWidget();
 		});
 	}
+}
+
+UWidget* UWidget_ConfirmScreen::NativeGetDesiredFocusTarget() const
+{
 	if (DynamicEntryBox_Buttons->GetNumEntries() != 0)
 	{
 		DynamicEntryBox_Buttons->GetAllEntries().Last()->SetFocus();
 	}
+
+	return Super::NativeGetDesiredFocusTarget();
 }
 
 

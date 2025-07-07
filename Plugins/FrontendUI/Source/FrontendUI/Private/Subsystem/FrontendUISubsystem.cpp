@@ -3,7 +3,6 @@
 
 #include "Subsystem/FrontendUISubsystem.h"
 
-#include "DebugHelper.h"
 #include "FrontendGameplayTags.h"
 #include "Engine/AssetManager.h"
 #include "FunctionLibrary/FrontendBlueprintFunctionLibrary.h"
@@ -37,8 +36,8 @@ bool UFrontendUISubsystem::ShouldCreateSubsystem(UObject* Outer) const
 }
 
 void UFrontendUISubsystem::PushSoftWidgetClassToStackAsync(const FGameplayTag& InTag,
-	TSoftClassPtr<UWidget_ActivatableBase>& InSoftWidgetClass,
-	TFunction<void(EAsyncPushWidgetState, UWidget_ActivatableBase*)> AsyncPushWidgetCallback) const
+	TSoftClassPtr<UWidget_ActivatableBase> InSoftWidgetClass,
+	TFunction<void(EAsyncPushWidgetState, UWidget_ActivatableBase*)> AsyncPushWidgetCallback) 
 {
 	UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(InSoftWidgetClass.ToSoftObjectPath(), FStreamableDelegate::CreateLambda(
 		[InSoftWidgetClass, this, InTag, AsyncPushWidgetCallback]()

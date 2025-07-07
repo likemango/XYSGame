@@ -29,7 +29,8 @@ public class FrontendUI : ModuleRules
 				"CommonUI",
 				"UMG",
 				"DeveloperSettings",
-				"GameplayTags"
+				"GameplayTags",
+				"PreLoadScreen"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -44,7 +45,8 @@ public class FrontendUI : ModuleRules
 				"SlateCore",
 				"CommonInput",
 				"InputCore",
-				"PropertyPath"
+				"PropertyPath",
+				"EnhancedInput",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
