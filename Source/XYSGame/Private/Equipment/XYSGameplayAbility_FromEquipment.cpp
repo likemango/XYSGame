@@ -39,6 +39,7 @@ UXYSInventoryItemInstance* UXYSGameplayAbility_FromEquipment::GetAssociatedItem(
 #if WITH_EDITOR
 EDataValidationResult UXYSGameplayAbility_FromEquipment::IsDataValid(FDataValidationContext& Context) const
 {
+	Super::IsDataValid(Context);
 	EDataValidationResult Result = Super::IsDataValid(Context);
 
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
