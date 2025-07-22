@@ -56,8 +56,16 @@
 			"Enabled": true
 		},
 		{
-			"Name": "AudioModulation",
-			"Enabled": true
+			"Name": "CommonGame",
+			"Enabled" :true
+		},
+		{
+			"Name": "CommonUser",
+			"Enabled" :true
+		},
+		{
+			"Name": "GameSubtitles",
+			"Enabled" :true
 		}
 	]
 }

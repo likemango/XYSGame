@@ -24,11 +24,12 @@ protected:
 #endif
 	
 private:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FrontendTabListSettings", meta=(AllowPrivateAccess="true"))
+	TSubclassOf<UFrontendCommonButtonBase> TabButtonEntryWidgetClass;
+	
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FrontendTabListSettings", meta=(AllowPrivateAccess="true", ClampMin="1", ClampMax="10"))
 	int32 TabCount;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FrontendTabListSettings", meta=(AllowPrivateAccess="true"))
-	TSubclassOf<UFrontendCommonButtonBase> TabButtonEntryWidgetClass;
 #endif
 	
 };

@@ -3,7 +3,7 @@
 
 #include "Widgets/Widget_PrimaryLayout.h"
 
-#include "DebugHelper.h"
+#include "Debug.h"
 #include "GameplayTagContainer.h"
 
 UCommonActivatableWidgetContainerBase* UWidget_PrimaryLayout::FindWidgetStackByTag(const FGameplayTag& InTag) const

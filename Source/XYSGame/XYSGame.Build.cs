@@ -24,7 +24,10 @@ public class XYSGame : ModuleRules
 			"ModularGameplay",
 			"SlateCore",
 			"Niagara",
-			"ModularGameplayActors"
+			"ModularGameplayActors",
+			"CommonUI", 
+			"GameSettings",
+			
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
@@ -35,7 +38,13 @@ public class XYSGame : ModuleRules
 			"SKGShooterFramework",
 			"SKGProceduralAnim",
 			"SKGShooterFrameworkActors",
-			"SKGMuzzle"
+			"SKGMuzzle", 
+			"CommonGame",
+			"Kismet",
+			"UMG",
+			"InputCore",
+			"ApplicationCore", 
+			"GameSubtitles",
 		});
 
 		// Uncomment if you are using Slate UI

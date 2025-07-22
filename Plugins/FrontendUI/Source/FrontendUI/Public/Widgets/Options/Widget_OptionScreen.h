@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FrontendTypes.h"
+#include "FrontendTypes/FrontendTypes.h"
 #include "Widgets/Widget_ActivatableBase.h"
 #include "Widget_OptionScreen.generated.h"
 

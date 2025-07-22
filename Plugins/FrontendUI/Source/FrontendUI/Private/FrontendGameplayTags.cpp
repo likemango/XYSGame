@@ -16,7 +16,8 @@ namespace FrontendGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Frontend_Widget_StoryScreen, TEXT("Frontend.Widget.StoryScreen"));
 
 	UE_DEFINE_GAMEPLAY_TAG(Frontend_Widget_OptionScreen, TEXT("Frontend.Widget.OptionScreen"));
-
+	UE_DEFINE_GAMEPLAY_TAG(Frontend_Widget_KeyRemapScreen,"Frontend.Widget.KeyRemapScreen");
+	
 	//Frontend Options Image
 	UE_DEFINE_GAMEPLAY_TAG(Frontend_Image_TestImage,"Frontend.Image.TestImage");
 }

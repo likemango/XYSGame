@@ -25,6 +25,8 @@ protected:
 	virtual void OnDataObjectInitialized() override;
 	virtual bool CanResetBackToDefaultValue() const override;
 	virtual bool TryResetBackToDefaultValue() override;
+	virtual bool CanSetToForcedStringValue(const FString& InForcedValue) const override;
+	virtual void OnSetToForcedStringValue(const FString& InForcedValue) override;
 	//~ End UListDataObject_Base Interface
 	
 	bool TrySetDisplayTextFromStringValue(const FString& InStringValue);
@@ -94,4 +96,19 @@ public:
 
 		SetDefaultValueFromString(ConvertedEnumString);
 	}
+};
+
+UCLASS()
+class FRONTENDUI_API UListDataObject_StringInteger : public UListDataObject_String
+{
+	GENERATED_BODY()
+
+public:
+	void AddIntegerOption(int32 InIntegerValue,const FText& InDisplayText);
+
+protected:
+	//~ Begin UListDataObject_String Interface
+	virtual void OnDataObjectInitialized() override;
+	virtual void OnEditDependencyDataModified(UListDataObject_Base* ModifiedDependencyData,EOptionsListDataModifyReason ModifyReason) override;
+	//~ End UListDataObject_String Interface
 };
