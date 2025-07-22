@@ -8,51 +8,101 @@ public class XYSGame : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
+		PublicIncludePaths.AddRange(
+			new string[] {
+				"XYSGame"
+			}
+		);
+
+		PrivateIncludePaths.AddRange(
+			new string[] {
+			}
+		);
+		
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core",
+			"CoreOnline",
 			"CoreUObject",
+			"ApplicationCore",
 			"Engine",
-			"InputCore",
-			"EnhancedInput",
-			"GameplayAbilities",
-			"MetasoundEngine",
+			"PhysicsCore",
 			"GameplayTags",
 			"GameplayTasks",
-			"NetCore",
-			"PhysicsCore", 
+			"GameplayAbilities",
+			"AIModule",
 			"ModularGameplay",
-			"SlateCore",
-			"Niagara",
 			"ModularGameplayActors",
-			"CommonUI", 
-			"GameSettings",
-			
+			"DataRegistry",
+			"ReplicationGraph",
+			"GameFeatures",
+			"SignificanceManager",
+			"Hotfix",
+			"CommonLoadingScreen",
+			"Niagara",
+			"AsyncMixin",
+			"ControlFlows",
+			"PropertyPath"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
-			"GameplayMessageRuntime",
-			"IrisCore", 
-			"AIModule",
 			"SKGShooterFramework",
 			"SKGProceduralAnim",
 			"SKGShooterFrameworkActors",
 			"SKGMuzzle", 
-			"CommonGame",
-			"Kismet",
-			"UMG",
 			"InputCore",
-			"ApplicationCore", 
+			"Slate",
+			"SlateCore",
+			"RenderCore",
+			"DeveloperSettings",
+			"EnhancedInput",
+			"NetCore",
+			"RHI",
+			"Projects",
+			"Gauntlet",
+			"UMG",
+			"CommonUI",
+			"CommonInput",
+			"GameSettings",
+			"CommonGame",
+			"CommonUser",
 			"GameSubtitles",
+			"GameplayMessageRuntime",
+			"AudioMixer",
+			"NetworkReplayStreaming",
+			"UIExtension",
+			"ClientPilot",
+			"AudioModulation",
+			"EngineSettings",
+			"DTLSHandlerComponent",
+			"Json",
 		});
 
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-		
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
+		DynamicallyLoadedModuleNames.AddRange(
+			new string[] {
+			}
+		);
 
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+		// Generate compile errors if using DrawDebug functions in test/shipping builds.
+		PublicDefinitions.Add("SHIPPING_DRAW_DEBUG_ERROR=1");
+
+		// Basic setup for External RPC Framework.
+		// Functionality within framework will be stripped in shipping to remove vulnerabilities.
+		PrivateDependencyModuleNames.Add("ExternalRpcRegistry");
+		PrivateDependencyModuleNames.Add("HTTPServer"); // Dependency for ExternalRpcRegistry
+		if (Target.Configuration == UnrealTargetConfiguration.Shipping)
+		{
+			PublicDefinitions.Add("WITH_RPC_REGISTRY=0");
+			PublicDefinitions.Add("WITH_HTTPSERVER_LISTENERS=0");
+		}
+		else
+		{
+			PublicDefinitions.Add("WITH_RPC_REGISTRY=1");
+			PublicDefinitions.Add("WITH_HTTPSERVER_LISTENERS=1");
+		}
+
+		SetupGameplayDebuggerSupport(Target);
+		SetupIrisSupport(Target);
 	}
 }

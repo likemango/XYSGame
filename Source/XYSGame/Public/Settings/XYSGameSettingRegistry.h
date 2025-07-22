@@ -6,6 +6,22 @@
 #include "GameSettingRegistry.h"
 #include "XYSGameSettingRegistry.generated.h"
 
+class UXYSLocalPlayer;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogXYSGameSettingRegistry, Log, Log);
+
+#define GET_SHARED_SETTINGS_FUNCTION_PATH(FunctionOrPropertyName)							\
+MakeShared<FGameSettingDataSourceDynamic>(TArray<FString>({								\
+GET_FUNCTION_NAME_STRING_CHECKED(UXYSLocalPlayer, GetSharedSettings),				\
+GET_FUNCTION_NAME_STRING_CHECKED(UXYSSettingsShared, FunctionOrPropertyName)		\
+}))
+
+#define GET_LOCAL_SETTINGS_FUNCTION_PATH(FunctionOrPropertyName)							\
+MakeShared<FGameSettingDataSourceDynamic>(TArray<FString>({								\
+GET_FUNCTION_NAME_STRING_CHECKED(UXYSLocalPlayer, GetLocalSettings),				\
+GET_FUNCTION_NAME_STRING_CHECKED(UXYSSettingsLocal, FunctionOrPropertyName)		\
+}))
+
 /**
  * 
  */

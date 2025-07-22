@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SubtitleDisplayOptions.h"
 #include "GameFramework/SaveGame.h"
 #include "XYSSettingsShared.generated.h"
 

@@ -7,6 +7,10 @@
 #include "Teams/XYSTeamAgentInterface.h"
 #include "XYSLocalPlayer.generated.h"
 
+class UInputMappingContext;
+struct FSwapAudioOutputResult;
+class UXYSSettingsShared;
+class UXYSSettingsLocal;
 /**
  * 
  */

@@ -33,6 +33,7 @@ class XYSGAME_API IXYSTeamAgentInterface : public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
+public:
 	virtual FOnXYSTeamIndexChangedDelegate* GetOnTeamIndexChangedDelegate() { return nullptr; }
 
 	static void ConditionalBroadcastTeamChanged(TScriptInterface<IXYSTeamAgentInterface> This, FGenericTeamId OldTeamID, FGenericTeamId NewTeamID);
