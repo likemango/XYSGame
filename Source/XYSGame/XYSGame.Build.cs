@@ -43,7 +43,8 @@ public class XYSGame : ModuleRules
 			"Kismet",
 			"UMG",
 			"InputCore",
-			"ApplicationCore"
+			"ApplicationCore", 
+			"GameSubtitles",
 		});
 
 		// Uncomment if you are using Slate UI

@@ -12,7 +12,7 @@ class UXYSTabListWidgetBase;
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract, meta = (Category = "Settings", DisableNativeTick))
 class XYSGAME_API UXYSSettingScreen : public UGameSettingScreen
 {
 	GENERATED_BODY()
