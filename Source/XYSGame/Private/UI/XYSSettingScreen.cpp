@@ -5,7 +5,6 @@
 
 #include "Input/CommonUIInputTypes.h"
 
-#include "Input/CommonUIInputTypes.h"
 #include "Player/XYSLocalPlayer.h"
 #include "Settings/XYSGameSettingRegistry.h"
 

@@ -42,7 +42,8 @@ public class XYSGame : ModuleRules
 			"Niagara",
 			"AsyncMixin",
 			"ControlFlows",
-			"PropertyPath"
+			"PropertyPath", 
+			"UIExtension"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
