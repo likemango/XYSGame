@@ -9,6 +9,7 @@
 #include "XYSLogChannels.h"
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "Camera/XYSCameraComponent.h"
+#include "Camera/XYSCameraMode.h"
 #include "Character/XYSCharacter.h"
 #include "Character/XYSPawnExtensionComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
@@ -227,29 +228,30 @@ void UXYSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Ma
 		}
 		
 		const UXYSPawnData* PawnData = nullptr;
-		if (UXYSPawnExtensionComponent* PawnExtensionComponent = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+
+		if (UXYSPawnExtensionComponent* PawnExtComp = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
 		{
-			// 初始化ASC, InitAbilityActorInfo
-			PawnExtensionComponent->InitializeAbilitySystem(XYSPS->GetXYSAbilitySystemComponent(), XYSPS);
-			PawnData = PawnExtensionComponent->GetPawnData<UXYSPawnData>();
+			PawnData = PawnExtComp->GetPawnData<UXYSPawnData>();
+
+			// The player state holds the persistent data for this player (state that persists across deaths and multiple pawns).
+			// The ability system component and attribute sets live on the player state.
+			PawnExtComp->InitializeAbilitySystem(XYSPS->GetXYSAbilitySystemComponent(), XYSPS);
 		}
-		
-		// 为pawn绑定相机模式变化的委托，方便后续更改相机模式
-		if (PawnData)
+
+		if (AXYSPlayerController* XYSPC = GetController<AXYSPlayerController>())
 		{
-			// Hook up the delegate for all pawns, in case we spectate later
-			if (UXYSCameraComponent* CameraComponent = UXYSCameraComponent::FindCameraComponent(Pawn))
+			if (Pawn->InputComponent != nullptr)
 			{
-				// CameraComponent->DetermineCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
+				InitializePlayerInput(Pawn->InputComponent);
 			}
 		}
 
-		// 初始化玩家角色输入(非AI)
-		if (AXYSPlayerController* XYSPC = GetController<AXYSPlayerController>())
+		// Hook up the delegate for all pawns, in case we spectate later
+		if (PawnData)
 		{
-			if (Pawn->InputComponent)
+			if (UXYSCameraComponent* CameraComponent = UXYSCameraComponent::FindCameraComponent(Pawn))
 			{
-				InitializePlayerInput(Pawn->InputComponent);
+				CameraComponent->DetermineCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
 			}
 		}
 	}
@@ -380,6 +382,30 @@ void UXYSHeroComponent::Input_LookMouse(const FInputActionValue& InputActionValu
 	{
 		Character->Input_Look(InputActionValue);
 	}
+}
+
+TSubclassOf<UXYSCameraMode> UXYSHeroComponent::DetermineCameraMode() const
+{
+	if (AbilityCameraMode)
+	{
+		return AbilityCameraMode;
+	}
+
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn)
+	{
+		return nullptr;
+	}
+
+	if (UXYSPawnExtensionComponent* PawnExtComp = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+	{
+		if (const UXYSPawnData* PawnData = PawnExtComp->GetPawnData<UXYSPawnData>())
+		{
+			return PawnData->DefaultCameraMode;
+		}
+	}
+
+	return nullptr;
 }
 
 /*

@@ -8,4 +8,5 @@ UXYSPawnData::UXYSPawnData(const FObjectInitializer& ObjectInitializer): Super(O
 	PawnClass = nullptr;
 	InputConfig = nullptr;
 	TagRelationshipMapping = nullptr;
+	DefaultCameraMode = nullptr;
 }

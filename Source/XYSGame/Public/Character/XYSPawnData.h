@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "XYSPawnData.generated.h"
 
+class UXYSCameraMode;
 class UXYSInputConfig;
 class UXYSAbilityTagRelationshipMapping;
 class UXYSAbilitySet;
@@ -35,5 +36,9 @@ public:
 	// Input configuration used by player controlled pawns to create input mappings and bind input actions.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UXYSInputConfig> InputConfig;
+
+	// Default camera mode used by player controlled pawns.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera")
+	TSubclassOf<UXYSCameraMode> DefaultCameraMode;
 
 };

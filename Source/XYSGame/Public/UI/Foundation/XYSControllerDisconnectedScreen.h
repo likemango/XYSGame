@@ -6,7 +6,6 @@
 #include "CommonActivatableWidget.h"
 #include "GameplayTagContainer.h"
 #include "GenericPlatform/GenericPlatformApplicationMisc.h"
-#include "UI/XYSActivatableWidget.h"
 #include "XYSControllerDisconnectedScreen.generated.h"
 
 class UCommonButtonBase;

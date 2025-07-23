@@ -9,6 +9,7 @@
 #include "Input/XYSInputConfig.h"
 #include "XYSHeroComponent.generated.h"
 
+class UXYSCameraMode;
 struct FInputActionValue;
 /**
  * Component that sets up input and camera handling for player controlled pawns (or bots that simulate players).
@@ -58,6 +59,12 @@ protected:
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_LookMouse(const FInputActionValue& InputActionValue);
 	/*void Input_Crouch(const FInputActionValue& InputActionValue);*/
+
+	TSubclassOf<UXYSCameraMode> DetermineCameraMode() const;
+
+	/** Camera mode set by an ability. */
+	UPROPERTY()
+	TSubclassOf<UXYSCameraMode> AbilityCameraMode;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FInputMappingContextAndPriority> DefaultInputMappings;

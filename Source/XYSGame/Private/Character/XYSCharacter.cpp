@@ -18,8 +18,8 @@ AXYSCharacter::AXYSCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UXYSCharacterMovementComponent>(CharacterMovementComponentName))
 {
 	// Avoid ticking characters if possible.
-	// PrimaryActorTick.bCanEverTick = false;
-	// PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	SetNetCullDistanceSquared(900000000.0f);
 

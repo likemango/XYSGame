@@ -17,9 +17,7 @@ class XYSGAME_API UXYSCameraComponent : public UCameraComponent
 {
 	GENERATED_BODY()
 
-
 public:
-
 	UXYSCameraComponent(const FObjectInitializer& ObjectInitializer);
 
 	// Returns the camera component if one exists on the specified actor.
@@ -41,7 +39,6 @@ public:
 	void GetBlendInfo(float& OutWeightOfTopLayer, FGameplayTag& OutTagOfTopLayer) const;
 
 protected:
-
 	virtual void OnRegister() override;
 	virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView) override;
 
