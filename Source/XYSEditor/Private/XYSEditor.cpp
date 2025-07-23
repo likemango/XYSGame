@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
-#include "System/XYSDeveloperSettings.h"
+#include "Development/XYSDeveloperSettings.h"
 
 class FXYSEditorModule : public IModuleInterface
 {

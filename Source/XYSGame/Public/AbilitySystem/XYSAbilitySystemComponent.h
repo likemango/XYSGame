@@ -27,6 +27,7 @@ public:
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
 	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
 	void ClearAbilityInput();
+	void CancelInputActivatedAbilities(bool bReplicateCancelAbility);
 
 	bool IsActivationGroupBlocked(EXYSAbilityActivationGroup Group) const;
 	void AddAbilityToActivationGroup(EXYSAbilityActivationGroup Group, UXYSGameplayAbility* XYSAbility);
@@ -36,6 +37,8 @@ public:
 	/** Gets the ability target data associated with the given ability handle and activation info */
 	void GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
 
+	void TryActivateAbilitiesOnSpawn();
+
 	// do something when tag changed.
 	void RegisterGameplayTagChangedEvent();
 	void OnAbilitySystemTagChanged(const FGameplayTag InTag, int32 TagCount) const;
@@ -43,6 +46,8 @@ public:
 	// Uses a gameplay effect to add the specified dynamic granted tag.
 	UFUNCTION(BlueprintCallable, Category="XYSAbilitySystem")
 	FActiveGameplayEffectHandle AddDynamicTagGameplayEffect(UPARAM(meta=(Categories="CharacterState.Movement")) FGameplayTag Tag);
+	// Removes all active instances of the gameplay effect that was used to add the specified dynamic granted tag.
+	void RemoveDynamicTagGameplayEffect(const FGameplayTag& Tag);
 	
 	//~Begin AbilitySystemComponent
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
@@ -56,7 +61,6 @@ public:
 	//~End
 
 private:
-	void TryActivateAbilitiesOnSpawn();
 	typedef TFunctionRef<bool(const UXYSGameplayAbility* XYSAbility, FGameplayAbilitySpecHandle Handle)> TShouldCancelAbilityFunc;
 	void CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility);
 

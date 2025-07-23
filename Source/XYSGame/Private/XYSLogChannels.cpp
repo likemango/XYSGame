@@ -7,6 +7,7 @@ DEFINE_LOG_CATEGORY(LogXYSGame);
 DEFINE_LOG_CATEGORY(LogXYSAbilitySystem);
 DEFINE_LOG_CATEGORY(LogXYSInventory);
 DEFINE_LOG_CATEGORY(LogXYSTeams);
+DEFINE_LOG_CATEGORY(LogXYSExperience);
 
 FString GetClientServerContextString(UObject* ContextObject)
 {

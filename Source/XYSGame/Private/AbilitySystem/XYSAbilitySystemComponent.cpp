@@ -191,6 +191,17 @@ void UXYSAbilitySystemComponent::ClearAbilityInput()
 	InputHeldSpecHandles.Reset();
 }
 
+void UXYSAbilitySystemComponent::CancelInputActivatedAbilities(bool bReplicateCancelAbility)
+{
+	auto ShouldCancelFunc = [this](const UXYSGameplayAbility* XYSAbility, FGameplayAbilitySpecHandle Handle)
+	{
+		const EXYSAbilityActivationPolicy ActivationPolicy = XYSAbility->GetActivationPolicy();
+		return ((ActivationPolicy == EXYSAbilityActivationPolicy::OnInputTriggered) || (ActivationPolicy == EXYSAbilityActivationPolicy::WhileInputActive));
+	};
+
+	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
+}
+
 bool UXYSAbilitySystemComponent::IsActivationGroupBlocked(EXYSAbilityActivationGroup Group) const
 {
 	bool bBlocked = false;
@@ -325,6 +336,21 @@ FActiveGameplayEffectHandle UXYSAbilitySystemComponent::AddDynamicTagGameplayEff
 
 	ActiveGameplayEffectHandle = ApplyGameplayEffectSpecToSelf(*Spec);
 	return ActiveGameplayEffectHandle;
+}
+
+void UXYSAbilitySystemComponent::RemoveDynamicTagGameplayEffect(const FGameplayTag& Tag)
+{
+	const TSubclassOf<UGameplayEffect> DynamicTagGE = UXYSAssetManager::GetSubclass(UXYSGameData::Get().DynamicTagGameplayEffect);
+	if (!DynamicTagGE)
+	{
+		UE_LOG(LogXYSAbilitySystem, Warning, TEXT("RemoveDynamicTagGameplayEffect: Unable to find gameplay effect [%s]."), *UXYSGameData::Get().DynamicTagGameplayEffect.GetAssetName());
+		return;
+	}
+
+	FGameplayEffectQuery Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(FGameplayTagContainer(Tag));
+	Query.EffectDefinition = DynamicTagGE;
+
+	RemoveActiveEffects(Query);
 }
 
 void UXYSAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)

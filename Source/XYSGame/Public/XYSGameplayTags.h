@@ -7,6 +7,8 @@
 
 namespace XYSGameplayTags
 {
+	XYSGAME_API	FGameplayTag FindTagByString(const FString& TagString, bool bMatchPartialString = false);
+	
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InitState_Spawned);
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InitState_DataAvailable);
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InitState_DataInitialized);
@@ -36,6 +38,8 @@ namespace XYSGameplayTags
 	XYSGAME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayEvent_Reset);
 	XYSGAME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayEvent_RequestReset);
 
+	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Crouching);
+	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_AutoRunning);
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death);
 	XYSGAME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death_Dying);
 	XYSGAME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death_Dead);
@@ -55,7 +59,7 @@ namespace XYSGameplayTags
 	XYSGAME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_ABILITY_SIMPLE_FAILURE_MESSAGE);
 	XYSGAME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_ABILITY_PLAY_MONTAGE_FAILURE_MESSAGE);
 
-	// Declare all of the custom native tags that Lyra will use
+	// Declare all of the custom native tags that XYS will use
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_ActivateFail_IsDead);
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_ActivateFail_Cooldown);
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_ActivateFail_Cost);
@@ -63,4 +67,15 @@ namespace XYSGameplayTags
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_ActivateFail_TagsMissing);
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_ActivateFail_Networking);
 	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_ActivateFail_ActivationGroup);
+
+	// These are mappings from MovementMode enums to GameplayTags associated with those enums (below)
+	XYSGAME_API	extern const TMap<uint8, FGameplayTag> MovementModeTagMap;
+	XYSGAME_API	extern const TMap<uint8, FGameplayTag> CustomMovementModeTagMap;
+	
+	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Walking);
+	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_NavWalking);
+	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Falling);
+	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Swimming);
+	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Flying);
+	XYSGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Custom);
 }

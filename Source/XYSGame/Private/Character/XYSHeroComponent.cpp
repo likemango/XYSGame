@@ -12,7 +12,7 @@
 #include "Character/XYSCharacter.h"
 #include "Character/XYSPawnExtensionComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
-#include "Controller/XYSPlayerController.h"
+#include "Player/XYSPlayerController.h"
 #include "Input/XYSInputComponent.h"
 #include "Misc/UObjectToken.h"
 #include "Player/XYSPlayerState.h"

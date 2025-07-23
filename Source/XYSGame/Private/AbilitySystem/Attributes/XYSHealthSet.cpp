@@ -8,7 +8,7 @@
 #include "XYSLogChannels.h"
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
-#include "Message/XYSVerbMessage.h"
+#include "Messages/XYSVerbMessage.h"
 #include "Net/UnrealNetwork.h"
 
 UXYSHealthSet::UXYSHealthSet()
