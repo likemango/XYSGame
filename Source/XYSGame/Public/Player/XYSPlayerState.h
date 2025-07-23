@@ -44,6 +44,8 @@ public:
 	bool HasStatTag(FGameplayTag Tag) const;
 	// ~
 
+	static const FName NAME_XYSAbilityReady;
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="GAS|PlayerState")
 	TObjectPtr<UXYSAbilitySystemComponent> AbilitySystemComponent;

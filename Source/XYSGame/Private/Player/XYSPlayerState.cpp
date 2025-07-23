@@ -9,12 +9,15 @@
 #include "AbilitySystem/Attributes/XYSCombatSet.h"
 #include "AbilitySystem/Attributes/XYSHealthSet.h"
 #include "Character/XYSPawnData.h"
+#include "Components/GameFrameworkComponentManager.h"
 #include "GameModes/XYSGameMode.h"
 #include "Net/UnrealNetwork.h"
 
+
+const FName AXYSPlayerState::NAME_XYSAbilityReady("XYSAbilitiesReady");
+
 AXYSPlayerState::AXYSPlayerState(const FObjectInitializer& ObjectInitializer)
 {
-
 	AbilitySystemComponent = ObjectInitializer.CreateDefaultSubobject<UXYSAbilitySystemComponent>(this, "AbilitySystemComponent");
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
@@ -82,7 +85,7 @@ void AXYSPlayerState::SetPawnData(const UXYSPawnData* InPawnData)
 			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, nullptr);
 		}
 	}
-	// UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_LyraAbilityReady);
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_XYSAbilityReady);
 
 	ForceNetUpdate();
 }

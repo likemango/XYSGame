@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFeatureAction_WorldActionBase.h"
 #include "GameplayTagContainer.h"
+#include "UIExtensionSystem.h"
 #include "GameFeatureAction_AddWidgets.generated.h"
 
 struct FComponentRequestHandle;
-struct FUIExtensionHandle;
 class UCommonActivatableWidget;
 
 USTRUCT()
@@ -74,7 +74,7 @@ private:
 
 	struct FPerActorData
 	{
-		TArray<TWeakObjectPtr<UCommonActivatableWidget>> LayoutsAdd;
+		TArray<TWeakObjectPtr<UCommonActivatableWidget>> LayoutsAdded;
 		TArray<FUIExtensionHandle> ExtensionHandles;
 	};
 

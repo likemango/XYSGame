@@ -18,9 +18,15 @@
 #include "Player/XYSPlayerState.h"
 
 const FName UXYSHeroComponent::NAME_ActorFeatureName("Hero");
+const FName UXYSHeroComponent::NAME_BindInputsNow("BindInputsNow");
 
-UXYSHeroComponent::UXYSHeroComponent(const FObjectInitializer& ObjectInitializer):Super(ObjectInitializer)
+UXYSHeroComponent::UXYSHeroComponent(const FObjectInitializer& ObjectInitializer):Super(ObjectInitializer), bReadyToBindInputs(false)
 {
+}
+
+bool UXYSHeroComponent::IsReadyToBindInputs() const
+{
+	return bReadyToBindInputs;
 }
 
 void UXYSHeroComponent::OnRegister()
@@ -77,6 +83,60 @@ void UXYSHeroComponent::CheckDefaultInitialization()
 
 	// This will try to progress from spawned (which is only set in BeginPlay) through the data initialization stages until it gets to gameplay ready
 	ContinueInitStateChain(StateChain);
+}
+
+void UXYSHeroComponent::AddAdditionalInputConfig(const UXYSInputConfig* InputConfig)
+{
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn)
+	{
+		return;
+	}
+	
+	const APlayerController* PC = GetController<APlayerController>();
+	check(PC);
+
+	const ULocalPlayer* LP = PC->GetLocalPlayer();
+	check(LP);
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(Subsystem);
+
+	if (const UXYSPawnExtensionComponent* PawnExtComp = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+	{
+		UXYSInputComponent* XYSIC = Pawn->FindComponentByClass<UXYSInputComponent>();
+		if (ensureMsgf(XYSIC, TEXT("Unexpected Input Component class! The Gameplay Abilities will not be bound to their inputs. Change the input component to UXYSInputComponent or a subclass of it.")))
+		{
+			XYSIC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ AdditionalBindHandles);
+		}
+	}
+}
+
+void UXYSHeroComponent::RemoveAdditionalInputConfig(const UXYSInputConfig* InputConfig)
+{
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn)
+	{
+		return;
+	}
+	
+	const APlayerController* PC = GetController<APlayerController>();
+	check(PC);
+
+	const ULocalPlayer* LP = PC->GetLocalPlayer();
+	check(LP);
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(Subsystem);
+
+	if (const UXYSPawnExtensionComponent* PawnExtComp = UXYSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+	{
+		UXYSInputComponent* XYSIC = Pawn->FindComponentByClass<UXYSInputComponent>();
+		if (ensureMsgf(XYSIC, TEXT("Unexpected Input Component class! The Gameplay Abilities will not be bound to their inputs. Change the input component to UXYSInputComponent or a subclass of it.")))
+		{
+			XYSIC->RemoveBinds(AdditionalBindHandles);
+		}
+	}
 }
 
 bool UXYSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState,FGameplayTag DesiredState) const
@@ -256,8 +316,7 @@ void UXYSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 					XYSInputComponent->AddInputMappings(InputConfig, LocalPlayerSubsystem);
 
 					// bind InputAction with InputTag, so ability can be triggered by: InputAction --> InputTag --> Ability
-					TArray<uint32> BindHandles;
-					XYSInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, BindHandles);
+					XYSInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, BaseBindHandles);
 
 					XYSInputComponent->BindNativeAction(InputConfig, XYSGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, false);
 					XYSInputComponent->BindNativeAction(InputConfig, XYSGameplayTags::InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_LookMouse, false);
@@ -267,13 +326,13 @@ void UXYSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompon
 		}
 	}
 
-	// if (ensure(!bReadyToBindInputs))
-	// {
-	// 	bReadyToBindInputs = true;
-	// }
- //
-	// UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_BindInputsNow);
-	// UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APawn*>(Pawn), NAME_BindInputsNow);
+	if (ensure(!bReadyToBindInputs))
+	{
+		bReadyToBindInputs = true;
+	}
+ 
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_BindInputsNow);
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APawn*>(Pawn), NAME_BindInputsNow);
 }
 
 void UXYSHeroComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)

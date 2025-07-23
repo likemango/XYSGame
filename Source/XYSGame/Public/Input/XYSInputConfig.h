@@ -10,23 +10,23 @@
 class UInputMappingContext;
 class UInputAction;
 
-USTRUCT(BlueprintType)
-struct FInputMappingContextAndPriority
-{
-	GENERATED_BODY()
-
-	/* todo: 临时修改为强引用，后面考虑使用GF来动态处理 */
-	UPROPERTY(EditAnywhere, Category="Input", meta=(AssetBundles="Client,Server"))
-	TObjectPtr<UInputMappingContext> InputMapping;
-
-	// Higher priority input mappings will be prioritized over mappings with a lower priority.
-	UPROPERTY(EditAnywhere, Category="Input")
-	int32 Priority = 0;
-	
-	// /** If true, then this mapping context will be registered with the settings when this game feature action is registered. */
-	// UPROPERTY(EditAnywhere, Category="Input")
-	// bool bRegisterWithSettings = true;
-};
+// USTRUCT(BlueprintType)
+// struct FInputMappingContextAndPriority
+// {
+// 	GENERATED_BODY()
+//
+// 	/* todo: 临时修改为强引用，后面考虑使用GF来动态处理 */
+// 	UPROPERTY(EditAnywhere, Category="Input", meta=(AssetBundles="Client,Server"))
+// 	TObjectPtr<UInputMappingContext> InputMapping;
+//
+// 	// Higher priority input mappings will be prioritized over mappings with a lower priority.
+// 	UPROPERTY(EditAnywhere, Category="Input")
+// 	int32 Priority = 0;
+// 	
+// 	// /** If true, then this mapping context will be registered with the settings when this game feature action is registered. */
+// 	// UPROPERTY(EditAnywhere, Category="Input")
+// 	// bool bRegisterWithSettings = true;
+// };
 
 
 USTRUCT(BlueprintType)

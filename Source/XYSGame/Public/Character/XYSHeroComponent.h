@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/GameFrameworkInitStateInterface.h"
+#include "GameFeatures/GameFeatureAction_AddInputContextMapping.h"
 #include "Components/PawnComponent.h"
 #include "Input/XYSInputConfig.h"
 #include "XYSHeroComponent.generated.h"
@@ -23,7 +24,8 @@ public:
 
 	/** The name of this component-implemented feature */
 	static const FName NAME_ActorFeatureName;
-
+	static const FName NAME_BindInputsNow;
+	
 	//~ Begin IGameFrameworkInitStateInterface interface
 	virtual FName GetFeatureName() const override { return NAME_ActorFeatureName; }
 	virtual bool CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const override;
@@ -35,6 +37,13 @@ public:
 	/** Returns the hero component if one exists on the specified actor. */
 	UFUNCTION(BlueprintPure, Category = "Hero")
 	static UXYSHeroComponent* FindHeroComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UXYSHeroComponent>() : nullptr); }
+
+	/** Adds mode-specific input config */
+	void AddAdditionalInputConfig(const UXYSInputConfig* InputConfig);
+	/** Removes a mode-specific input config if it has been added */
+	void RemoveAdditionalInputConfig(const UXYSInputConfig* InputConfig);
+	/** True if this is controlled by a real player and has progressed far enough in initialization where additional input bindings can be added */
+	bool IsReadyToBindInputs() const;
 
 protected:
 	virtual void OnRegister() override;
@@ -52,4 +61,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FInputMappingContextAndPriority> DefaultInputMappings;
+
+	/** True when player input bindings have been applied, will never be true for non - players */
+	bool bReadyToBindInputs;
+
+private:
+	TArray<uint32> BaseBindHandles;
+	TArray<uint32> AdditionalBindHandles;
+		
 };
