@@ -96,7 +96,7 @@ public:
 protected:
 	virtual FVector GetPivotLocation() const;
 	virtual FRotator GetPivotRotation() const;
-
+	
 	virtual void UpdateView(float DeltaTime);
 	virtual void UpdateBlending(float DeltaTime);
 
@@ -110,18 +110,15 @@ protected:
 	FXYSCameraModeView View;
 
 	// The horizontal field of view (in degrees).
-	UPROPERTY(EditDefaultsOnly, Category = "View",
-		Meta = (UIMin = "5.0", UIMax = "170", ClampMin = "5.0", ClampMax = "170.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "View",Meta = (UIMin = "5.0", UIMax = "170", ClampMin = "5.0", ClampMax = "170.0"))
 	float FieldOfView;
 
 	// Minimum view pitch (in degrees).
-	UPROPERTY(EditDefaultsOnly, Category = "View",
-		Meta = (UIMin = "-89.9", UIMax = "89.9", ClampMin = "-89.9", ClampMax = "89.9"))
+	UPROPERTY(EditDefaultsOnly, Category = "View",Meta = (UIMin = "-89.9", UIMax = "89.9", ClampMin = "-89.9", ClampMax = "89.9"))
 	float ViewPitchMin;
 
 	// Maximum view pitch (in degrees).
-	UPROPERTY(EditDefaultsOnly, Category = "View",
-		Meta = (UIMin = "-89.9", UIMax = "89.9", ClampMin = "-89.9", ClampMax = "89.9"))
+	UPROPERTY(EditDefaultsOnly, Category = "View",Meta = (UIMin = "-89.9", UIMax = "89.9", ClampMin = "-89.9", ClampMax = "89.9"))
 	float ViewPitchMax;
 
 	// How long it takes to blend in this mode.

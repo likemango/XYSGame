@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "XYSGameplayAbility.generated.h"
 
+class UXYSCameraMode;
 class UXYSAbilityCost;
 class UXYSHeroComponent;
 class UXYSAbilitySystemComponent;
@@ -144,6 +145,14 @@ public:
 		K2_OnAbilityFailedToActivate(FailedReason);
 	}
 
+	// Sets the ability's camera mode.
+	UFUNCTION(BlueprintCallable, Category = "XYS|Ability")
+	void SetCameraMode(TSubclassOf<UXYSCameraMode> CameraMode);
+
+	// Clears the ability's camera mode.  Automatically called if needed when the ability ends.
+	UFUNCTION(BlueprintCallable, Category = "XYS|Ability")
+	void ClearCameraMode();
+
 protected:
 	//~UGameplayAbility interface
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
@@ -182,4 +191,7 @@ protected:
 	// If true, extra information should be logged when this ability is canceled. This is temporary, used for tracking a bug.
 	UPROPERTY(EditDefaultsOnly, Category = "Advanced")
 	bool bLogCancelation;
+
+	// Current camera mode set by the ability.
+	TSubclassOf<UXYSCameraMode> ActiveCameraMode;
 };

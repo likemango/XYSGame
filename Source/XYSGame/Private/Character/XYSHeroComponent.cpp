@@ -21,8 +21,10 @@
 const FName UXYSHeroComponent::NAME_ActorFeatureName("Hero");
 const FName UXYSHeroComponent::NAME_BindInputsNow("BindInputsNow");
 
-UXYSHeroComponent::UXYSHeroComponent(const FObjectInitializer& ObjectInitializer):Super(ObjectInitializer), bReadyToBindInputs(false)
+UXYSHeroComponent::UXYSHeroComponent(const FObjectInitializer& ObjectInitializer):Super(ObjectInitializer)
 {
+	AbilityCameraMode = nullptr;
+	bReadyToBindInputs = false;
 }
 
 bool UXYSHeroComponent::IsReadyToBindInputs() const
@@ -84,6 +86,24 @@ void UXYSHeroComponent::CheckDefaultInitialization()
 
 	// This will try to progress from spawned (which is only set in BeginPlay) through the data initialization stages until it gets to gameplay ready
 	ContinueInitStateChain(StateChain);
+}
+
+void UXYSHeroComponent::SetAbilityCameraMode(TSubclassOf<UXYSCameraMode> CameraMode, const FGameplayAbilitySpecHandle& OwningSpecHandle)
+{
+	if (CameraMode)
+	{
+		AbilityCameraMode = CameraMode;
+		AbilityCameraModeOwningSpecHandle = OwningSpecHandle;
+	}
+}
+
+void UXYSHeroComponent::ClearAbilityCameraMode(const FGameplayAbilitySpecHandle& OwningSpecHandle)
+{
+	if (AbilityCameraModeOwningSpecHandle == OwningSpecHandle)
+	{
+		AbilityCameraMode = nullptr;
+		AbilityCameraModeOwningSpecHandle = FGameplayAbilitySpecHandle();
+	}
 }
 
 void UXYSHeroComponent::AddAdditionalInputConfig(const UXYSInputConfig* InputConfig)

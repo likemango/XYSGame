@@ -38,6 +38,14 @@ struct FCharacterGroundInfo
 	float GroundDistance;	
 };
 
+UENUM(BlueprintType)
+enum class ECharacterViewType : uint8
+{
+	None,
+	FirstPerson,
+	ThirdPerson
+};
+
 /*
 *   The base character pawn class used by this project.
  *	Responsible for sending events to pawn components.
@@ -58,6 +66,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "XYS|Character")
 	UXYSAbilitySystemComponent* GetXYSAbilitySystemComponent() const;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	UFUNCTION(BlueprintCallable, Category = "XYS|Character")
+	void SetCharacterMeshViewMode(ECharacterViewType NewType);
 	
 	void StartFPMeshCrouchStateChange();
 	
@@ -69,6 +80,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	
 //~Animation
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	const FCharacterGroundInfo& GetGroundInfo();
@@ -102,9 +114,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName="OnDeathFinished"))
 	void K2_OnDeathFinished();
 
-	UPROPERTY(EditDefaultsOnly, Category = "XYSComponents")
-	FName CameraAttachSocket = FName(TEXT("S_Camera"));
-
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "XYS|Character")
 	FORCEINLINE USkeletalMeshComponent* GetFPUpperMesh() const { return FPUpperMesh;}
@@ -121,28 +130,29 @@ private:
 	float CrouchStateChangeInterpSpeed = 15.f;
 	
 	void UpdateFPMeshWhenCrouching(float DeltaTime);
-	
-private:
+
+	UPROPERTY()
+	ECharacterViewType CharacterViewType;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYS|Character", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UXYSCharacterMovementComponent> XYSMovementComponent;
 
-	UPROPERTY(VisibleAnywhere, Category = "XYS|Character", meta=(AllowPrivateAccess="true"))
-	TObjectPtr<USkeletalMeshComponent> FPUpperMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYS|Character", meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UXYSCameraComponent> XYSCameraComponent;
-
-	UPROPERTY(VisibleAnywhere, Category = "XYS|Character", meta=(AllowPrivateAccess="true"))
-	TObjectPtr<USkeletalMeshComponent> FPLowerMesh;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYS|Character", Meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UXYSPawnExtensionComponent> PawnExtComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYS|Character", Meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UXYSHeroComponent> HeroComponent;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYS|Character", Meta=(AllowPrivateAccess="true"))
+	// TObjectPtr<UXYSHeroComponent> HeroComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYS|Character", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UXYSHealthComponent> HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "XYS|Character", meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UXYSCameraComponent> CameraComponent;
+	
+	UPROPERTY(VisibleAnywhere, Category = "XYS|Character", meta=(AllowPrivateAccess="true"))
+	TObjectPtr<USkeletalMeshComponent> FPUpperMesh;
+	UPROPERTY(VisibleAnywhere, Category = "XYS|Character", meta=(AllowPrivateAccess="true"))
+	TObjectPtr<USkeletalMeshComponent> FPLowerMesh;
 };
 
 

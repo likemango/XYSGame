@@ -10,6 +10,7 @@
 #include "XYSLogChannels.h"
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/XYSAbilityCost.h"
+#include "Camera/XYSCameraMode.h"
 #include "Character/XYSCharacter.h"
 #include "Character/XYSCharacterMovementComponent.h"
 #include "Character/XYSHeroComponent.h"
@@ -173,9 +174,34 @@ bool UXYSGameplayAbility::ChangeActivationGroup(EXYSAbilityActivationGroup NewGr
 	return true;
 }
 
+void UXYSGameplayAbility::SetCameraMode(TSubclassOf<UXYSCameraMode> CameraMode)
+{
+	ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(SetCameraMode, );
+
+	if (UXYSHeroComponent* HeroComponent = GetHeroComponentFromActorInfo())
+	{
+		HeroComponent->SetAbilityCameraMode(CameraMode, CurrentSpecHandle);
+		ActiveCameraMode = CameraMode;
+	}
+}
+
+void UXYSGameplayAbility::ClearCameraMode()
+{
+	ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(ClearCameraMode, );
+
+	if (ActiveCameraMode)
+	{
+		if (UXYSHeroComponent* HeroComponent = GetHeroComponentFromActorInfo())
+		{
+			HeroComponent->ClearAbilityCameraMode(CurrentSpecHandle);
+		}
+		ActiveCameraMode = nullptr;
+	}
+}
+
 bool UXYSGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
-	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+                                             const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
+                                             const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
 {
 	if (!ActorInfo || !ActorInfo->AbilitySystemComponent.IsValid())
 	{
@@ -226,6 +252,8 @@ void UXYSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 void UXYSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,bool bReplicateEndAbility, bool bWasCancelled)
 {
+	ClearCameraMode();
+	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 

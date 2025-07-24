@@ -7,21 +7,32 @@
 #include "AbilitySystem/XYSAbilitySystemComponent.h"
 #include "Character/XYSCharacterMovementComponent.h"
 #include "Camera/XYSCameraComponent.h"
+#include "Camera/XYSCameraMode_FirstPerson.h"
 #include "Character/XYSHealthComponent.h"
-#include "Character/XYSHeroComponent.h"
 #include "Character/XYSPawnExtensionComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 
+static FName NAME_XYSCharacterCollisionProfile_Capsule(TEXT("XYSPawnCapsule"));
+static FName NAME_XYSCharacterCollisionProfile_Mesh(TEXT("XYSPawnMesh"));
 
 AXYSCharacter::AXYSCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UXYSCharacterMovementComponent>(CharacterMovementComponentName))
 {
 	// Avoid ticking characters if possible.
-	PrimaryActorTick.bCanEverTick = false;
-	PrimaryActorTick.bStartWithTickEnabled = false;
+	// PrimaryActorTick.bCanEverTick = false;
+	// PrimaryActorTick.bStartWithTickEnabled = false;
 
 	SetNetCullDistanceSquared(900000000.0f);
+
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	check(CapsuleComp);
+	CapsuleComp->InitCapsuleSize(40.0f, 90.0f);
+	CapsuleComp->SetCollisionProfileName(NAME_XYSCharacterCollisionProfile_Capsule);
+
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	check(MeshComp);
+	MeshComp->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));  // Rotate mesh to be X forward since it is exported as Y forward.
+	MeshComp->SetCollisionProfileName(NAME_XYSCharacterCollisionProfile_Mesh);
 
 	UXYSCharacterMovementComponent* XYSMoveComp = CastChecked<UXYSCharacterMovementComponent>(GetCharacterMovement());
 	XYSMoveComp->GravityScale = 1.0f;
@@ -32,35 +43,42 @@ AXYSCharacter::AXYSCharacter(const FObjectInitializer& ObjectInitializer)
 	XYSMoveComp->BrakingDecelerationWalking = 1400.0f;
 	XYSMoveComp->bUseControllerDesiredRotation = false;
 	XYSMoveComp->bOrientRotationToMovement = false;
+	XYSMoveComp->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
 	XYSMoveComp->bAllowPhysicsRotationDuringAnimRootMotion = false;
 	XYSMoveComp->GetNavAgentPropertiesRef().bCanCrouch = true;
 	XYSMoveComp->bCanWalkOffLedgesWhenCrouching = true;
 	XYSMoveComp->SetCrouchedHalfHeight(65.0f);
 
-	FPUpperMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPUpper"));
-	FPUpperMesh->SetupAttachment(GetMesh());
-	FPUpperMesh->bOnlyOwnerSee = true;
-	XYSCameraComponent = CreateDefaultSubobject<UXYSCameraComponent>(TEXT("XYSCamera"));
-	XYSCameraComponent->SetupAttachment(FPUpperMesh, CameraAttachSocket);
-	XYSCameraComponent->bUsePawnControlRotation = true;
-
-	FPLowerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPLower"));
-	FPLowerMesh->SetupAttachment(GetMesh());
-	FPLowerMesh->bOnlyOwnerSee = true;
-
-	GetMesh()->bOwnerNoSee = true;
-	
 	PawnExtComponent = CreateDefaultSubobject<UXYSPawnExtensionComponent>(TEXT("PawnExtComponent"));
 	PawnExtComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
 	PawnExtComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
 
-	HeroComponent = CreateDefaultSubobject<UXYSHeroComponent>(TEXT("HeroComponent"));
 	HealthComponent = CreateDefaultSubobject<UXYSHealthComponent>(TEXT("HealthComponent"));
 	HealthComponent->OnDeathStarted.AddDynamic(this, &ThisClass::OnDeathStarted);
 	HealthComponent->OnDeathFinished.AddDynamic(this, &ThisClass::OnDeathFinished);
 	
-	bUseControllerRotationYaw = true;
+	FPUpperMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPUpper"));
+	FPUpperMesh->SetupAttachment(GetMesh());
+	FPUpperMesh->bOnlyOwnerSee = true;
+	FPLowerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPLower"));
+	FPLowerMesh->SetupAttachment(GetMesh());
+	FPLowerMesh->bOnlyOwnerSee = true;
+	GetMesh()->bOwnerNoSee = true;
+
+	CameraComponent = CreateDefaultSubobject<UXYSCameraComponent>(TEXT("CameraComponent"));
+	CameraComponent->SetupAttachment(FPUpperMesh, UXYSCameraMode_FirstPerson::NAME_XYSFirstPersonCameraAttachSocket);
+	CameraComponent->bUsePawnControlRotation = true;
+	// CameraComponent->SetRelativeLocation(FVector(-300.0f, 0.0f, 75.0f));
+	// HeroComponent = CreateDefaultSubobject<UXYSHeroComponent>(TEXT("HeroComponent"));
 	
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = false;
+
+	BaseEyeHeight = 80.0f;
+	CrouchedEyeHeight = 50.0f;
+
+	CharacterViewType = ECharacterViewType::FirstPerson;
 }
 
 void AXYSCharacter::BeginPlay()
@@ -93,6 +111,31 @@ UAbilitySystemComponent* AXYSCharacter::GetAbilitySystemComponent() const
 	}
 
 	return PawnExtComponent->GetXYSAbilitySystemComponent();
+}
+
+void AXYSCharacter::SetCharacterMeshViewMode(ECharacterViewType NewType)
+{
+	if (CharacterViewType != NewType)
+	{
+		if (NewType == ECharacterViewType::ThirdPerson)
+		{
+			GetMesh()->bOwnerNoSee = false;
+			GetFPUpperMesh()->bOwnerNoSee = true;
+			GetFPLowerMesh()->bOwnerNoSee = true;
+		}
+		else if (NewType == ECharacterViewType::FirstPerson)
+		{
+			GetMesh()->bOwnerNoSee = true;
+			GetFPUpperMesh()->bOwnerNoSee = false;
+			GetFPLowerMesh()->bOwnerNoSee = false;
+		}
+
+		GetMesh()->MarkRenderStateDirty();
+		GetFPUpperMesh()->MarkRenderStateDirty();
+		GetFPLowerMesh()->MarkRenderStateDirty();
+		
+		CharacterViewType = NewType;
+	}
 }
 
 void AXYSCharacter::StartFPMeshCrouchStateChange()
@@ -307,10 +350,10 @@ void AXYSCharacter::UpdateFPMeshWhenCrouching(float DeltaTime)
 	DuringCrouchStateChange -= DeltaTime;
 
 	const FVector FPMeshLocation = FPUpperMesh->GetComponentLocation();
-	const FVector FPMeshCameraLocation = FPUpperMesh->GetSocketLocation(CameraAttachSocket);
+	const FVector FPMeshCameraLocation = FPUpperMesh->GetSocketLocation(UXYSCameraMode_FirstPerson::NAME_XYSFirstPersonCameraAttachSocket);
 	const FVector DistFPCameraToMesh = FPMeshLocation - FPMeshCameraLocation;
 
-	const FVector TPMeshCameraLocation = GetMesh()->GetSocketLocation(CameraAttachSocket);
+	const FVector TPMeshCameraLocation = GetMesh()->GetSocketLocation(UXYSCameraMode_FirstPerson::NAME_XYSFirstPersonCameraAttachSocket);
 	const FVector InterpVector = FMath::VInterpTo(FPMeshCameraLocation, TPMeshCameraLocation, DeltaTime, CrouchStateChangeInterpSpeed);
 	const FVector TargetFPMeshLocation = DistFPCameraToMesh + InterpVector;
 

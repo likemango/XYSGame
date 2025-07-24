@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "GameFeatures/GameFeatureAction_AddInputContextMapping.h"
 #include "Components/PawnComponent.h"
@@ -11,6 +12,8 @@
 
 class UXYSCameraMode;
 struct FInputActionValue;
+
+
 /**
  * Component that sets up input and camera handling for player controlled pawns (or bots that simulate players).
  * This depends on a PawnExtensionComponent to coordinate initialization.
@@ -38,7 +41,13 @@ public:
 	/** Returns the hero component if one exists on the specified actor. */
 	UFUNCTION(BlueprintPure, Category = "Hero")
 	static UXYSHeroComponent* FindHeroComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UXYSHeroComponent>() : nullptr); }
+	
+	/** Overrides the camera from an active gameplay ability */
+	void SetAbilityCameraMode(TSubclassOf<UXYSCameraMode> CameraMode, const FGameplayAbilitySpecHandle& OwningSpecHandle);
 
+	/** Clears the camera override if it is set */
+	void ClearAbilityCameraMode(const FGameplayAbilitySpecHandle& OwningSpecHandle);
+	
 	/** Adds mode-specific input config */
 	void AddAdditionalInputConfig(const UXYSInputConfig* InputConfig);
 	/** Removes a mode-specific input config if it has been added */
@@ -65,6 +74,9 @@ protected:
 	/** Camera mode set by an ability. */
 	UPROPERTY()
 	TSubclassOf<UXYSCameraMode> AbilityCameraMode;
+
+	/** Spec handle for the last ability to set a camera mode. */
+	FGameplayAbilitySpecHandle AbilityCameraModeOwningSpecHandle;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FInputMappingContextAndPriority> DefaultInputMappings;
