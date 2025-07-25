@@ -23,8 +23,6 @@
 #include "CommonInputSubsystem.h"
 #include "Player/XYSLocalPlayer.h"
 #include "GameModes/XYSGameState.h"
-#include "Settings/XYSSettingsLocal.h"
-#include "Settings/XYSSettingsShared.h"
 #include "Replays/XYSReplaySubsystem.h"
 #include "ReplaySubsystem.h"
 #include "Development/XYSDeveloperSettings.h"
@@ -219,13 +217,13 @@ bool AXYSPlayerController::ShouldRecordClientReplay()
 		}
 
 		// If this is possible, now check the settings
-		if (const UXYSLocalPlayer* XYSLocalPlayer = Cast<UXYSLocalPlayer>(GetLocalPlayer()))
+		/*if (const UXYSLocalPlayer* XYSLocalPlayer = Cast<UXYSLocalPlayer>(GetLocalPlayer()))
 		{
 			if (XYSLocalPlayer->GetLocalSettings()->ShouldAutoRecordReplays())
 			{
 				return true;
 			}
-		}
+		}*/
 	}
 	return false;
 }
@@ -311,18 +309,18 @@ void AXYSPlayerController::SetPlayer(UPlayer* InPlayer)
 {
 	Super::SetPlayer(InPlayer);
 
-	if (const UXYSLocalPlayer* XYSLocalPlayer = Cast<UXYSLocalPlayer>(InPlayer))
+	/*if (const UXYSLocalPlayer* XYSLocalPlayer = Cast<UXYSLocalPlayer>(InPlayer))
 	{
 		UXYSSettingsShared* UserSettings = XYSLocalPlayer->GetSharedSettings();
 		UserSettings->OnSettingChanged.AddUObject(this, &ThisClass::OnSettingsChanged);
 
 		OnSettingsChanged(UserSettings);
-	}
+	}*/
 }
 
 void AXYSPlayerController::OnSettingsChanged(UXYSSettingsShared* InSettings)
 {
-	bForceFeedbackEnabled = InSettings->GetForceFeedbackEnabled();
+	// bForceFeedbackEnabled = InSettings->GetForceFeedbackEnabled();
 }
 
 void AXYSPlayerController::AddCheats(bool bForce)

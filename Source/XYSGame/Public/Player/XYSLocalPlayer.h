@@ -42,15 +42,15 @@ public:
 	//~End of IXYSTeamAgentInterface interface
 
 	/** Gets the local settings for this player, this is read from config files at process startup and is always valid */
-	UFUNCTION()
-	UXYSSettingsLocal* GetLocalSettings() const;
-
-	/** Gets the shared setting for this player, this is read using the save game system so may not be correct until after user login */
-	UFUNCTION()
-	UXYSSettingsShared* GetSharedSettings() const;
+	// UFUNCTION()
+	// UXYSSettingsLocal* GetLocalSettings() const;
+	//
+	// /** Gets the shared setting for this player, this is read using the save game system so may not be correct until after user login */
+	// UFUNCTION()
+	// UXYSSettingsShared* GetSharedSettings() const;
 
 	/** Starts an async request to load the shared settings, this will call OnSharedSettingsLoaded after loading or creating new ones */
-	void LoadSharedSettingsFromDisk(bool bForceLoad = false);
+	// void LoadSharedSettingsFromDisk(bool bForceLoad = false);
 
 protected:
 	void OnSharedSettingsLoaded(UXYSSettingsShared* LoadedOrCreatedSettings);
@@ -66,8 +66,8 @@ protected:
 	void OnControllerChangedTeam(UObject* TeamAgent, int32 OldTeam, int32 NewTeam);
 
 private:
-	UPROPERTY(Transient)
-	mutable TObjectPtr<UXYSSettingsShared> SharedSettings;
+	// UPROPERTY(Transient)
+	// mutable TObjectPtr<UXYSSettingsShared> SharedSettings;
 
 	FUniqueNetIdRepl NetIdForSharedSettings;
 

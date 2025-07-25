@@ -6,7 +6,6 @@
 #include "Engine/NetDriver.h"
 #include "DeviceProfiles/DeviceProfileManager.h"
 #include "DeviceProfiles/DeviceProfile.h"
-#include "Settings/XYSSettingsLocal.h"
 #include "HAL/MemoryMisc.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(XYSHotfixManager)
@@ -47,8 +46,8 @@ void UXYSHotfixManager::OnHotfixCompleted(EHotfixResult HotfixResult)
 		bHasPendingDeviceProfileHotfix = false;
 		UDeviceProfileManager::Get().ReapplyDeviceProfile();
 
-		UXYSSettingsLocal* GameSettings = UXYSSettingsLocal::Get();
-		GameSettings->OnHotfixDeviceProfileApplied();
+		/*UXYSSettingsLocal* GameSettings = UXYSSettingsLocal::Get();
+		GameSettings->OnHotfixDeviceProfileApplied();*/
 	}
 
 #if ENABLE_SHARED_MEMORY_TRACKER

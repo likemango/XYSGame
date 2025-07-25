@@ -7,7 +7,6 @@
 #include "AudioModulationStatics.h"
 #include "LoadingScreenManager.h"
 #include "Audio/XYSAudioSettings.h"
-#include "Settings/XYSSettingsLocal.h"
 #include "Sound/SoundSubmix.h"
 
 
@@ -222,7 +221,7 @@ void UXYSAudioMixEffectsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 		}
 
 		// Retrieve the user settings
-		if (const UXYSSettingsLocal* XYSSettingsLocal = GetDefault<UXYSSettingsLocal>())
+		/*if (const UXYSSettingsLocal* XYSSettingsLocal = GetDefault<UXYSSettingsLocal>())
 		{
 			// Activate the User Mix
 			if (UserMix)
@@ -249,7 +248,7 @@ void UXYSAudioMixEffectsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 			}
 
 			ApplyDynamicRangeEffectsChains(XYSSettingsLocal->IsHDRAudioModeEnabled());
-		}
+		}*/
 	}
 }
 

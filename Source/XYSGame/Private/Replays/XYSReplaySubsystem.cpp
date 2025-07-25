@@ -12,7 +12,6 @@
 #include "ICommonUIModule.h"
 #include "XYSLogChannels.h"
 #include "Player/XYSLocalPlayer.h"
-#include "Settings/XYSSettingsLocal.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(XYSReplaySubsystem)
 
@@ -47,7 +46,7 @@ void UXYSReplaySubsystem::PlayReplay(UXYSReplayListEntry* Replay)
 
 void UXYSReplaySubsystem::RecordClientReplay(APlayerController* PlayerController)
 {
-	if (ensure(DoesPlatformSupportReplays() && PlayerController))
+	/*if (ensure(DoesPlatformSupportReplays() && PlayerController))
 	{
 		FText FriendlyNameText = FText::Format(NSLOCTEXT("XYS", "XYSReplayName_Format", "Client Replay {0}"), FText::AsDateTime(FDateTime::UtcNow(), EDateTimeStyle::Short, EDateTimeStyle::Short));
 		GetGameInstance()->StartRecordingReplay(FString(), FriendlyNameText.ToString());
@@ -58,7 +57,7 @@ void UXYSReplaySubsystem::RecordClientReplay(APlayerController* PlayerController
 			int32 NumToKeep = XYSLocalPlayer->GetLocalSettings()->GetNumberOfReplaysToKeep();
 			CleanupLocalReplays(XYSLocalPlayer, NumToKeep);
 		}
-	}
+	}*/
 }
 
 void UXYSReplaySubsystem::CleanupLocalReplays(ULocalPlayer* LocalPlayer, int32 NumReplaysToKeep)

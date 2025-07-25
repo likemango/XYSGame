@@ -10,15 +10,17 @@
 
 class FPreLoadScreenManager;
 
+
+// now use CommonLoadingScreen
 bool UFrontendLoadingScreenSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
-	if (!CastChecked<UGameInstance>(Outer)->IsDedicatedServerInstance())
+	/*if (!CastChecked<UGameInstance>(Outer)->IsDedicatedServerInstance())
 	{	
 		TArray<UClass*> FoundClasses;
 		GetDerivedClasses(GetClass(),FoundClasses);
 
 		return FoundClasses.IsEmpty();
-	}
+	}*/
 
 	return false;
 }

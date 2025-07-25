@@ -13,7 +13,6 @@
 #include "GameFeatureAction.h"
 #include "GameFeaturesSubsystemSettings.h"
 #include "TimerManager.h"
-#include "Settings/XYSSettingsLocal.h"
 #include "XYSLogChannels.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(XYSExperienceManagerComponent)
@@ -356,9 +355,9 @@ void UXYSExperienceManagerComponent::OnExperienceFullLoadCompleted()
 	OnExperienceLoaded_LowPriority.Clear();
 
 	// Apply any necessary scalability settings
-#if !UE_SERVER
+/*#if !UE_SERVER
 	UXYSSettingsLocal::Get()->OnExperienceLoaded();
-#endif
+#endif*/
 }
 
 void UXYSExperienceManagerComponent::OnActionDeactivationCompleted()

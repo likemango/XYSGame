@@ -4,8 +4,6 @@
 #include "Player/XYSLocalPlayer.h"
 
 #include "AudioMixerBlueprintLibrary.h"
-#include "Settings/XYSSettingsLocal.h"
-#include "Settings/XYSSettingsShared.h"
 
 UXYSLocalPlayer::UXYSLocalPlayer()
 {
@@ -15,10 +13,10 @@ void UXYSLocalPlayer::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	if (UXYSSettingsLocal* LocalSettings = GetLocalSettings())
+	/*if (UXYSSettingsLocal* LocalSettings = GetLocalSettings())
 	{
 		LocalSettings->OnAudioOutputDeviceChanged.AddUObject(this, &UXYSLocalPlayer::OnAudioOutputDeviceChanged);
-	}
+	}*/
 }
 
 void UXYSLocalPlayer::SwitchController(class APlayerController* PC)
@@ -88,6 +86,7 @@ FOnXYSTeamIndexChangedDelegate* UXYSLocalPlayer::GetOnTeamIndexChangedDelegate()
 	return &OnTeamChangedDelegate;
 }
 
+/*
 UXYSSettingsLocal* UXYSLocalPlayer::GetLocalSettings() const
 {
 	return UXYSSettingsLocal::Get();
@@ -114,7 +113,9 @@ UXYSSettingsShared* UXYSLocalPlayer::GetSharedSettings() const
 
 	return SharedSettings;
 }
+*/
 
+/*
 void UXYSLocalPlayer::LoadSharedSettingsFromDisk(bool bForceLoad)
 {
 	FUniqueNetIdRepl CurrentNetId = GetCachedUniqueNetId();
@@ -126,6 +127,7 @@ void UXYSLocalPlayer::LoadSharedSettingsFromDisk(bool bForceLoad)
 
 	ensure(UXYSSettingsShared::AsyncLoadOrCreateSettings(this, UXYSSettingsShared::FOnSettingsLoadedEvent::CreateUObject(this, &UXYSLocalPlayer::OnSharedSettingsLoaded)));
 }
+*/
 
 void UXYSLocalPlayer::OnSharedSettingsLoaded(UXYSSettingsShared* LoadedOrCreatedSettings)
 {
@@ -133,7 +135,7 @@ void UXYSLocalPlayer::OnSharedSettingsLoaded(UXYSSettingsShared* LoadedOrCreated
 	if (ensure(LoadedOrCreatedSettings))
 	{
 		// This will replace the temporary or previously loaded object which will GC out normally
-		SharedSettings = LoadedOrCreatedSettings;
+		// SharedSettings = LoadedOrCreatedSettings;
 
 		NetIdForSharedSettings = GetCachedUniqueNetId();
 	}
