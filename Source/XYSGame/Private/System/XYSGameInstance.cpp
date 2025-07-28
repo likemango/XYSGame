@@ -7,6 +7,7 @@
 #include "Components/GameFrameworkComponentManager.h"
 
 UXYSGameInstance::UXYSGameInstance(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 }
 

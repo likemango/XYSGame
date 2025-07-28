@@ -3,25 +3,56 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AsyncAction_CommonUserInitialize.h"
+#include "ControlFlowNode.h"
+#include "LoadingProcessInterface.h"
 #include "Components/GameStateComponent.h"
 #include "XYSFrontendStateComponent.generated.h"
 
 
-UCLASS(Abstract, NotBlueprintable)
-class XYSGAME_API UXYSFrontendStateComponent : public UGameStateComponent
+class UXYSExperienceDefinition;
+class UCommonActivatableWidget;
+
+UCLASS(Abstract)
+class XYSGAME_API UXYSFrontendStateComponent : public UGameStateComponent, public ILoadingProcessInterface
 {
 	GENERATED_BODY()
-
+	
 public:
-	// Sets default values for this component's properties
-	UXYSFrontendStateComponent();
+	UXYSFrontendStateComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-protected:
-	// Called when the game starts
+	//~UActorComponent interface
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	//~End of UActorComponent interface
 
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+	//~ILoadingProcessInterface interface
+	virtual bool ShouldShowLoadingScreen(FString& OutReason) const override;
+	//~End of ILoadingProcessInterface
+
+private:
+	void OnExperienceLoaded(const UXYSExperienceDefinition* Experience);
+
+	UFUNCTION()
+	void OnUserInitialized(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error, ECommonUserPrivilege RequestedPrivilege, ECommonUserOnlineContext OnlineContext);
+
+	void FlowStep_WaitForUserInitialization(FControlFlowNodeRef SubFlow);
+	void FlowStep_TryShowPressStartScreen(FControlFlowNodeRef SubFlow);
+	void FlowStep_TryJoinRequestedSession(FControlFlowNodeRef SubFlow);
+	void FlowStep_TryShowMainScreen(FControlFlowNodeRef SubFlow);
+
+	bool bShouldShowLoadingScreen = true;
+
+	UPROPERTY(EditAnywhere, Category = UI)
+	TSoftClassPtr<UCommonActivatableWidget> PressStartScreenClass;
+
+	UPROPERTY(EditAnywhere, Category = UI)
+	TSoftClassPtr<UCommonActivatableWidget> MainScreenClass;
+
+	TSharedPtr<FControlFlow> FrontEndFlow;
+	
+	// If set, this is the in-progress press start screen task
+	FControlFlowNodePtr InProgressPressStartScreen;
+
+	FDelegateHandle OnJoinSessionCompleteEventHandle;
 };
