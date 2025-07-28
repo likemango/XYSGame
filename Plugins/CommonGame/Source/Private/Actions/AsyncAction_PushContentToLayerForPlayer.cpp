@@ -14,7 +14,8 @@ UAsyncAction_PushContentToLayerForPlayer::UAsyncAction_PushContentToLayerForPlay
 {
 }
 
-UAsyncAction_PushContentToLayerForPlayer* UAsyncAction_PushContentToLayerForPlayer::PushContentToLayerForPlayer(APlayerController* InOwningPlayer, TSoftClassPtr<UCommonActivatableWidget> InWidgetClass, FGameplayTag InLayerName, bool bSuspendInputUntilComplete)
+UAsyncAction_PushContentToLayerForPlayer* UAsyncAction_PushContentToLayerForPlayer::PushContentToLayerForPlayer(APlayerController* InOwningPlayer,
+	TSoftClassPtr<UCommonActivatableWidget> InWidgetClass, FGameplayTag InLayerName, bool bSuspendInputUntilComplete, bool bFocusOnNewlyPushedWidget)
 {
 	if (InWidgetClass.IsNull())
 	{
@@ -29,6 +30,7 @@ UAsyncAction_PushContentToLayerForPlayer* UAsyncAction_PushContentToLayerForPlay
 		Action->OwningPlayerPtr = InOwningPlayer;
 		Action->LayerName = InLayerName;
 		Action->bSuspendInputUntilComplete = bSuspendInputUntilComplete;
+		Action->bFocusOnNewlyPushedWidget = bFocusOnNewlyPushedWidget;
 		Action->RegisterWithGameInstance(World);
 
 		return Action;
@@ -63,6 +65,13 @@ void UAsyncAction_PushContentToLayerForPlayer::Activate()
 						break;
 					case EAsyncWidgetLayerState::AfterPush:
 						AfterPush.Broadcast(Widget);
+						if (bFocusOnNewlyPushedWidget)
+						{
+							if (UWidget* FocusWidget = Widget->GetDesiredFocusTarget())
+							{
+								FocusWidget->SetFocus();
+							}
+						}
 						SetReadyToDestroy();
 						break;
 					case EAsyncWidgetLayerState::Canceled:

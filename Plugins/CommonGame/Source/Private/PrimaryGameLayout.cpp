@@ -94,7 +94,7 @@ void UPrimaryGameLayout::RegisterLayer(FGameplayTag LayerTag, UCommonActivatable
 		// TODO: Consider allowing a transition duration, we currently set it to 0, because if it's not 0, the
 		//       transition effect will cause focus to not transition properly to the new widgets when using
 		//       gamepad always.
-		LayerWidget->SetTransitionDuration(0.0);
+		// LayerWidget->SetTransitionDuration(0.0);
 
 		Layers.Add(LayerTag, LayerWidget);
 	}

@@ -30,7 +30,8 @@ public:
 	UE_API virtual void Cancel() override;
 
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, meta=(WorldContext = "WorldContextObject", BlueprintInternalUseOnly="true"))
-	static UE_API UAsyncAction_PushContentToLayerForPlayer* PushContentToLayerForPlayer(APlayerController* OwningPlayer, UPARAM(meta = (AllowAbstract=false)) TSoftClassPtr<UCommonActivatableWidget> WidgetClass, UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerName, bool bSuspendInputUntilComplete = true);
+	static UE_API UAsyncAction_PushContentToLayerForPlayer* PushContentToLayerForPlayer(APlayerController* OwningPlayer, UPARAM(meta = (AllowAbstract=false)) TSoftClassPtr<UCommonActivatableWidget> WidgetClass,
+		UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerName, bool bSuspendInputUntilComplete = true, bool bFocusOnNewlyPushedWidget = true);
 
 	UE_API virtual void Activate() override;
 
@@ -46,6 +47,7 @@ private:
 
 	FGameplayTag LayerName;
 	bool bSuspendInputUntilComplete = false;
+	bool bFocusOnNewlyPushedWidget = false;
 	TWeakObjectPtr<APlayerController> OwningPlayerPtr;
 	TSoftClassPtr<UCommonActivatableWidget> WidgetClass;
 
