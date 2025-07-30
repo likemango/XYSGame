@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "AsyncAction_CommonUserInitialize.h"
 #include "ControlFlowNode.h"
-#include "LoadingProcessInterface.h"
 #include "Components/GameStateComponent.h"
+#include "Interface/FrontendLoadingScreenInterface.h"
 #include "XYSFrontendStateComponent.generated.h"
 
 
@@ -14,7 +14,7 @@ class UXYSExperienceDefinition;
 class UCommonActivatableWidget;
 
 UCLASS(Abstract)
-class XYSGAME_API UXYSFrontendStateComponent : public UGameStateComponent, public ILoadingProcessInterface
+class XYSGAME_API UXYSFrontendStateComponent : public UGameStateComponent, public IFrontendLoadingScreenInterface
 {
 	GENERATED_BODY()
 	
@@ -36,7 +36,7 @@ private:
 	UFUNCTION()
 	void OnUserInitialized(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error, ECommonUserPrivilege RequestedPrivilege, ECommonUserOnlineContext OnlineContext);
 
-	void FlowStep_WaitForUserInitialization(FControlFlowNodeRef SubFlow);
+	// void FlowStep_WaitForUserInitialization(FControlFlowNodeRef SubFlow);
 	void FlowStep_TryShowPressStartScreen(FControlFlowNodeRef SubFlow);
 	void FlowStep_TryJoinRequestedSession(FControlFlowNodeRef SubFlow);
 	void FlowStep_TryShowMainScreen(FControlFlowNodeRef SubFlow);

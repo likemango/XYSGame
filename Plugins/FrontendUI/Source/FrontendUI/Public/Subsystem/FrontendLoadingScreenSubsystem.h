@@ -19,6 +19,11 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnLoadingReasonUpdatedDelegate OnLoadingReasonUpdated;
+
+	/** Called when the loading screen visibility changes  */
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnLoadingScreenVisibilityChangedDelegate, bool);
+
+	FORCEINLINE FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChangedDelegate() { return LoadingScreenVisibilityChanged; }
 	
 	//~ Begin USubsytem Interface
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const;
@@ -34,6 +39,9 @@ public:
 	virtual TStatId GetStatId() const override;
 	//~ End FTickableGameObject Interface
 
+	/** Returns True when the loading screen is currently being shown */
+	FORCEINLINE bool GetLoadingScreenDisplayStatus() const { return bIsCurrentlyLoadingMap;}
+	
 private:
 	void OnMapPreLoaded(const FWorldContext& WorldContext, const FString& MapName);
 	void OnMapPostLoaded(UWorld* LoadedWorld);
@@ -44,10 +52,12 @@ private:
 	bool CheckTheNeedToShowLoadingScreen();
 	void TryDisplayLoadingScreenIfNone();
 	void TryRemoveLoadingScreen();
-	void NotifyLoadingScreenVisibilityChanged(bool bIsVisible);
 	
 	bool bIsCurrentlyLoadingMap = false;
 	float HoldLoadingScreenStartUpTime = -1.f;
 	FString CurrentLoadingReason;
 	TSharedPtr<SWidget> CachedCreatedLoadingScreenWidget;
+
+	/** Delegate broadcast when the loading screen visibility changes */
+	FOnLoadingScreenVisibilityChangedDelegate LoadingScreenVisibilityChanged;
 };

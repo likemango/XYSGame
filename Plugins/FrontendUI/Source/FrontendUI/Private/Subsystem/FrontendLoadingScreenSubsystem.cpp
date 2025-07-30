@@ -2,25 +2,23 @@
 
 
 #include "Subsystem/FrontendLoadingScreenSubsystem.h"
-#include "Debug.h"
 #include "Blueprint/UserWidget.h"
 #include "FrontendSettings/FrontendLoadingScreenSettings.h"
+#include "GameFramework/GameStateBase.h"
 #include "Interface/FrontendLoadingScreenInterface.h"
 #include "Runtime/PreLoadScreen/Public/PreLoadScreenManager.h"
 
 class FPreLoadScreenManager;
 
-
-// now use CommonLoadingScreen
 bool UFrontendLoadingScreenSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
-	/*if (!CastChecked<UGameInstance>(Outer)->IsDedicatedServerInstance())
+	if (!CastChecked<UGameInstance>(Outer)->IsDedicatedServerInstance())
 	{	
 		TArray<UClass*> FoundClasses;
 		GetDerivedClasses(GetClass(),FoundClasses);
 
 		return FoundClasses.IsEmpty();
-	}*/
+	}
 
 	return false;
 }
@@ -116,8 +114,9 @@ void UFrontendLoadingScreenSubsystem::TryUpdateLoadingScreen()
 
 		HoldLoadingScreenStartUpTime = -1.f;
 		
-		//Notify the loading is completes
-		NotifyLoadingScreenVisibilityChanged(false);
+		// //Notify the loading is completes
+		// NotifyLoadingScreenVisibilityChanged(false);
+		LoadingScreenVisibilityChanged.Broadcast(false);
 
 		//Disable the ticking
 		SetTickableTickType(ETickableTickType::Never);
@@ -174,20 +173,45 @@ bool UFrontendLoadingScreenSubsystem::ShouldShowLoadingScreen()
 
 bool UFrontendLoadingScreenSubsystem::CheckTheNeedToShowLoadingScreen()
 {
+	// Start out with 'unknown' reason in case someone forgets to put a reason when changing this in the future.
+	CurrentLoadingReason = TEXT("Reason for Showing/Hiding LoadingScreen is unknown!");
+	
 	if (bIsCurrentlyLoadingMap)
 	{
 		CurrentLoadingReason = TEXT("Loading Level");
 
 		return true;
 	}
+	const UGameInstance* LocalGameInstance = GetGameInstance();
 
-	UWorld* OwningWorld = GetGameInstance()->GetWorld();
-
-	if (!OwningWorld)
+	const FWorldContext* Context = LocalGameInstance->GetWorldContext();
+	if (Context == nullptr)
 	{
-		CurrentLoadingReason = TEXT("Initializing World");
-
+		// We don't have a world context right now... better show a loading screen
+		CurrentLoadingReason = FString(TEXT("The game instance has a null WorldContext"));
 		return true;
+	}
+
+	UWorld* OwningWorld = Context->World();
+	if (OwningWorld == nullptr)
+	{
+		CurrentLoadingReason = FString(TEXT("Initializing World"));
+		return true;
+	}
+
+	AGameStateBase* GameState = OwningWorld->GetGameState<AGameStateBase>();
+	// Ask the game state if it needs a loading screen	
+	if (IFrontendLoadingScreenInterface::ShouldShowLoadingScreen(GameState, /*out*/ CurrentLoadingReason))
+	{
+		return true;
+	}
+	// Ask any game state components if they need a loading screen
+	for (UActorComponent* TestComponent : GameState->GetComponents())
+	{
+		if (IFrontendLoadingScreenInterface::ShouldShowLoadingScreen(TestComponent, /*out*/ CurrentLoadingReason))
+		{
+			return true;
+		}
 	}
 
 	if (!OwningWorld->HasBegunPlay())
@@ -196,16 +220,34 @@ bool UFrontendLoadingScreenSubsystem::CheckTheNeedToShowLoadingScreen()
 
 		return true;
 	}
-
-	if (!OwningWorld->GetFirstPlayerController())
+	
+	for (ULocalPlayer* LP : LocalGameInstance->GetLocalPlayers())
 	{
-		CurrentLoadingReason = TEXT("Player Controller is not valid yet");
+		if (LP != nullptr)
+		{
+			if (APlayerController* PC = LP->PlayerController)
+			{
+				// Ask the PC itself if it needs a loading screen
+				if (IFrontendLoadingScreenInterface::ShouldShowLoadingScreen(PC, /*out*/ CurrentLoadingReason))
+				{
+					return true;
+				}
 
-		return true;
+				// Ask any PC components if they need a loading screen
+				for (UActorComponent* TestComponent : PC->GetComponents())
+				{
+					if (IFrontendLoadingScreenInterface::ShouldShowLoadingScreen(TestComponent, /*out*/ CurrentLoadingReason))
+					{
+						return true;
+					}
+				}
+			}
+		}
 	}
-
-	//Check if the game states, player states, or player character, actor component are ready
-
+	
+	// Victory! The loading screen can go away now
+	CurrentLoadingReason = TEXT("(nothing wants to show it anymore)");
+	
 	return false;
 }
 
@@ -229,7 +271,8 @@ void UFrontendLoadingScreenSubsystem::TryDisplayLoadingScreenIfNone()
 
 	GetGameInstance()->GetGameViewportClient()->AddViewportWidgetContent(CachedCreatedLoadingScreenWidget.ToSharedRef(),1000);
 
-	NotifyLoadingScreenVisibilityChanged(true);
+	LoadingScreenVisibilityChanged.Broadcast(true);
+	// NotifyLoadingScreenVisibilityChanged(true);
 }
 
 void UFrontendLoadingScreenSubsystem::TryRemoveLoadingScreen()
@@ -241,47 +284,4 @@ void UFrontendLoadingScreenSubsystem::TryRemoveLoadingScreen()
 
 	GetGameInstance()->GetGameViewportClient()->RemoveViewportWidgetContent(CachedCreatedLoadingScreenWidget.ToSharedRef());
 	CachedCreatedLoadingScreenWidget.Reset();
-}
-
-void UFrontendLoadingScreenSubsystem::NotifyLoadingScreenVisibilityChanged(bool bIsVisible)
-{
-	for (ULocalPlayer* ExistingLocalPlayer : GetGameInstance()->GetLocalPlayers())
-	{
-		if (!ExistingLocalPlayer)
-		{
-			continue;
-		}
-
-		if (APlayerController* PC = ExistingLocalPlayer->GetPlayerController(GetGameInstance()->GetWorld()))
-		{
-			//Query if the player controller implements the interface. Call the function through interface to notify the loading status if yes.
-			if (PC->Implements<UFrontendLoadingScreenInterface>())
-			{	
-				if (bIsVisible)
-				{
-					IFrontendLoadingScreenInterface::Execute_OnLoadingScreenActivated(PC);
-				}
-				else
-				{
-					IFrontendLoadingScreenInterface::Execute_OnLoadingScreenDeactivated(PC);
-				}
-				
-			}
-
-			if(APawn* OwningPawn = PC->GetPawn())
-			{
-				if (OwningPawn->Implements<UFrontendLoadingScreenInterface>())
-				{
-					if (bIsVisible)
-					{
-						IFrontendLoadingScreenInterface::Execute_OnLoadingScreenActivated(OwningPawn);
-					}
-					else
-					{
-						IFrontendLoadingScreenInterface::Execute_OnLoadingScreenDeactivated(OwningPawn);
-					}
-				}
-			}
-		}
-	}
 }

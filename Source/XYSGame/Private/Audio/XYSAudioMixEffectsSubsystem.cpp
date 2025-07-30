@@ -5,9 +5,9 @@
 
 #include "AudioMixerBlueprintLibrary.h"
 #include "AudioModulationStatics.h"
-#include "LoadingScreenManager.h"
 #include "Audio/XYSAudioSettings.h"
 #include "Sound/SoundSubmix.h"
+#include "Subsystem/FrontendLoadingScreenSubsystem.h"
 
 
 void UXYSAudioMixEffectsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -17,7 +17,7 @@ void UXYSAudioMixEffectsSubsystem::Initialize(FSubsystemCollectionBase& Collecti
 
 void UXYSAudioMixEffectsSubsystem::Deinitialize()
 {
-	if (ULoadingScreenManager* LoadingScreenManager = UGameInstance::GetSubsystem<ULoadingScreenManager>(GetWorld()->GetGameInstance()))
+	if (UFrontendLoadingScreenSubsystem* LoadingScreenManager = UGameInstance::GetSubsystem<UFrontendLoadingScreenSubsystem>(GetWorld()->GetGameInstance()))
 	{
 		LoadingScreenManager->OnLoadingScreenVisibilityChangedDelegate().RemoveAll(this);
 		ApplyOrRemoveLoadingScreenMix(false);
@@ -203,7 +203,7 @@ void UXYSAudioMixEffectsSubsystem::PostInitialize()
 	}
 
 	// Register with the loading screen manager
-	if (ULoadingScreenManager* LoadingScreenManager = UGameInstance::GetSubsystem<ULoadingScreenManager>(GetWorld()->GetGameInstance()))
+	if (UFrontendLoadingScreenSubsystem* LoadingScreenManager = UGameInstance::GetSubsystem<UFrontendLoadingScreenSubsystem>(GetWorld()->GetGameInstance()))
 	{
 		LoadingScreenManager->OnLoadingScreenVisibilityChangedDelegate().AddUObject(this, &ThisClass::OnLoadingScreenStatusChanged);
 		ApplyOrRemoveLoadingScreenMix(LoadingScreenManager->GetLoadingScreenDisplayStatus());

@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFeaturePluginOperationResult.h"
-#include "LoadingProcessInterface.h"
 #include "Components/GameStateComponent.h"
+#include "Interface/FrontendLoadingScreenInterface.h"
 #include "XYSExperienceManagerComponent.generated.h"
 
 namespace UE::GameFeatures
@@ -29,7 +29,7 @@ enum class EXYSExperienceLoadState
 };
 
 UCLASS()
-class XYSGAME_API UXYSExperienceManagerComponent : public UGameStateComponent, public ILoadingProcessInterface
+class XYSGAME_API UXYSExperienceManagerComponent : public UGameStateComponent, public IFrontendLoadingScreenInterface
 {
 	GENERATED_BODY()
 

@@ -64,7 +64,7 @@ bool UXYSFrontendStateComponent::ShouldShowLoadingScreen(FString& OutReason) con
 void UXYSFrontendStateComponent::OnExperienceLoaded(const UXYSExperienceDefinition* Experience)
 {
 	FControlFlow& Flow = FControlFlowStatics::Create(this, TEXT("FrontendFlow"))
-		.QueueStep(TEXT("Wait For User Initialization"), this, &ThisClass::FlowStep_WaitForUserInitialization)
+		// .QueueStep(TEXT("Wait For User Initialization"), this, &ThisClass::FlowStep_WaitForUserInitialization)
 		.QueueStep(TEXT("Try Show Press Start Screen"), this, &ThisClass::FlowStep_TryShowPressStartScreen)
 		.QueueStep(TEXT("Try Join Requested Session"), this, &ThisClass::FlowStep_TryJoinRequestedSession)
 		.QueueStep(TEXT("Try Show Main Screen"), this, &ThisClass::FlowStep_TryShowMainScreen);
@@ -74,7 +74,7 @@ void UXYSFrontendStateComponent::OnExperienceLoaded(const UXYSExperienceDefiniti
 	FrontEndFlow = Flow.AsShared();
 }
 
-void UXYSFrontendStateComponent::FlowStep_WaitForUserInitialization(FControlFlowNodeRef SubFlow)
+/*void UXYSFrontendStateComponent::FlowStep_WaitForUserInitialization(FControlFlowNodeRef SubFlow)
 {
 	// If this was a hard disconnect, explicitly destroy all user and session state
 	// TODO: Refactor the engine disconnect flow so it is more explicit about why it happened
@@ -102,7 +102,7 @@ void UXYSFrontendStateComponent::FlowStep_WaitForUserInitialization(FControlFlow
 	}
 
 	SubFlow->ContinueFlow();
-}
+}*/
 
 void UXYSFrontendStateComponent::FlowStep_TryShowPressStartScreen(FControlFlowNodeRef SubFlow)
 {

@@ -20,13 +20,13 @@ class FRONTENDUI_API IFrontendLoadingScreenInterface
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintNativeEvent)
-	void OnLoadingScreenActivated();
-	/*virtual void OnLoadingScreenActivated_Implementation();*/
+	// Checks to see if this object implements the interface, and if so asks whether or not we should
+	// be currently showing a loading screen
+	static bool ShouldShowLoadingScreen(UObject* TestObject, FString& OutReason);
 
-	UFUNCTION(BlueprintNativeEvent)
-	void OnLoadingScreenDeactivated();
-	/*virtual void OnLoadingScreenDeactivated_Implementation();*/
+	virtual bool ShouldShowLoadingScreen(FString& OutReason) const
+	{
+		return false;
+	}
 };

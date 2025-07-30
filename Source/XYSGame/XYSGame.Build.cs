@@ -38,12 +38,12 @@ public class XYSGame : ModuleRules
 			"GameFeatures",
 			"SignificanceManager",
 			"Hotfix",
-			"CommonLoadingScreen",
 			"Niagara",
 			"AsyncMixin",
 			"ControlFlows",
 			"PropertyPath", 
-			"UIExtension"
+			"UIExtension", 
+			"FrontendUI"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
