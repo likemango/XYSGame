@@ -2,15 +2,14 @@
 
 
 #include "GameModes/XYSUserFacingExperienceDefinition.h"
-#include "CommonSessionSubsystem.h"
 #include "Containers/UnrealString.h"
 #include "UObject/NameTypes.h"
 #include "Engine/GameInstance.h"
 #include "Engine/Engine.h"
-#include "Replays/XYSReplaySubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(XYSUserFacingExperienceDefinition)
 
+/*
 UCommonSession_HostSessionRequest* UXYSUserFacingExperienceDefinition::CreateHostingRequest(const UObject* WorldContextObject) const
 {
 	const FString ExperienceName = ExperienceID.PrimaryAssetName.ToString();
@@ -51,4 +50,5 @@ UCommonSession_HostSessionRequest* UXYSUserFacingExperienceDefinition::CreateHos
 
 	return Result;
 }
+*/
 

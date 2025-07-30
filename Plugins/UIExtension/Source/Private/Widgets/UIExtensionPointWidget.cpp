@@ -1,11 +1,12 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Widgets/UIExtensionPointWidget.h"
+
+#include "XYSCommonLocalPlayer.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Editor/WidgetCompilerLog.h"
 #include "Misc/UObjectToken.h"
-#include "CommonLocalPlayer.h"
 #include "GameFramework/PlayerState.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(UIExtensionPointWidget)
@@ -35,8 +36,8 @@ TSharedRef<SWidget> UUIExtensionPointWidget::RebuildWidget()
 		ResetExtensionPoint();
 		RegisterExtensionPoint();
 
-		FDelegateHandle Handle = GetOwningLocalPlayer<UCommonLocalPlayer>()->CallAndRegister_OnPlayerStateSet(
-			UCommonLocalPlayer::FPlayerStateSetDelegate::FDelegate::CreateUObject(this, &UUIExtensionPointWidget::RegisterExtensionPointForPlayerState)
+		FDelegateHandle Handle = GetOwningLocalPlayer<UXYSCommonLocalPlayer>()->CallAndRegister_OnPlayerStateSet(
+			UXYSCommonLocalPlayer::FPlayerStateSetDelegate::FDelegate::CreateUObject(this, &UUIExtensionPointWidget::RegisterExtensionPointForPlayerState)
 		);
 	}
 
@@ -99,7 +100,7 @@ void UUIExtensionPointWidget::RegisterExtensionPoint()
 	}
 }
 
-void UUIExtensionPointWidget::RegisterExtensionPointForPlayerState(UCommonLocalPlayer* LocalPlayer, APlayerState* PlayerState)
+void UUIExtensionPointWidget::RegisterExtensionPointForPlayerState(UXYSCommonLocalPlayer* LocalPlayer, APlayerState* PlayerState)
 {
 	if (UUIExtensionSubsystem* ExtensionSubsystem = GetWorld()->GetSubsystem<UUIExtensionSubsystem>())
 	{

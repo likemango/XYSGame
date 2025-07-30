@@ -21,9 +21,6 @@
 #include "Engine/GameInstance.h"
 #include "AbilitySystemGlobals.h"
 #include "CommonInputSubsystem.h"
-#include "Player/XYSLocalPlayer.h"
-#include "GameModes/XYSGameState.h"
-#include "Replays/XYSReplaySubsystem.h"
 #include "ReplaySubsystem.h"
 #include "Development/XYSDeveloperSettings.h"
 #include "GameMapsSettings.h"
@@ -158,30 +155,6 @@ UXYSAbilitySystemComponent* AXYSPlayerController::GetXYSAbilitySystemComponent()
 AXYSHUD* AXYSPlayerController::GetXYSHUD() const
 {
 	return CastChecked<AXYSHUD>(GetHUD(), ECastCheckedType::NullAllowed);
-}
-
-bool AXYSPlayerController::TryToRecordClientReplay()
-{
-	// See if we should record a replay
-	if (ShouldRecordClientReplay())
-	{
-		if (UXYSReplaySubsystem* ReplaySubsystem = GetGameInstance()->GetSubsystem<UXYSReplaySubsystem>())
-		{
-			APlayerController* FirstLocalPlayerController = GetGameInstance()->GetFirstLocalPlayerController();
-			if (FirstLocalPlayerController == this)
-			{
-				// If this is the first player, update the spectator player for local replays and then record
-				if (AXYSGameState* GameState = Cast<AXYSGameState>(GetWorld()->GetGameState()))
-				{
-					GameState->SetRecorderPlayerState(PlayerState);
-
-					ReplaySubsystem->RecordClientReplay(this);
-					return true;
-				}
-			}
-		}
-	}
-	return false;
 }
 
 bool AXYSPlayerController::ShouldRecordClientReplay()

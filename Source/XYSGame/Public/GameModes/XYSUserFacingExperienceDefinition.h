@@ -64,8 +64,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Experience)
 	int32 MaxPlayerCount = 16;
 
-public:
-	/** Create a request object that is used to actually start a session with these settings */
+/*public:
+	/** Create a request object that is used to actually start a session with these settings #1#
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, meta = (WorldContext = "WorldContextObject"))
-	UCommonSession_HostSessionRequest* CreateHostingRequest(const UObject* WorldContextObject) const;
+	UCommonSession_HostSessionRequest* CreateHostingRequest(const UObject* WorldContextObject) const;*/
 };

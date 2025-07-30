@@ -9,9 +9,9 @@
 
 #define UE_API UIEXTENSION_API
 
+class UXYSCommonLocalPlayer;
 class IWidgetCompilerLog;
 
-class UCommonLocalPlayer;
 class APlayerState;
 
 /**
@@ -40,7 +40,7 @@ public:
 private:
 	void ResetExtensionPoint();
 	void RegisterExtensionPoint();
-	void RegisterExtensionPointForPlayerState(UCommonLocalPlayer* LocalPlayer, APlayerState* PlayerState);
+	void RegisterExtensionPointForPlayerState(UXYSCommonLocalPlayer* LocalPlayer, APlayerState* PlayerState);
 	void OnAddOrRemoveExtension(EUIExtensionAction Action, const FUIExtensionRequest& Request);
 
 protected:

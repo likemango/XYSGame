@@ -73,12 +73,4 @@ protected:
 	void OnMatchAssignmentGiven(FPrimaryAssetId ExperienceId, const FString& ExperienceIdSource);
 
 	void HandleMatchAssignmentIfNotExpectingOne();
-
-	bool TryDedicatedServerLogin();
-	void HostDedicatedServerMatch(ECommonSessionOnlineMode OnlineMode);
-
-	UFUNCTION()
-	void OnUserInitializedForDedicatedServer(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error,
-	                                         ECommonUserPrivilege RequestedPrivilege,
-	                                         ECommonUserOnlineContext OnlineContext);
 };

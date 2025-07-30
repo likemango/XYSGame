@@ -17,6 +17,17 @@ TSoftClassPtr<UWidget_ActivatableBase> UFrontendBlueprintFunctionLibrary::GetFro
 	return FrontendDevelopSettings->FrontedWidgetMaps.FindRef(WidgetTag);
 }
 
+TSubclassOf<UUserWidget> UFrontendBlueprintFunctionLibrary::GetWidgetClassFromDevelopSettingsByTag(FGameplayTag WidgetTag)
+{
+	checkf(WidgetTag.IsValid(), TEXT("WidgetTag in GetWidgetClassFromDevelopSettingsByTag is null."))
+
+	const UFrontendDeveloperSettings* FrontendDevelopSettings = GetDefault<UFrontendDeveloperSettings>();
+
+	ensureAlwaysMsgf(FrontendDevelopSettings->WidgetMappings.Contains(WidgetTag), TEXT("FrontendDevelopSettings's FrontedWidgetMaps does not contain tag: %s"), *WidgetTag.ToString());
+
+	return FrontendDevelopSettings->WidgetMappings.FindRef(WidgetTag);
+}
+
 TSoftObjectPtr<UTexture2D> UFrontendBlueprintFunctionLibrary::GetOptionsSoftImageByTag(FGameplayTag InImageTag)
 {
 	const UFrontendDeveloperSettings* FrontendDeveloperSettings = GetDefault<UFrontendDeveloperSettings>();

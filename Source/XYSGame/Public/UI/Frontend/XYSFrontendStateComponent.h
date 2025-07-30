@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AsyncAction_CommonUserInitialize.h"
 #include "ControlFlowNode.h"
 #include "Components/GameStateComponent.h"
 #include "Interface/FrontendLoadingScreenInterface.h"
 #include "XYSFrontendStateComponent.generated.h"
 
 
+class UWidget_ActivatableBase;
 class UXYSExperienceDefinition;
 class UCommonActivatableWidget;
 
@@ -33,21 +33,16 @@ public:
 private:
 	void OnExperienceLoaded(const UXYSExperienceDefinition* Experience);
 
-	UFUNCTION()
-	void OnUserInitialized(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error, ECommonUserPrivilege RequestedPrivilege, ECommonUserOnlineContext OnlineContext);
-
-	// void FlowStep_WaitForUserInitialization(FControlFlowNodeRef SubFlow);
 	void FlowStep_TryShowPressStartScreen(FControlFlowNodeRef SubFlow);
-	void FlowStep_TryJoinRequestedSession(FControlFlowNodeRef SubFlow);
 	void FlowStep_TryShowMainScreen(FControlFlowNodeRef SubFlow);
 
 	bool bShouldShowLoadingScreen = true;
 
 	UPROPERTY(EditAnywhere, Category = UI)
-	TSoftClassPtr<UCommonActivatableWidget> PressStartScreenClass;
+	TSoftClassPtr<UWidget_ActivatableBase> PressStartScreenClass;
 
 	UPROPERTY(EditAnywhere, Category = UI)
-	TSoftClassPtr<UCommonActivatableWidget> MainScreenClass;
+	TSoftClassPtr<UWidget_ActivatableBase> MainScreenClass;
 
 	TSharedPtr<FControlFlow> FrontEndFlow;
 	

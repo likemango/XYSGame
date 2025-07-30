@@ -10,29 +10,22 @@
 #include "AssetRegistry/AssetData.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
-#include "XYSLogChannels.h"
 #include "Misc/CommandLine.h"
 #include "System/XYSAssetManager.h"
 #include "GameModes/XYSGameState.h"
-#include "System/XYSGameSession.h"
 #include "Player/XYSPlayerController.h"
 #include "Player/XYSPlayerBotController.h"
 #include "Player/XYSPlayerState.h"
 #include "Character/XYSCharacter.h"
 #include "UI/XYSHUD.h"
-#include "Character/XYSPawnExtensionComponent.h"
-#include "Character/XYSPawnData.h"
 #include "GameModes/XYSWorldSettings.h"
 #include "GameModes/XYSExperienceDefinition.h"
 #include "GameModes/XYSExperienceManagerComponent.h"
-#include "GameModes/XYSUserFacingExperienceDefinition.h"
 #include "Kismet/GameplayStatics.h"
 #include "Development/XYSDeveloperSettings.h"
 #include "Player/XYSPlayerSpawningManagerComponent.h"
-#include "CommonUserSubsystem.h"
-#include "CommonSessionSubsystem.h"
 #include "TimerManager.h"
-#include "GameMapsSettings.h"
+#include "GameFramework/GameSession.h"
 #include "Player/XYSReplayPlayerController.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(XYSGameMode)
@@ -41,7 +34,7 @@ AXYSGameMode::AXYSGameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	GameStateClass = AXYSGameState::StaticClass();
-	GameSessionClass = AXYSGameSession::StaticClass();
+	GameSessionClass = AGameSession::StaticClass();
 	PlayerControllerClass = AXYSPlayerController::StaticClass();
 	ReplaySpectatorPlayerControllerClass = AXYSReplayPlayerController::StaticClass();
 	PlayerStateClass = AXYSPlayerState::StaticClass();
@@ -157,11 +150,11 @@ void AXYSGameMode::HandleMatchAssignmentIfNotExpectingOne()
 	// Final fallback to the default experience
 	if (!ExperienceId.IsValid())
 	{
-		if (TryDedicatedServerLogin())
+		/*if (TryDedicatedServerLogin())
 		{
 			// This will start to host as a dedicated server
 			return;
-		}
+		}*/
 
 		//@TODO: Pull this from a config setting or something
 		ExperienceId = FPrimaryAssetId(FPrimaryAssetType("XYSExperienceDefinition"), FName("B_XYSDefaultExperience"));
@@ -169,128 +162,6 @@ void AXYSGameMode::HandleMatchAssignmentIfNotExpectingOne()
 	}
 
 	OnMatchAssignmentGiven(ExperienceId, ExperienceIdSource);
-}
-
-bool AXYSGameMode::TryDedicatedServerLogin()
-{
-	// Some basic code to register as an active dedicated server, this would be heavily modified by the game
-	FString DefaultMap = UGameMapsSettings::GetGameDefaultMap();
-	UWorld* World = GetWorld();
-	UGameInstance* GameInstance = GetGameInstance();
-	if (GameInstance && World && World->GetNetMode() == NM_DedicatedServer && World->URL.Map == DefaultMap)
-	{
-		// Only register if this is the default map on a dedicated server
-		UCommonUserSubsystem* UserSubsystem = GameInstance->GetSubsystem<UCommonUserSubsystem>();
-
-		// Dedicated servers may need to do an online login
-		UserSubsystem->OnUserInitializeComplete.AddDynamic(this, &AXYSGameMode::OnUserInitializedForDedicatedServer);
-
-		// There are no local users on dedicated server, but index 0 means the default platform user which is handled by the online login code
-		if (!UserSubsystem->TryToLoginForOnlinePlay(0))
-		{
-			OnUserInitializedForDedicatedServer(nullptr, false, FText(), ECommonUserPrivilege::CanPlayOnline, ECommonUserOnlineContext::Default);
-		}
-
-		return true;
-	}
-
-	return false;
-}
-
-void AXYSGameMode::HostDedicatedServerMatch(ECommonSessionOnlineMode OnlineMode)
-{
-	FPrimaryAssetType UserExperienceType = UXYSUserFacingExperienceDefinition::StaticClass()->GetFName();
-	
-	// Figure out what UserFacingExperience to load
-	FPrimaryAssetId UserExperienceId;
-	FString UserExperienceFromCommandLine;
-	if (FParse::Value(FCommandLine::Get(), TEXT("UserExperience="), UserExperienceFromCommandLine) ||
-		FParse::Value(FCommandLine::Get(), TEXT("Playlist="), UserExperienceFromCommandLine))
-	{
-		UserExperienceId = FPrimaryAssetId::ParseTypeAndName(UserExperienceFromCommandLine);
-		if (!UserExperienceId.PrimaryAssetType.IsValid())
-		{
-			UserExperienceId = FPrimaryAssetId(FPrimaryAssetType(UserExperienceType), FName(*UserExperienceFromCommandLine));
-		}
-	}
-
-	// Search for the matching experience, it's fine to force load them because we're in dedicated server startup
-	UXYSAssetManager& AssetManager = UXYSAssetManager::Get();
-	TSharedPtr<FStreamableHandle> Handle = AssetManager.LoadPrimaryAssetsWithType(UserExperienceType);
-	if (ensure(Handle.IsValid()))
-	{
-		Handle->WaitUntilComplete();
-	}
-
-	TArray<UObject*> UserExperiences;
-	AssetManager.GetPrimaryAssetObjectList(UserExperienceType, UserExperiences);
-	UXYSUserFacingExperienceDefinition* FoundExperience = nullptr;
-	UXYSUserFacingExperienceDefinition* DefaultExperience = nullptr;
-
-	for (UObject* Object : UserExperiences)
-	{
-		UXYSUserFacingExperienceDefinition* UserExperience = Cast<UXYSUserFacingExperienceDefinition>(Object);
-		if (ensure(UserExperience))
-		{
-			if (UserExperience->GetPrimaryAssetId() == UserExperienceId)
-			{
-				FoundExperience = UserExperience;
-				break;
-			}
-			
-			if (UserExperience->bIsDefaultExperience && DefaultExperience == nullptr)
-			{
-				DefaultExperience = UserExperience;
-			}
-		}
-	}
-
-	if (FoundExperience == nullptr)
-	{
-		FoundExperience = DefaultExperience;
-	}
-	
-	UGameInstance* GameInstance = GetGameInstance();
-	if (ensure(FoundExperience && GameInstance))
-	{
-		// Actually host the game
-		UCommonSession_HostSessionRequest* HostRequest = FoundExperience->CreateHostingRequest(this);
-		if (ensure(HostRequest))
-		{
-			HostRequest->OnlineMode = OnlineMode;
-
-			// TODO override other parameters?
-
-			UCommonSessionSubsystem* SessionSubsystem = GameInstance->GetSubsystem<UCommonSessionSubsystem>();
-			SessionSubsystem->HostSession(nullptr, HostRequest);
-			
-			// This will handle the map travel
-		}
-	}
-
-}
-
-void AXYSGameMode::OnUserInitializedForDedicatedServer(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error, ECommonUserPrivilege RequestedPrivilege, ECommonUserOnlineContext OnlineContext)
-{
-	UGameInstance* GameInstance = GetGameInstance();
-	if (GameInstance)
-	{
-		// Unbind
-		UCommonUserSubsystem* UserSubsystem = GameInstance->GetSubsystem<UCommonUserSubsystem>();
-		UserSubsystem->OnUserInitializeComplete.RemoveDynamic(this, &AXYSGameMode::OnUserInitializedForDedicatedServer);
-
-		// Dedicated servers do not require user login, but some online subsystems may expect it
-		if (bSuccess && ensure(UserInfo))
-		{
-			UE_LOG(LogXYSExperience, Log, TEXT("Dedicated server user login succeeded for id %s, starting online server"), *UserInfo->GetNetId().ToString());
-		}
-		else
-		{
-			UE_LOG(LogXYSExperience, Log, TEXT("Dedicated server user login unsuccessful, starting online server as login is not required"));
-		}
-		
-		HostDedicatedServerMatch(ECommonSessionOnlineMode::Online);
-	}
 }
 
 void AXYSGameMode::OnMatchAssignmentGiven(FPrimaryAssetId ExperienceId, const FString& ExperienceIdSource)

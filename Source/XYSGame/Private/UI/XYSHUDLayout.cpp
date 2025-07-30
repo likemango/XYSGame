@@ -2,12 +2,7 @@
 #include "UI/XYSHUDLayout.h"
 
 #include "NativeGameplayTags.h"
-#include "CommonUIExtensions.h"
-#include "CommonUISettings.h"
-#include "ICommonUIModule.h"
 #include "UITag.h"
-#include "XYSLogChannels.h"
-#include "GameFramework/InputDeviceSubsystem.h"
 #include "Input/CommonUIInputTypes.h"
 
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_UI_LAYER_MENU, "UI.Layer.Menu");
@@ -58,8 +53,10 @@ void UXYSHUDLayout::NativeDestruct()
 
 void UXYSHUDLayout::HandleEscapeAction() const
 {
-	if (ensure(!EscapeMenuClass.IsNull()))
-	{
-		UCommonUIExtensions::PushStreamedContentToLayer_ForPlayer(GetOwningLocalPlayer(), TAG_UI_LAYER_MENU, EscapeMenuClass);
-	}
+	// todo push use FrontendUISubsystem
+	
+	// if (ensure(!EscapeMenuClass.IsNull()))
+	// {
+	// 	UCommonUIExtensions::PushStreamedContentToLayer_ForPlayer(GetOwningLocalPlayer(), TAG_UI_LAYER_MENU, EscapeMenuClass);
+	// }
 }

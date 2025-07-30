@@ -7,6 +7,7 @@
 #include "Engine/DeveloperSettings.h"
 #include "FrontendDeveloperSettings.generated.h"
 
+class UWidget;
 class UWidget_ActivatableBase;
 /**
  * 
@@ -22,4 +23,7 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, Category = "Options Image Reference", meta = (ForceInlineRow, Categories = "Frontend.Image"))
 	TMap< FGameplayTag, TSoftObjectPtr<UTexture2D> > OptionsScreenSoftImageMap;
+
+	UPROPERTY(Config, EditAnywhere, Category="Widget Reference", meta=(ForceInlineRow))
+	TMap<FGameplayTag, TSubclassOf<UUserWidget>> WidgetMappings;
 };

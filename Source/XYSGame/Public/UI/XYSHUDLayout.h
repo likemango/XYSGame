@@ -7,6 +7,7 @@
 #include "XYSActivatableWidget.h"
 #include "XYSHUDLayout.generated.h"
 
+class UWidget_ActivatableBase;
 class UXYSControllerDisconnectedScreen;
 /**
  * 
@@ -29,7 +30,7 @@ protected:
 	 * The menu to be displayed when the user presses the "Pause" or "Escape" button 
 	 */
 	UPROPERTY(EditDefaultsOnly)
-	TSoftClassPtr<UCommonActivatableWidget> EscapeMenuClass;
+	TSoftClassPtr<UWidget_ActivatableBase> EscapeMenuClass;
 
 	/** Handle from the FSTicker for when we want to process the controller state of our player */
 	FTSTicker::FDelegateHandle RequestProcessControllerStateHandle;

@@ -22,7 +22,7 @@ public:
 
 protected:
 	UFUNCTION(BlueprintCallable)
-	void RegisterWidgetStack(UPARAM(meta=(Categories="Frontend.WidgetStack")) FGameplayTag InStackTag, UCommonActivatableWidgetContainerBase* InStack);
+	void RegisterWidgetStack(UPARAM(meta=(Categories="UI.Layer")) FGameplayTag InStackTag, UCommonActivatableWidgetContainerBase* InStack);
 	
 	UPROPERTY(Transient)
 	TMap<FGameplayTag, UCommonActivatableWidgetContainerBase*> RegisteredWidgetStackMap;

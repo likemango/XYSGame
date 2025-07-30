@@ -31,7 +31,6 @@ public class FrontendUI : ModuleRules
 				"DeveloperSettings",
 				"GameplayTags",
 				"PreLoadScreen",
-				"CommonGame",
 				"ModularGameplayActors"
 				// ... add other public dependencies that you statically link with here ...
 			}

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommonLocalPlayer.h"
+#include "XYSCommonLocalPlayer.h"
 #include "Teams/XYSTeamAgentInterface.h"
 #include "XYSLocalPlayer.generated.h"
 
@@ -15,7 +15,7 @@ class UXYSSettingsLocal;
  * 
  */
 UCLASS()
-class XYSGAME_API UXYSLocalPlayer : public UCommonLocalPlayer, public IXYSTeamAgentInterface
+class XYSGAME_API UXYSLocalPlayer : public UXYSCommonLocalPlayer, public IXYSTeamAgentInterface
 {
 	GENERATED_BODY()
 

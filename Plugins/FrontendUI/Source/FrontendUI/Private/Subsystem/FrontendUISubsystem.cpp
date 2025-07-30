@@ -21,6 +21,27 @@ UFrontendUISubsystem* UFrontendUISubsystem::Get(const UObject* WorldContextObjec
 	return nullptr;
 }
 
+UCommonActivatableWidget* UFrontendUISubsystem::PushContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer,
+	FGameplayTag LayerName, TSubclassOf<UCommonActivatableWidget> WidgetClass)
+{
+	if (UFrontendUISubsystem* UISubsystem = Get(LocalPlayer))
+	{
+		return  UISubsystem->PushWidgetClassToStackAsync(LayerName, WidgetClass, [](UCommonActivatableWidget*) {});
+	}
+	return nullptr;
+}
+
+UCommonActivatableWidget* UFrontendUISubsystem::PushWidgetClassToStackAsync(const FGameplayTag& InTag,
+	TSubclassOf<UCommonActivatableWidget> InSoftWidgetClass,
+	TFunction<void(UCommonActivatableWidget*)> AsyncPushWidgetCallback)
+{
+	if (!CreatedPrimaryLayout)
+		return nullptr;
+
+	UCommonActivatableWidgetContainerBase* ContainBase = CreatedPrimaryLayout->FindWidgetStackByTag(InTag);
+	return ContainBase->AddWidget(InSoftWidgetClass);
+}
+
 bool UFrontendUISubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
 	if (Outer)
@@ -91,6 +112,24 @@ void UFrontendUISubsystem::PushConfirmScreenToModalStackAsync(EConfirmScreenType
 	});
 }
 
+void UFrontendUISubsystem::NotifyPlayerAdded(ULocalPlayer* LocalPlayer)
+{
+	check(!CreatedPrimaryLayout);
+	TSubclassOf<UUserWidget> PrimaryLayoutClass =
+		UFrontendBlueprintFunctionLibrary::GetWidgetClassFromDevelopSettingsByTag(FrontendGameplayTags::Frontend_PrimaryLayout);
+	if (PrimaryLayoutClass && LocalPlayer && LocalPlayer->PlayerController && !CreatedPrimaryLayout)
+	{
+		CreatedPrimaryLayout = CreateWidget<UWidget_PrimaryLayout>(LocalPlayer->PlayerController, PrimaryLayoutClass);
+		RegisterCreatedPrimaryLayout(CreatedPrimaryLayout);
+		CreatedPrimaryLayout->AddToViewport();
+	}
+}
+
+void UFrontendUISubsystem::NotifyPlayerRemoved(ULocalPlayer* LocalPlayer)
+{
+	check(CreatedPrimaryLayout);
+	CreatedPrimaryLayout->RemoveFromParent();
+}
 
 void UFrontendUISubsystem::RegisterCreatedPrimaryLayout(UWidget_PrimaryLayout* InLayout)
 {

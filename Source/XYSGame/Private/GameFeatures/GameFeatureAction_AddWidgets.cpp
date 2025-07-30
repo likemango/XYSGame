@@ -6,7 +6,6 @@
 #include "Engine/GameInstance.h"
 #include "GameFeatures/GameFeatureAction_WorldActionBase.h"
 #include "GameFeaturesSubsystemSettings.h"
-#include "CommonUIExtensions.h"
 #include "UI/XYSHUD.h"
 
 #if WITH_EDITOR
@@ -14,6 +13,7 @@
 #endif
 
 #include "CommonActivatableWidget.h"
+#include "Subsystem/FrontendUISubsystem.h"
 
 #define LOCTEXT_NAMESPACE "XYSGameFeatures"
 
@@ -152,7 +152,7 @@ void UGameFeatureAction_AddWidgets::AddWidgets(AActor* Actor, FPerContextData& A
 		{
 			if (TSubclassOf<UCommonActivatableWidget> ConcreteWidgetClass = Entry.LayoutClass.Get())
 			{
-				ActorData.LayoutsAdded.Add(UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer, Entry.LayerID, ConcreteWidgetClass));
+				ActorData.LayoutsAdded.Add(UFrontendUISubsystem::PushContentToLayer_ForPlayer(LocalPlayer, Entry.LayerID, ConcreteWidgetClass));
 			}
 		}
 

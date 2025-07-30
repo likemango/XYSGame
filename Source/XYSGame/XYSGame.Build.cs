@@ -66,8 +66,6 @@ public class XYSGame : ModuleRules
 			"CommonUI",
 			"CommonInput",
 			"GameSettings",
-			"CommonGame",
-			"CommonUser",
 			"GameSubtitles",
 			"GameplayMessageRuntime",
 			"AudioMixer",

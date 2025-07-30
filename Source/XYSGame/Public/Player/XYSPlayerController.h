@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommonPlayerController.h"
 #include "Camera/XYSCameraAssistInterface.h"
 #include "GameFramework/PlayerController.h"
 #include "Teams/XYSTeamAgentInterface.h"
@@ -17,7 +16,7 @@ class UXYSAbilitySystemComponent;
  * The base player controller class used by this project.
  */
 UCLASS(Config = Game, Meta = (ShortTooltip = "The base player controller class used by this project."))
-class XYSGAME_API AXYSPlayerController : public ACommonPlayerController, public IXYSTeamAgentInterface, public IXYSCameraAssistInterface
+class XYSGAME_API AXYSPlayerController : public APlayerController, public IXYSTeamAgentInterface, public IXYSCameraAssistInterface
 {
 	GENERATED_BODY()
 
@@ -32,10 +31,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "XYS|PlayerController")
 	AXYSHUD* GetXYSHUD() const;
-
-	// Call from game state logic to start recording an automatic client replay if ShouldRecordClientReplay returns true
-	UFUNCTION(BlueprintCallable, Category = "XYS|PlayerController")
-	bool TryToRecordClientReplay();
 
 	// Call to see if we should record a replay, subclasses could change this
 	virtual bool ShouldRecordClientReplay();
