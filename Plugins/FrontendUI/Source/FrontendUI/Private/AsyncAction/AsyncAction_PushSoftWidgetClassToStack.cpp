@@ -40,15 +40,15 @@ void UAsyncAction_PushSoftWidgetClassToStack::Activate()
 			UFrontendUISubsystem* FrontendUISubsystem = UFrontendUISubsystem::Get(World);
 
 			FrontendUISubsystem->PushSoftWidgetClassToStackAsync(StackTagCached, SoftWidgetClassCached,
-				[this](EAsyncPushWidgetState State, UWidget_ActivatableBase* CreatedWidget)
+				[this](EAsyncWidgetLayerState State, UWidget_ActivatableBase* CreatedWidget)
 			{
 				switch (State)
 				{
-					case EAsyncPushWidgetState::OnCreatedBeforePush:
+					case EAsyncWidgetLayerState::Initialize:
 						CreatedWidget->SetOwningPlayer(OwningPlayerControllerCached.Get());
 						CreatedBeforePush.Broadcast(CreatedWidget);
 						break;
-					case EAsyncPushWidgetState::AfterPush:
+					case EAsyncWidgetLayerState::AfterPush:
 						if (bFocusOnNewlyPushedWidgetCached)
 						{
 							if (UWidget* FocusWidget = CreatedWidget->GetDesiredFocusTarget())

@@ -5,43 +5,13 @@
 #include "Engine/LocalPlayer.h"
 #include "Debug.h"
 #include "FrontendGameplayTags.h"
-#include "../../../../../XYSCommonGame/Source/XYSCommonGame/Public/XYSCommonLocalPlayer.h"
+#include "XYSCommonLocalPlayer.h"
 #include "Engine/AssetManager.h"
 #include "FunctionLibrary/FrontendBlueprintFunctionLibrary.h"
-#include "Kismet/GameplayStatics.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 #include "Widgets/Widget_ActivatableBase.h"
 #include "Widgets/Widget_ConfirmScreen.h"
 #include "Widgets/Widget_PrimaryLayout.h"
-
-UWidget_PrimaryLayout* UFrontendUISubsystem::GetPrimaryGameLayoutForPrimaryPlayer(const UObject* WorldContextObject)
-{
-	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(WorldContextObject);
-	APlayerController* PlayerController = GameInstance->GetPrimaryPlayerController(false);
-	return GetPrimaryGameLayout(PlayerController);
-}
-
-UWidget_PrimaryLayout* UFrontendUISubsystem::GetPrimaryGameLayout(APlayerController* PlayerController)
-{
-	return PlayerController ? GetPrimaryGameLayout(Cast<UXYSCommonLocalPlayer>(PlayerController->Player)) : nullptr;
-}
-
-UWidget_PrimaryLayout* UFrontendUISubsystem::GetPrimaryGameLayout(ULocalPlayer* LocalPlayer)
-{
-	if (LocalPlayer)
-	{
-		const UXYSCommonLocalPlayer* CommonLocalPlayer = CastChecked<UXYSCommonLocalPlayer>(LocalPlayer);
-		if (const UGameInstance* GameInstance = CommonLocalPlayer->GetGameInstance())
-		{
-			if (UFrontendUISubsystem* UISubsystem = UFrontendUISubsystem::Get(GameInstance))
-			{
-				return UISubsystem->GetRootLayout(CommonLocalPlayer);
-			}
-		}
-	}
-
-	return nullptr;
-}
 
 UFrontendUISubsystem* UFrontendUISubsystem::Get(const UObject* WorldContextObject)
 {
@@ -60,30 +30,10 @@ void UFrontendUISubsystem::RegisterAndCallPrimaryLayoutCreated(FSimpleMulticastD
 		OnPrimaryLayoutAdded.Add(Delegate);
 	}
 	
-	if (RootViewportLayouts.Num() > 0)
+	if (RootViewportLayout.RootLayout)
 	{
 		Delegate.Execute();
 	}
-}
-
-UCommonActivatableWidget* UFrontendUISubsystem::PushContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer,
-                                                                             FGameplayTag LayerName, TSubclassOf<UCommonActivatableWidget> WidgetClass)
-{
-	if (UFrontendUISubsystem* UISubsystem = Get(LocalPlayer))
-	{
-		return  UISubsystem->PushWidgetClassToStackAsync(LayerName, WidgetClass, [](UCommonActivatableWidget*) {});
-	}
-	return nullptr;
-}
-
-UCommonActivatableWidget* UFrontendUISubsystem::PushWidgetClassToStackAsync(const FGameplayTag& InTag,
-	TSubclassOf<UCommonActivatableWidget> InSoftWidgetClass,
-	TFunction<void(UCommonActivatableWidget*)> AsyncPushWidgetCallback)
-{
-	UWidget_PrimaryLayout* PrimaryLayout = GetPrimaryGameLayoutForPrimaryPlayer(GetWorld());
-	ensure(PrimaryLayout);
-	UCommonActivatableWidgetContainerBase* ContainBase = PrimaryLayout->FindWidgetStackByTag(InTag);
-	return ContainBase->AddWidget(InSoftWidgetClass);
 }
 
 bool UFrontendUISubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -103,9 +53,9 @@ bool UFrontendUISubsystem::ShouldCreateSubsystem(UObject* Outer) const
 
 void UFrontendUISubsystem::PushSoftWidgetClassToStackAsync(const FGameplayTag& InTag,
                                                            TSoftClassPtr<UWidget_ActivatableBase> InSoftWidgetClass,
-                                                           TFunction<void(EAsyncPushWidgetState, UWidget_ActivatableBase*)> AsyncPushWidgetCallback) 
+                                                           TFunction<void(EAsyncWidgetLayerState, UWidget_ActivatableBase*)> AsyncPushWidgetCallback) 
 {
-	UWidget_PrimaryLayout* PrimaryLayout = GetPrimaryGameLayoutForPrimaryPlayer(GetWorld());
+	UWidget_PrimaryLayout* PrimaryLayout = RootViewportLayout.RootLayout;
 	ensure(PrimaryLayout);
 	
 	UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(InSoftWidgetClass.ToSoftObjectPath(), FStreamableDelegate::CreateLambda(
@@ -117,9 +67,9 @@ void UFrontendUISubsystem::PushSoftWidgetClassToStackAsync(const FGameplayTag& I
 			check(ContainBase);
 			UWidget_ActivatableBase* CreatedPushedWidget = ContainBase->AddWidget<UWidget_ActivatableBase>(LoadedClass, [AsyncPushWidgetCallback](UWidget_ActivatableBase& CreatedWidget)
 			{
-				AsyncPushWidgetCallback(EAsyncPushWidgetState::OnCreatedBeforePush, &CreatedWidget);
+				AsyncPushWidgetCallback(EAsyncWidgetLayerState::Initialize, &CreatedWidget);
 			});
-			AsyncPushWidgetCallback(EAsyncPushWidgetState::AfterPush, CreatedPushedWidget);
+			AsyncPushWidgetCallback(EAsyncWidgetLayerState::AfterPush, CreatedPushedWidget);
 		}
 	));
 }
@@ -147,9 +97,9 @@ void UFrontendUISubsystem::PushConfirmScreenToModalStackAsync(EConfirmScreenType
 	//2.Load/Create 并且在push前，根据1中生成的数据结构，初始化ConfirmScreen的结构
 	TSoftClassPtr<UWidget_ActivatableBase> ConfirmScreenWidgetClass = UFrontendBlueprintFunctionLibrary::GetFrontendSoftWidgetClassByTag(FrontendGameplayTags::Frontend_Widget_ConfirmScreen);
 	PushSoftWidgetClassToStackAsync(FrontendGameplayTags::Frontend_WidgetStack_Modal, ConfirmScreenWidgetClass,
-		[ScreenInfo, ButtonClickedCallback](EAsyncPushWidgetState PushWidgetState, UWidget_ActivatableBase* CreatedWidget)
+		[ScreenInfo, ButtonClickedCallback](EAsyncWidgetLayerState PushWidgetState, UWidget_ActivatableBase* CreatedWidget)
 	{
-		if (PushWidgetState == EAsyncPushWidgetState::OnCreatedBeforePush)
+		if (PushWidgetState == EAsyncWidgetLayerState::Initialize)
 		{
 			UWidget_ConfirmScreen* ConfirmScreen = CastChecked<UWidget_ConfirmScreen>(CreatedWidget);
 			ConfirmScreen->InitConfirmScreen(ScreenInfo, ButtonClickedCallback);
@@ -159,14 +109,25 @@ void UFrontendUISubsystem::PushConfirmScreenToModalStackAsync(EConfirmScreenType
 
 void UFrontendUISubsystem::NotifyPlayerAdded(UXYSCommonLocalPlayer* LocalPlayer)
 {
+	if (!LocalPlayer)
+		return;
+
+	// 确认为单人玩家游戏，不考虑其他LocalPlayer的加入
+	ensureAlwaysMsgf(LocalPlayer != RootViewportLayout.LocalPlayer, TEXT("Add same LocalPlayer again!"));
+	ensureAlwaysMsgf(RootViewportLayout.LocalPlayer == nullptr, TEXT("Add Another LocalPlayer!"));
+
+	if (RootViewportLayout.LocalPlayer)
+		return;
+	
 	LocalPlayer->OnPlayerControllerSet.AddWeakLambda(this, [this](UXYSCommonLocalPlayer* LocalPlayer, APlayerController* PlayerController)
 	{
 		NotifyPlayerDestroyed(LocalPlayer);
 
-		if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+		// ensureAlwaysMsgf(LocalPlayer == RootViewportLayout.LocalPlayer, TEXT("PlayerController's LocalPlayer should same to RootViewportLayout's!"));
+		if (RootViewportLayout.RootLayout)
 		{
-			AddLayoutToViewport(LocalPlayer, LayoutInfo->RootLayout);
-			LayoutInfo->bAddedToViewport = true;
+			AddLayoutToViewport(LocalPlayer, RootViewportLayout.RootLayout);
+			RootViewportLayout.bAddedToViewport = true;
 		}
 		else
 		{
@@ -174,10 +135,10 @@ void UFrontendUISubsystem::NotifyPlayerAdded(UXYSCommonLocalPlayer* LocalPlayer)
 		}
 	});
 
-	if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
+	if (RootViewportLayout.RootLayout)
 	{
-		AddLayoutToViewport(LocalPlayer, LayoutInfo->RootLayout);
-		LayoutInfo->bAddedToViewport = true;
+		AddLayoutToViewport(LocalPlayer, RootViewportLayout.RootLayout);
+		RootViewportLayout.bAddedToViewport = true;
 	}
 	else
 	{
@@ -187,32 +148,57 @@ void UFrontendUISubsystem::NotifyPlayerAdded(UXYSCommonLocalPlayer* LocalPlayer)
 
 void UFrontendUISubsystem::NotifyPlayerRemoved(UXYSCommonLocalPlayer* LocalPlayer)
 {
-	if (FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer))
-	{
-		RemoveLayoutFromViewport(LocalPlayer, LayoutInfo->RootLayout);
-		LayoutInfo->bAddedToViewport = false;
-	}
+	if (RootViewportLayout.LocalPlayer != LocalPlayer)
+		return;
+	
+	RemoveLayoutFromViewport(LocalPlayer, RootViewportLayout.RootLayout);
+	RootViewportLayout.bAddedToViewport = false;
+}
+
+UCommonActivatableWidget* UFrontendUISubsystem::PushWidgetToLayerStack(ULocalPlayer* LocalPlayer, FGameplayTag LayerName, TSubclassOf<UCommonActivatableWidget> InActivatableWidgetClass)
+{
+	UWidget_PrimaryLayout* PrimaryLayout = GetRootLayout(CastChecked<UXYSCommonLocalPlayer>(LocalPlayer));
+	ensure(PrimaryLayout);
+	return PrimaryLayout->PushWidgetToLayerStack(LayerName, InActivatableWidgetClass);
+}
+
+void UFrontendUISubsystem::PushWidgetToLayerStackAsync(ULocalPlayer* LocalPlayer, FGameplayTag LayerName,
+	bool bSuspendInputUntilComplete, TSoftClassPtr<UCommonActivatableWidget> WidgetClass)
+{
+	UWidget_PrimaryLayout* PrimaryLayout = GetRootLayout(CastChecked<UXYSCommonLocalPlayer>(LocalPlayer));
+	ensure(PrimaryLayout);
+	PrimaryLayout->PushWidgetToLayerStackAsync(LayerName, bSuspendInputUntilComplete, WidgetClass);
+}
+
+void UFrontendUISubsystem::FindAndRemoveWidgetFromLayer(ULocalPlayer* LocalPlayer,
+	UCommonActivatableWidget* InActivatableWidget)
+{
+	UWidget_PrimaryLayout* PrimaryLayout = GetRootLayout(CastChecked<UXYSCommonLocalPlayer>(LocalPlayer));
+	ensure(PrimaryLayout);
+	PrimaryLayout->FindAndRemoveWidgetFromLayer(InActivatableWidget);
 }
 
 UWidget_PrimaryLayout* UFrontendUISubsystem::GetRootLayout(const UXYSCommonLocalPlayer* LocalPlayer) const
 {
-	const FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer);
-	return LayoutInfo ? LayoutInfo->RootLayout : nullptr;
+	// const FRootViewportLayoutInfo* LayoutInfo = RootViewportLayouts.FindByKey(LocalPlayer);
+	// return LayoutInfo ? LayoutInfo->RootLayout : nullptr;
+
+	return RootViewportLayout.RootLayout;
 }
 
 void UFrontendUISubsystem::NotifyPlayerDestroyed(UXYSCommonLocalPlayer* LocalPlayer)
 {
 	NotifyPlayerRemoved(LocalPlayer);
 	LocalPlayer->OnPlayerControllerSet.RemoveAll(this);
-	const int32 LayoutInfoIdx = RootViewportLayouts.IndexOfByKey(LocalPlayer);
-	if (LayoutInfoIdx != INDEX_NONE)
+	
+	if (LocalPlayer == RootViewportLayout.LocalPlayer)
 	{
-		UWidget_PrimaryLayout* Layout = RootViewportLayouts[LayoutInfoIdx].RootLayout;
-		RootViewportLayouts.RemoveAt(LayoutInfoIdx);
+		UWidget_PrimaryLayout* Layout = RootViewportLayout.RootLayout;
 
 		RemoveLayoutFromViewport(LocalPlayer, Layout);
-
 		OnRootLayoutReleased(LocalPlayer, Layout);
+
+		RootViewportLayout = FRootViewportLayoutInfo();
 	}
 }
 
@@ -225,9 +211,11 @@ void UFrontendUISubsystem::CreateLayoutWidget(UXYSCommonLocalPlayer* InLocalPlay
 		if (ensure(LayoutWidgetClass) && !LayoutWidgetClass->HasAnyClassFlags(CLASS_Abstract))
 		{
 			UWidget_PrimaryLayout* NewWidgetObject = CreateWidget<UWidget_PrimaryLayout>(PlayerController, LayoutWidgetClass);
-			RootViewportLayouts.Emplace(InLocalPlayer, NewWidgetObject, true);
+			RootViewportLayout.LocalPlayer = InLocalPlayer;
+			RootViewportLayout.RootLayout = NewWidgetObject;
 
 			AddLayoutToViewport(InLocalPlayer, NewWidgetObject);
+			RootViewportLayout.bAddedToViewport = true;
 		}
 	}
 }

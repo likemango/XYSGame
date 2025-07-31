@@ -16,7 +16,7 @@ UWidget_ConfirmScreen::FConfirmScreenInfoStruct UWidget_ConfirmScreen::CreateOkS
 	ConfirmScreenInfo.ScreenMessage = InScreenMessage;
 	
 	FConfirmScreenButtonInfo OKButtonInfo;
-	OKButtonInfo.ConfirmScreenButtonType = EConfirmScreenButtonType::Closed;
+	OKButtonInfo.ConfirmScreenButtonType = EConfirmScreenButtonType::Confirmed;
 	OKButtonInfo.ButtonTextToDisplay = FText::FromString(TEXT("Ok"));
 	ConfirmScreenInfo.AvailableScreenButtons.Add(OKButtonInfo);
 	return ConfirmScreenInfo;

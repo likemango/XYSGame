@@ -4,6 +4,14 @@
 
 #include "FrontendTypes.generated.h"
 
+UENUM()
+enum class EAsyncWidgetLayerState : uint8
+{
+	Canceled,
+	Initialize,
+	AfterPush
+};
+
 UENUM(BlueprintType)
 enum class EConfirmScreenType : uint8
 {

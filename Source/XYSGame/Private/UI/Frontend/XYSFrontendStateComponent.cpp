@@ -87,10 +87,10 @@ void UXYSFrontendStateComponent::FlowStep_TryShowPressStartScreen(FControlFlowNo
 	if (UFrontendUISubsystem* UISubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UFrontendUISubsystem>())
 	{
 		UISubsystem->PushSoftWidgetClassToStackAsync(FrontendGameplayTags::Frontend_WidgetStack_Menu, PressStartScreenClass,
-			[this, SubFlow](EAsyncPushWidgetState State, UCommonActivatableWidget* Screen) {
+			[this, SubFlow](EAsyncWidgetLayerState State, UCommonActivatableWidget* Screen) {
 			switch (State)
 			{
-			case EAsyncPushWidgetState::AfterPush:
+			case EAsyncWidgetLayerState::AfterPush:
 				bShouldShowLoadingScreen = false;
 				Screen->OnDeactivated().AddWeakLambda(this, [this, SubFlow]() {
 					SubFlow->ContinueFlow();
@@ -110,10 +110,10 @@ void UXYSFrontendStateComponent::FlowStep_TryShowMainScreen(FControlFlowNodeRef 
 	if (UFrontendUISubsystem* UISubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UFrontendUISubsystem>())
 	{
 		UISubsystem->PushSoftWidgetClassToStackAsync(FrontendGameplayTags::Frontend_WidgetStack_Menu, MainScreenClass,
-			[this, SubFlow](EAsyncPushWidgetState State, UCommonActivatableWidget* Screen) {
+			[this, SubFlow](EAsyncWidgetLayerState State, UCommonActivatableWidget* Screen) {
 			switch (State)
 			{
-			case EAsyncPushWidgetState::AfterPush:
+			case EAsyncWidgetLayerState::AfterPush:
 				bShouldShowLoadingScreen = false;
 				SubFlow->ContinueFlow();
 				return;

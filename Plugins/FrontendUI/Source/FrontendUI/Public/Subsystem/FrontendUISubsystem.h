@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "XYSGameUIManagerSubsystem.h"
+#include "XYSCommonUIManagerSubsystem.h"
 #include "FrontendTypes/FrontendTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "FrontendUISubsystem.generated.h"
@@ -16,13 +16,6 @@ class UWidget_ActivatableBase;
 class UWidget_PrimaryLayout;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMainMenuButtonHoveredDelegate, UFrontendCommonButtonBase*, FrontendButton, FText, DescriptionText);
-
-UENUM()
-enum EAsyncPushWidgetState : uint8
-{
-	OnCreatedBeforePush,
-	AfterPush
-};
 
 USTRUCT()
 struct FRootViewportLayoutInfo
@@ -53,31 +46,20 @@ public:
  * 
  */
 UCLASS()
-class FRONTENDUI_API UFrontendUISubsystem : public UXYSGameUIManagerSubsystem
+class FRONTENDUI_API UFrontendUISubsystem : public UXYSCommonUIManagerSubsystem
 {
 	GENERATED_BODY()
 
 public:
-	static UWidget_PrimaryLayout* GetPrimaryGameLayoutForPrimaryPlayer(const UObject* WorldContextObject);
-	static UWidget_PrimaryLayout* GetPrimaryGameLayout(APlayerController* PlayerController);
-	static UWidget_PrimaryLayout* GetPrimaryGameLayout(ULocalPlayer* LocalPlayer);
-	
 	static UFrontendUISubsystem* Get(const UObject* WorldContextObject);
 	
 	FSimpleMulticastDelegate& GetPrimaryLayoutAddedDelegate() {return OnPrimaryLayoutAdded;}
 	FSimpleMulticastDelegate OnPrimaryLayoutAdded;
 
 	void RegisterAndCallPrimaryLayoutCreated(FSimpleMulticastDelegate::FDelegate Delegate);
-
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Global UI Extensions")
-	static UCommonActivatableWidget* PushContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer,
-		UPARAM(meta = (Categories = "UI.Layer")) FGameplayTag LayerName, UPARAM(meta = (AllowAbstract = false)) TSubclassOf<UCommonActivatableWidget> WidgetClass);
-
-	UCommonActivatableWidget* PushWidgetClassToStackAsync(const FGameplayTag& InTag, TSubclassOf<UCommonActivatableWidget> InSoftWidgetClass,
-			TFunction<void(UCommonActivatableWidget*)> AsyncPushWidgetCallback);
 	
 	void PushSoftWidgetClassToStackAsync(const FGameplayTag& InTag, TSoftClassPtr<UWidget_ActivatableBase> InSoftWidgetClass,
-		TFunction<void(EAsyncPushWidgetState,UWidget_ActivatableBase*)> AsyncPushWidgetCallback);
+		TFunction<void(EAsyncWidgetLayerState,UWidget_ActivatableBase*)> AsyncPushWidgetCallback);
 
 	void PushConfirmScreenToModalStackAsync(EConfirmScreenType InScreenType, const FText& InScreenTitle, const FText& InScreenMessage,
 		TFunction<void(EConfirmScreenButtonType)> ButtonClickedCallback);
@@ -85,6 +67,10 @@ public:
 	virtual void NotifyPlayerAdded(UXYSCommonLocalPlayer* LocalPlayer) override;
 	virtual void NotifyPlayerDestroyed(UXYSCommonLocalPlayer* LocalPlayer) override;
 	virtual void NotifyPlayerRemoved(UXYSCommonLocalPlayer* LocalPlayer) override;
+
+	virtual UCommonActivatableWidget* PushWidgetToLayerStack(ULocalPlayer* LocalPlayer, FGameplayTag LayerName, TSubclassOf<UCommonActivatableWidget> InActivatableWidgetClass) override;
+	virtual void PushWidgetToLayerStackAsync(ULocalPlayer* LocalPlayer, FGameplayTag LayerName, bool bSuspendInputUntilComplete, TSoftClassPtr<UCommonActivatableWidget> WidgetClass) override;
+	virtual void FindAndRemoveWidgetFromLayer(ULocalPlayer* LocalPlayer, UCommonActivatableWidget* InActivatableWidget) override;
 
 	UWidget_PrimaryLayout* GetRootLayout(const UXYSCommonLocalPlayer* LocalPlayer) const ;
 	
@@ -108,5 +94,5 @@ protected:
 
 private:
 	UPROPERTY(Transient)
-	TArray<FRootViewportLayoutInfo> RootViewportLayouts;
+	FRootViewportLayoutInfo RootViewportLayout;
 };

@@ -25,7 +25,7 @@ public class XYSCommonGame : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core", "ModularGameplayActors",
+				"Core", "ModularGameplayActors", "CommonInput"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -37,7 +37,10 @@ public class XYSCommonGame : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore"
+				"SlateCore", 
+				"CommonUI",
+				"UMG",
+				"GameplayTags"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
