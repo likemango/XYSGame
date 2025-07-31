@@ -1,10 +1,10 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
-public class FrontendUI : ModuleRules
+public class XYSCommonGame : ModuleRules
 {
-	public FrontendUI(ReadOnlyTargetRules Target) : base(Target)
+	public XYSCommonGame(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -25,14 +25,7 @@ public class FrontendUI : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core", 
-				"CommonUI",
-				"UMG",
-				"DeveloperSettings",
-				"GameplayTags",
-				"PreLoadScreen",
-				"ModularGameplayActors", 
-				"XYSCommonGame"
+				"Core", "ModularGameplayActors",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -44,11 +37,7 @@ public class FrontendUI : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
-				"CommonInput",
-				"InputCore",
-				"PropertyPath",
-				"EnhancedInput",
+				"SlateCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

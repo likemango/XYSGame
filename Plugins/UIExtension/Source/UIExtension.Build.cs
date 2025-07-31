@@ -16,7 +16,8 @@ public class UIExtension : ModuleRules
 				"Slate",
 				"UMG",
 				"CommonUI",
-				"GameplayTags"
+				"GameplayTags",
+				"XYSCommonGame"
 			}
 		);
 

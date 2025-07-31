@@ -7,7 +7,7 @@
 #include "Widgets/Widget_ActivatableBase.h"
 
 UAsyncAction_PushSoftWidgetClassToStack* UAsyncAction_PushSoftWidgetClassToStack::PushSoftWidget(
-	const UObject* WorldContextObject, APlayerController* OwningPlayerController, UPARAM(meta=(Categories="Frontend.WidgetStack")) FGameplayTag StackTag,
+	const UObject* WorldContextObject, APlayerController* OwningPlayerController, UPARAM(meta=(Categories="UI.Layer")) FGameplayTag StackTag,
 	TSoftClassPtr<UWidget_ActivatableBase> SoftWidgetClass, bool bFocusOnNewlyPushedWidget)
 {
 	checkf(!SoftWidgetClass.IsNull(), TEXT("Widget class in PushSoftWidgetClassToStack is null!"))

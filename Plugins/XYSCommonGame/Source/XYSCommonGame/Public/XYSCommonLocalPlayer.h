@@ -9,8 +9,8 @@
 /**
  * 
  */
-UCLASS()
-class UIEXTENSION_API UXYSCommonLocalPlayer : public ULocalPlayer
+UCLASS(Transient)
+class XYSCOMMONGAME_API UXYSCommonLocalPlayer : public ULocalPlayer
 {
 	GENERATED_BODY()
 
@@ -36,8 +36,7 @@ public:
 	FDelegateHandle CallAndRegister_OnPlayerPawnSet(FPlayerPawnSetDelegate::FDelegate Delegate);
 
 public:
-	virtual bool GetProjectionData(FViewport* Viewport, FSceneViewProjectionData& ProjectionData,
-	                               int32 StereoViewIndex) const override;
+	virtual bool GetProjectionData(FViewport* Viewport, FSceneViewProjectionData& ProjectionData,int32 StereoViewIndex) const override;
 
 	bool IsPlayerViewEnabled() const { return bIsPlayerViewEnabled; }
 	void SetIsPlayerViewEnabled(bool bInIsPlayerViewEnabled) { bIsPlayerViewEnabled = bInIsPlayerViewEnabled; }

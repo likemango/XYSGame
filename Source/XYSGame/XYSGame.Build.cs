@@ -43,7 +43,8 @@ public class XYSGame : ModuleRules
 			"ControlFlows",
 			"PropertyPath", 
 			"UIExtension", 
-			"FrontendUI"
+			"FrontendUI",
+			"XYSCommonGame"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

@@ -1,0 +1,23 @@
+﻿{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "XYSCommonGame",
+	"Description": "Mininal CommonGame from Epic.",
+	"Category": "Other",
+	"CreatedBy": "Xiaoyao",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "XYSCommonGame",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

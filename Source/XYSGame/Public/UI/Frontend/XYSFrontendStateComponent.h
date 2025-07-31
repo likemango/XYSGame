@@ -33,6 +33,7 @@ public:
 private:
 	void OnExperienceLoaded(const UXYSExperienceDefinition* Experience);
 
+	void FlowStep_WaitForPrimaryLayoutInitialization(FControlFlowNodeRef SubFlow);
 	void FlowStep_TryShowPressStartScreen(FControlFlowNodeRef SubFlow);
 	void FlowStep_TryShowMainScreen(FControlFlowNodeRef SubFlow);
 

@@ -6,7 +6,7 @@
 #include "GameplayTagContainer.h"
 #include "FrontendSettings/FrontendDeveloperSettings.h"
 
-TSoftClassPtr<UWidget_ActivatableBase> UFrontendBlueprintFunctionLibrary::GetFrontendSoftWidgetClassFromDevelopSettingsByTag(FGameplayTag WidgetTag)
+TSoftClassPtr<UWidget_ActivatableBase> UFrontendBlueprintFunctionLibrary::GetFrontendSoftWidgetClassByTag(FGameplayTag WidgetTag)
 {
 	checkf(WidgetTag.IsValid(), TEXT("WidgetTag in GetWidgetClassFromDevelopSettingsByTag is null."))
 
@@ -17,16 +17,12 @@ TSoftClassPtr<UWidget_ActivatableBase> UFrontendBlueprintFunctionLibrary::GetFro
 	return FrontendDevelopSettings->FrontedWidgetMaps.FindRef(WidgetTag);
 }
 
-TSubclassOf<UUserWidget> UFrontendBlueprintFunctionLibrary::GetWidgetClassFromDevelopSettingsByTag(FGameplayTag WidgetTag)
+TSoftClassPtr<UWidget_PrimaryLayout> UFrontendBlueprintFunctionLibrary::GetPrimaryLayoutWidgetClass()
 {
-	checkf(WidgetTag.IsValid(), TEXT("WidgetTag in GetWidgetClassFromDevelopSettingsByTag is null."))
-
-	const UFrontendDeveloperSettings* FrontendDevelopSettings = GetDefault<UFrontendDeveloperSettings>();
-
-	ensureAlwaysMsgf(FrontendDevelopSettings->WidgetMappings.Contains(WidgetTag), TEXT("FrontendDevelopSettings's FrontedWidgetMaps does not contain tag: %s"), *WidgetTag.ToString());
-
-	return FrontendDevelopSettings->WidgetMappings.FindRef(WidgetTag);
+	const UFrontendDeveloperSettings* FrontendDeveloperSettings = GetDefault<UFrontendDeveloperSettings>();
+	return FrontendDeveloperSettings->PrimaryLayoutClass;
 }
+
 
 TSoftObjectPtr<UTexture2D> UFrontendBlueprintFunctionLibrary::GetOptionsSoftImageByTag(FGameplayTag InImageTag)
 {

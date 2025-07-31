@@ -40,7 +40,7 @@ void UWidget_ListEntry_KeyRemap::OnRemapKeyButtonClicked()
 	
 	UFrontendUISubsystem::Get(this)->PushSoftWidgetClassToStackAsync(
 		FrontendGameplayTags::Frontend_WidgetStack_Modal,
-		UFrontendBlueprintFunctionLibrary::GetFrontendSoftWidgetClassFromDevelopSettingsByTag(FrontendGameplayTags::Frontend_Widget_KeyRemapScreen),
+		UFrontendBlueprintFunctionLibrary::GetFrontendSoftWidgetClassByTag(FrontendGameplayTags::Frontend_Widget_KeyRemapScreen),
 		[this](EAsyncPushWidgetState PushState, UWidget_ActivatableBase* PushedWidget)
 		{
 			if (PushState == EAsyncPushWidgetState::OnCreatedBeforePush)

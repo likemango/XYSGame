@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "XYSCommonPlayerController.h"
 #include "Camera/XYSCameraAssistInterface.h"
 #include "GameFramework/PlayerController.h"
 #include "Teams/XYSTeamAgentInterface.h"
@@ -16,7 +17,7 @@ class UXYSAbilitySystemComponent;
  * The base player controller class used by this project.
  */
 UCLASS(Config = Game, Meta = (ShortTooltip = "The base player controller class used by this project."))
-class XYSGAME_API AXYSPlayerController : public APlayerController, public IXYSTeamAgentInterface, public IXYSCameraAssistInterface
+class XYSGAME_API AXYSPlayerController : public AXYSCommonPlayerController, public IXYSTeamAgentInterface, public IXYSCameraAssistInterface
 {
 	GENERATED_BODY()
 

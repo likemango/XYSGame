@@ -37,8 +37,7 @@ TSharedRef<SWidget> UUIExtensionPointWidget::RebuildWidget()
 		RegisterExtensionPoint();
 
 		FDelegateHandle Handle = GetOwningLocalPlayer<UXYSCommonLocalPlayer>()->CallAndRegister_OnPlayerStateSet(
-			UXYSCommonLocalPlayer::FPlayerStateSetDelegate::FDelegate::CreateUObject(this, &UUIExtensionPointWidget::RegisterExtensionPointForPlayerState)
-		);
+			UXYSCommonLocalPlayer::FPlayerStateSetDelegate::FDelegate::CreateUObject(this, &UUIExtensionPointWidget::RegisterExtensionPointForPlayerState));
 	}
 
 	if (IsDesignTime())

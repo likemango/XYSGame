@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "XYSCommonPlayerController.h"
 #include "GameFramework/PlayerController.h"
 #include "FrontendPlayerController.generated.h"
 
@@ -10,7 +11,7 @@
  * 
  */
 UCLASS()
-class FRONTENDUI_API AFrontendPlayerController : public APlayerController
+class FRONTENDUI_API AFrontendPlayerController : public AXYSCommonPlayerController
 {
 	GENERATED_BODY()
 

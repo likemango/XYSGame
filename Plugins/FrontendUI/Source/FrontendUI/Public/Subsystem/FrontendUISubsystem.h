@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "XYSGameUIManagerSubsystem.h"
 #include "FrontendTypes/FrontendTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "FrontendUISubsystem.generated.h"
 
+class UXYSCommonLocalPlayer;
 class UCommonActivatableWidget;
 class UFrontendCommonButtonBase;
 struct FGameplayTag;
@@ -22,16 +24,50 @@ enum EAsyncPushWidgetState : uint8
 	AfterPush
 };
 
+USTRUCT()
+struct FRootViewportLayoutInfo
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(Transient)
+	TObjectPtr<ULocalPlayer> LocalPlayer = nullptr;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UWidget_PrimaryLayout> RootLayout = nullptr;
+
+	UPROPERTY(Transient)
+	bool bAddedToViewport = false;
+
+	FRootViewportLayoutInfo() {}
+	FRootViewportLayoutInfo(ULocalPlayer* InLocalPlayer, UWidget_PrimaryLayout* InRootLayout, bool bIsInViewport)
+		: LocalPlayer(InLocalPlayer)
+		, RootLayout(InRootLayout)
+		, bAddedToViewport(bIsInViewport)
+	{}
+
+	bool operator==(const ULocalPlayer* OtherLocalPlayer) const { return LocalPlayer == OtherLocalPlayer; }
+};
+
+
 /**
  * 
  */
 UCLASS()
-class FRONTENDUI_API UFrontendUISubsystem : public UGameInstanceSubsystem
+class FRONTENDUI_API UFrontendUISubsystem : public UXYSGameUIManagerSubsystem
 {
 	GENERATED_BODY()
 
 public:
+	static UWidget_PrimaryLayout* GetPrimaryGameLayoutForPrimaryPlayer(const UObject* WorldContextObject);
+	static UWidget_PrimaryLayout* GetPrimaryGameLayout(APlayerController* PlayerController);
+	static UWidget_PrimaryLayout* GetPrimaryGameLayout(ULocalPlayer* LocalPlayer);
+	
 	static UFrontendUISubsystem* Get(const UObject* WorldContextObject);
+	
+	FSimpleMulticastDelegate& GetPrimaryLayoutAddedDelegate() {return OnPrimaryLayoutAdded;}
+	FSimpleMulticastDelegate OnPrimaryLayoutAdded;
+
+	void RegisterAndCallPrimaryLayoutCreated(FSimpleMulticastDelegate::FDelegate Delegate);
 
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Global UI Extensions")
 	static UCommonActivatableWidget* PushContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer,
@@ -46,8 +82,11 @@ public:
 	void PushConfirmScreenToModalStackAsync(EConfirmScreenType InScreenType, const FText& InScreenTitle, const FText& InScreenMessage,
 		TFunction<void(EConfirmScreenButtonType)> ButtonClickedCallback);
 
-	virtual void NotifyPlayerAdded(ULocalPlayer* LocalPlayer);
-	virtual void NotifyPlayerRemoved(ULocalPlayer* LocalPlayer);
+	virtual void NotifyPlayerAdded(UXYSCommonLocalPlayer* LocalPlayer) override;
+	virtual void NotifyPlayerDestroyed(UXYSCommonLocalPlayer* LocalPlayer) override;
+	virtual void NotifyPlayerRemoved(UXYSCommonLocalPlayer* LocalPlayer) override;
+
+	UWidget_PrimaryLayout* GetRootLayout(const UXYSCommonLocalPlayer* LocalPlayer) const ;
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnMainMenuButtonHoveredDelegate OnMenuButtonHovered;
@@ -57,10 +96,17 @@ public:
 protected:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 
-	// UFUNCTION(BlueprintCallable)
-	void RegisterCreatedPrimaryLayout(UWidget_PrimaryLayout* InLayout);
-	
+	void CreateLayoutWidget(UXYSCommonLocalPlayer* InLocalPlayer);
+	TSubclassOf<UWidget_PrimaryLayout> GetLayoutWidgetClass() const;
+
+	void AddLayoutToViewport(UXYSCommonLocalPlayer* InLocalPlayer, UWidget_PrimaryLayout* InRootLayout);
+	void RemoveLayoutFromViewport(UXYSCommonLocalPlayer* LocalPlayer, UWidget_PrimaryLayout* Layout);
+
+	virtual void OnRootLayoutAddedToViewport(UXYSCommonLocalPlayer* LocalPlayer, UWidget_PrimaryLayout* Layout);
+	virtual void OnRootLayoutRemovedFromViewport(UXYSCommonLocalPlayer* LocalPlayer, UWidget_PrimaryLayout* Layout);
+	virtual void OnRootLayoutReleased(UXYSCommonLocalPlayer* LocalPlayer, UWidget_PrimaryLayout* Layout);
+
 private:
 	UPROPERTY(Transient)
-	TObjectPtr<UWidget_PrimaryLayout> CreatedPrimaryLayout;
+	TArray<FRootViewportLayoutInfo> RootViewportLayouts;
 };

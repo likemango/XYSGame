@@ -20,10 +20,10 @@ class FRONTENDUI_API UAsyncAction_PushSoftWidgetClassToStack : public UBlueprint
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "FrontendUI", DisplayName="Push Soft Widge tClass To Stack",
+	UFUNCTION(BlueprintCallable, Category = "FrontendUI", DisplayName="Push Soft Widget Class To Stack",
 		meta=(BlueprintInternalUseOnly="true",WorldContext="WorldContextObject", HidePin="WorldContextObject"))
 	static UAsyncAction_PushSoftWidgetClassToStack* PushSoftWidget(const UObject* WorldContextObject, APlayerController* OwningPlayerController,
-		UPARAM(meta=(Categories="Frontend.WidgetStack")) FGameplayTag StackTag, TSoftClassPtr<UWidget_ActivatableBase> SoftWidgetClass, bool bFocusOnNewlyPushedWidget);
+		UPARAM(meta=(Categories="UI.Layer")) FGameplayTag StackTag, TSoftClassPtr<UWidget_ActivatableBase> SoftWidgetClass, bool bFocusOnNewlyPushedWidget);
 
 	virtual void Activate() override;
 	
