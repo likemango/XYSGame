@@ -200,6 +200,9 @@ bool UFrontendLoadingScreenSubsystem::CheckTheNeedToShowLoadingScreen()
 	}
 
 	AGameStateBase* GameState = OwningWorld->GetGameState<AGameStateBase>();
+	if (!GameState)
+		return false;
+	
 	// Ask the game state if it needs a loading screen	
 	if (IFrontendLoadingScreenInterface::ShouldShowLoadingScreen(GameState, /*out*/ CurrentLoadingReason))
 	{

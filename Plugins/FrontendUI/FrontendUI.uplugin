@@ -19,7 +19,8 @@
 			"Name": "FrontendUI",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
-		}],
+		}
+	],
 	"Plugins": [
 		{
 			"Name":"CommonUI",

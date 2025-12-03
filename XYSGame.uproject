@@ -346,6 +346,10 @@
 		{
 			"Name": "Reflex",
 			"Enabled": true
+		},
+		{
+			"Name": "FrontendUI",
+			"Enabled": true
 		}
 	]
 }
